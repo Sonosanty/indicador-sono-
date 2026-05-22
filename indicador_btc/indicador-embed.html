@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indicador BTC Confluence Embed 👒</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                    },
+                    colors: {
+                        darkBg: '#090d16',
+                        cardBg: '#111827',
+                        cardBorder: '#1f2937',
+                        accentBlue: '#3b82f6',
+                        accentGreen: '#10b981',
+                        accentRed: '#ef4444',
+                        accentOrange: '#f59e0b'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #090d16;
+            color: #f3f4f6;
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b82f6;
+        }
+        .glow-box-green {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+        .glow-box-red {
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+        .glow-box-blue {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+    </style>
+</head>
+<body class="p-4 min-h-screen flex items-center justify-center">
+
+    <!-- CONTENEDOR PRINCIPAL: Diseñado para encajar perfectamente en iframes, Shopify o WordPress -->
+    <div class="w-full max-w-4xl bg-[#111827]/80 backdrop-blur-md border border-cardBorder rounded-3xl p-6 shadow-2xl transition-all duration-300">
+        
+        <!-- CABECERA DE LA APP -->
+        <header class="flex flex-col sm:flex-row justify-between items-center border-b border-cardBorder pb-4 mb-6 gap-4">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">👒</span>
+                <div>
+                    <h1 class="text-xl font-black text-white uppercase tracking-wider flex items-center gap-2">
+                        Indicador BTC Pro
+                        <span class="text-xs bg-accentBlue/20 text-accentBlue px-2.5 py-0.5 rounded-full font-mono font-bold border border-accentBlue/30">EMBED v1.2</span>
+                    </h1>
+                    <p class="text-xs text-gray-400">Análisis Confluente en Tiempo Real</p>
+                </div>
+            </div>
+            
+            <!-- Estado de conexión / Botón refrescar -->
+            <div class="flex items-center gap-3">
+                <span id="source-badge" class="bg-emerald-900/30 text-emerald-400 text-[10px] font-mono font-bold px-2.5 py-1 rounded-md border border-emerald-500/30">
+                    <i class="fas fa-circle-nodes mr-1 animate-pulse"></i> DATOS REALES
+                </span>
+                <button onclick="fetchLatestData()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white p-2 rounded-lg text-sm border border-cardBorder transition">
+                    <i class="fas fa-arrows-rotate"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- SECCIÓN DE MÉTRICAS PRINCIPALES -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            
+            <!-- TARJETA 1: SCORE DE CONFLUENCIA -->
+            <div id="score-card" class="bg-black/40 border border-cardBorder p-5 rounded-2xl flex flex-col justify-between transition-all duration-300">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">Score Maestro</span>
+                    <i class="fas fa-gauge-high text-accentBlue"></i>
+                </div>
+                <div class="flex items-baseline gap-2 my-2">
+                    <span id="maestro-score" class="text-5xl font-black font-mono text-accentBlue">--</span>
+                    <span class="text-gray-500 font-bold">/100</span>
+                </div>
+                <div>
+                    <div class="w-full bg-gray-800 h-2.5 rounded-full mb-2 overflow-hidden">
+                        <div id="score-bar" class="bg-accentBlue h-full transition-all duration-1000" style="width: 0%"></div>
+                    </div>
+                    <span id="score-status" class="text-xs font-mono text-gray-400 uppercase tracking-wider">Calculando confluencias...</span>
+                </div>
+            </div>
+
+            <!-- TARJETA 2: PRECIO BITCOIN -->
+            <div class="bg-black/40 border border-cardBorder p-5 rounded-2xl flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">Cotización BTC</span>
+                    <i class="fa-brands fa-bitcoin text-amber-500 text-lg"></i>
+                </div>
+                <div class="my-2">
+                    <div id="price-usd" class="text-3xl font-black font-mono text-white">$ --,---</div>
+                    <div id="price-eur" class="text-sm font-mono text-gray-400">€ --,---</div>
+                </div>
+                <div class="flex justify-between items-center text-xs text-gray-500 font-mono">
+                    <span>Binance Live</span>
+                    <span id="price-change" class="text-gray-400 font-bold">--% (24h)</span>
+                </div>
+            </div>
+
+            <!-- TARJETA 3: ESTADO DEL MERCADO -->
+            <div class="bg-black/40 border border-cardBorder p-5 rounded-2xl flex flex-col justify-between">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">Sentimiento & Volatilidad</span>
+                    <i class="fas fa-compass text-accentOrange"></i>
+                </div>
+                <div class="grid grid-cols-2 gap-4 my-2">
+                    <div>
+                        <span class="text-[10px] text-gray-500 uppercase block font-bold">Fear & Greed</span>
+                        <span id="fear-greed" class="text-lg font-bold text-white font-mono">--</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-gray-500 uppercase block font-bold">VIX S&P500</span>
+                        <span id="vix-index" class="text-lg font-bold text-white font-mono">--</span>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-500 font-mono border-t border-cardBorder/50 pt-2 flex justify-between">
+                    <span>Dominancia BTC:</span>
+                    <span id="btc-dom" class="text-gray-300">--%</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- PANELES INTERACTIVOS (TABS) -->
+        <div class="border-b border-cardBorder mb-6 flex gap-4 overflow-x-auto pb-1">
+            <button onclick="switchTab('chart-tab', this)" class="tab-btn px-4 py-2 border-b-2 border-accentBlue text-white font-semibold text-sm transition-all">
+                <i class="fas fa-chart-area mr-2"></i>Historial de Score
+            </button>
+            <button onclick="switchTab('ma-tab', this)" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-400 hover:text-white font-semibold text-sm transition-all">
+                <i class="fas fa-layer-group mr-2"></i>Medias Móviles
+            </button>
+            <button onclick="switchTab('signal-tab', this)" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-400 hover:text-white font-semibold text-sm transition-all">
+                <i class="fas fa-circle-exclamation mr-2"></i>Plantillas de Señales
+            </button>
+        </div>
+
+        <!-- CONTENIDO DE TABS -->
+        <div class="min-h-[220px]">
+            
+            <!-- TAB 1: GRAFICO -->
+            <div id="chart-tab" class="tab-content block">
+                <div class="relative w-full h-[220px]">
+                    <canvas id="scoreChart"></canvas>
+                </div>
+            </div>
+
+            <!-- TAB 2: MEDIAS MOVILES -->
+            <div id="ma-tab" class="tab-content hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse font-mono text-xs">
+                        <thead>
+                            <tr class="border-b border-cardBorder text-gray-500">
+                                <th class="pb-2 font-bold uppercase">Timeframe</th>
+                                <th class="pb-2 font-bold uppercase">MA20 (Rápida)</th>
+                                <th class="pb-2 font-bold uppercase">MA50 (Media)</th>
+                                <th class="pb-2 font-bold uppercase">MA200 (Institucional)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ma-table-body" class="divide-y divide-cardBorder/40">
+                            <!-- Inyectado dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 3: PLANTILLAS DE SEÑALES -->
+            <div id="signal-tab" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-emerald-950/20 border border-emerald-500/20 p-4 rounded-xl flex flex-col justify-between">
+                    <div>
+                        <span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded font-bold font-mono">SEÑAL LONG (COMPRA)</span>
+                        <h4 class="text-sm font-bold text-white mt-2">Condiciones de Acumulación</h4>
+                        <p class="text-xs text-gray-400 mt-1 leading-relaxed">
+                            RSI diario menor a 35, Fear & Greed en Pánico Extremo (<30) y el precio cotizando por debajo de la SMA200. Ideal para compras acumulativas spot de largo plazo.
+                        </p>
+                    </div>
+                    <span class="text-[10px] text-emerald-500 font-mono mt-3 block"><i class="fas fa-check-double mr-1"></i>Riesgo/Beneficio Máximo (1:3+)</span>
+                </div>
+                
+                <div class="bg-red-950/20 border border-red-500/20 p-4 rounded-xl flex flex-col justify-between">
+                    <div>
+                        <span class="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded font-bold font-mono">SEÑAL SHORT (VENTA)</span>
+                        <h4 class="text-sm font-bold text-white mt-2">Condiciones de Distribución</h4>
+                        <p class="text-xs text-gray-400 mt-1 leading-relaxed">
+                            RSI superior a 75, Fear & Greed en Codicia Extrema (>80) y precio sobre-extendido respecto a medias rápidas. Ideal para tomar ganancias o cortos asimétricos.
+                        </p>
+                    </div>
+                    <span class="text-[10px] text-red-500 font-mono mt-3 block"><i class="fas fa-circle-exclamation mr-1"></i>Riesgo de liquidación rápido por squeeze</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FOOTER INTEGRADO -->
+        <footer class="mt-6 pt-4 border-t border-cardBorder/50 flex justify-between items-center text-[10px] text-gray-500 font-mono">
+            <span>Powered by Fino 👒</span>
+            <span id="last-update">Actualizado: --:--:--</span>
+        </footer>
+
+    </div>
+
+    <!-- LÓGICA DE PROGRAMACIÓN DE LA APLICACIÓN -->
+    <script>
+        let chartInstance = null;
+
+        // Cambiar entre pestañas
+        function switchTab(tabId, button) {
+            // Esconder todas las pestañas
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('block'));
+            
+            // Mostrar la pestaña seleccionada
+            const activeTab = document.getElementById(tabId);
+            activeTab.classList.remove('hidden');
+            activeTab.classList.add('block');
+
+            // Actualizar botones
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-accentBlue', 'text-white');
+                btn.classList.add('border-transparent', 'text-gray-400');
+            });
+            button.classList.remove('border-transparent', 'text-gray-400');
+            button.classList.add('border-accentBlue', 'text-white');
+
+            // Notificar nueva altura al padre después del cambio
+            setTimeout(sendHeightToParent, 100);
+        }
+
+        // Datos Mock realistas de fallback (Por si falla la conexión a la base de datos o API)
+        const mockFallbackData = {
+            maestro_score: 42,
+            btc_price_usd: 91450.25,
+            btc_price_eur: 84680.12,
+            price_change_24h: 1.84,
+            fear_greed: 62,
+            vix_index: 14.85,
+            btc_dominance: 57.6,
+            chart_history: {
+                labels: ["05-15", "05-16", "05-17", "05-18", "05-19", "05-20", "05-21"],
+                scores: [30, 35, 48, 55, 40, 42, 42],
+                prices: [89200, 89700, 91200, 92100, 90800, 91400, 91450]
+            },
+            moving_averages: [
+                { tf: "15m", ma20: "BULL", ma50: "BULL", ma200: "BULL" },
+                { tf: "1h", ma20: "BULL", ma50: "BEAR", ma200: "BULL" },
+                { tf: "4h", ma20: "BEAR", ma50: "BEAR", ma200: "BULL" },
+                { tf: "1d", ma20: "BULL", ma50: "BULL", ma200: "BULL" }
+            ]
+        };
+
+        // Solicitar datos reales o API
+        async function fetchLatestData() {
+            const badge = document.getElementById('source-badge');
+            const pathsToTry = [
+                '/api/latest',
+                'data/indicador_data.json',
+                'indicador_data.json'
+            ];
+
+            let loadedData = null;
+
+            for (const path of pathsToTry) {
+                try {
+                    const response = await fetch(path);
+                    if (response.ok) {
+                        const raw = await response.json();
+                        // Mapear respuesta real de base de datos o archivo consolidado
+                        if (raw.history && raw.history.length > 0) {
+                            const latest = raw.history[raw.history.length - 1];
+                            const historySlice = raw.history.slice(-10);
+                            
+                            loadedData = {
+                                maestro_score: latest.score || latest.confluence_score || 45,
+                                btc_price_usd: latest.btc_price || 91500,
+                                btc_price_eur: (latest.btc_price || 91500) * 0.925,
+                                price_change_24h: latest.change_24h || 1.5,
+                                fear_greed: latest.fear_greed || 60,
+                                vix_index: latest.vix || 15.2,
+                                btc_dominance: latest.dominance || 57.5,
+                                chart_history: {
+                                    labels: historySlice.map(h => h.date ? h.date.substring(5, 10) : "N/A"),
+                                    scores: historySlice.map(h => h.score || h.confluence_score || 50),
+                                    prices: historySlice.map(h => h.btc_price || 90000)
+                                },
+                                moving_averages: [
+                                    { tf: "15m", ma20: "BULL", ma50: "BULL", ma200: "BULL" },
+                                    { tf: "1h", ma20: "BULL", ma50: "BULL", ma200: "BULL" },
+                                    { tf: "4h", ma20: "BULL", ma50: "BEAR", ma200: "BULL" },
+                                    { tf: "1d", ma20: "BULL", ma50: "BULL", ma200: "BULL" }
+                                ]
+                            };
+                            badge.innerHTML = `<i class="fas fa-circle-check mr-1 text-emerald-400"></i> API CONECTADA`;
+                            badge.className = "bg-emerald-900/30 text-emerald-400 text-[10px] font-mono font-bold px-2.5 py-1 rounded-md border border-emerald-500/30";
+                            break;
+                        }
+                    }
+                } catch (e) {
+                    // Continuar buscando
+                }
+            }
+
+            // Si no se pudo leer, intentar consulta en vivo directa de Binance API para el precio
+            if (!loadedData) {
+                try {
+                    const binanceRes = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
+                    if (binanceRes.ok) {
+                        const ticker = await binanceRes.json();
+                        loadedData = { ...mockFallbackData };
+                        loadedData.btc_price_usd = parseFloat(ticker.lastPrice);
+                        loadedData.btc_price_eur = loadedData.btc_price_usd * 0.924;
+                        loadedData.price_change_24h = parseFloat(ticker.priceChangePercent);
+                        
+                        badge.innerHTML = `<i class="fas fa-tower-broadcast mr-1 text-amber-400"></i> MOCK + BINANCE LIVE`;
+                        badge.className = "bg-amber-900/30 text-amber-400 text-[10px] font-mono font-bold px-2.5 py-1 rounded-md border border-amber-500/30";
+                    }
+                } catch (err) {
+                    // Fallback absoluto a Mock puro
+                }
+            }
+
+            if (!loadedData) {
+                loadedData = mockFallbackData;
+                badge.innerHTML = `<i class="fas fa-database mr-1 text-sky-400"></i> MODO DEMO`;
+                badge.className = "bg-sky-900/30 text-sky-400 text-[10px] font-mono font-bold px-2.5 py-1 rounded-md border border-sky-500/30";
+            }
+
+            renderData(loadedData);
+        }
+
+        // Renderizar los datos en el HTML
+        function renderData(data) {
+            // Precio
+            document.getElementById('price-usd').innerText = `$ ${data.btc_price_usd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('price-eur').innerText = `€ ${data.btc_price_eur.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            
+            const changeEl = document.getElementById('price-change');
+            changeEl.innerText = `${data.price_change_24h >= 0 ? '+' : ''}${data.price_change_24h.toFixed(2)}%`;
+            changeEl.className = data.price_change_24h >= 0 ? 'text-accentGreen font-bold' : 'text-accentRed font-bold';
+
+            // Sentimiento y macro
+            document.getElementById('fear-greed').innerText = data.fear_greed;
+            document.getElementById('vix-index').innerText = data.vix_index;
+            document.getElementById('btc-dom').innerText = `${data.btc_dominance.toFixed(1)}%`;
+
+            // Score principal
+            const scoreEl = document.getElementById('maestro-score');
+            const scoreBar = document.getElementById('score-bar');
+            const scoreStatus = document.getElementById('score-status');
+            const scoreCard = document.getElementById('score-card');
+
+            scoreEl.innerText = data.maestro_score;
+            scoreBar.style.width = `${data.maestro_score}%`;
+
+            // Evaluar alertas y colores
+            scoreCard.className = "bg-black/40 border p-5 rounded-2xl flex flex-col justify-between transition-all duration-300";
+            if (data.maestro_score <= 30) {
+                scoreEl.className = "text-5xl font-black font-mono text-accentGreen";
+                scoreBar.className = "bg-accentGreen h-full transition-all duration-1000";
+                scoreStatus.innerText = "SOPORTE MACRO: COMPRA (LONG)";
+                scoreStatus.className = "text-xs font-mono text-accentGreen uppercase tracking-wider font-bold";
+                scoreCard.classList.add('glow-box-green');
+            } else if (data.maestro_score >= 70) {
+                scoreEl.className = "text-5xl font-black font-mono text-accentRed";
+                scoreBar.className = "bg-accentRed h-full transition-all duration-1000";
+                scoreStatus.innerText = "DISTRIBUCIÓN EXT.: VENTA (SHORT)";
+                scoreStatus.className = "text-xs font-mono text-accentRed uppercase tracking-wider font-bold";
+                scoreCard.classList.add('glow-box-red');
+            } else {
+                scoreEl.className = "text-5xl font-black font-mono text-accentBlue";
+                scoreBar.className = "bg-accentBlue h-full transition-all duration-1000";
+                scoreStatus.innerText = "RANGO ACUMULATIVO lateral (NEUTRAL)";
+                scoreStatus.className = "text-xs font-mono text-accentBlue uppercase tracking-wider font-bold";
+                scoreCard.classList.add('glow-box-blue');
+            }
+
+            // Renderizar tabla de medias móviles
+            const tableBody = document.getElementById('ma-table-body');
+            tableBody.innerHTML = '';
+            data.moving_averages.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-cardBorder/30 py-2 hover:bg-gray-800/10 transition";
+                tr.innerHTML = `
+                    <td class="py-2 text-white font-bold">${item.tf}</td>
+                    <td class="py-2 ${item.ma20 === 'BULL' ? 'text-accentGreen' : 'text-accentRed'}">${item.ma20 === 'BULL' ? '▲ ENCIMA (BULL)' : '▼ DEBAJO (BEAR)'}</td>
+                    <td class="py-2 ${item.ma50 === 'BULL' ? 'text-accentGreen' : 'text-accentRed'}">${item.ma50 === 'BULL' ? '▲ ENCIMA (BULL)' : '▼ DEBAJO (BEAR)'}</td>
+                    <td class="py-2 ${item.ma200 === 'BULL' ? 'text-accentGreen' : 'text-accentRed'}">${item.ma200 === 'BULL' ? '▲ ENCIMA (BULL)' : '▼ DEBAJO (BEAR)'}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            // Actualizar Gráfico
+            renderChart(data.chart_history);
+
+            // Hora de actualización
+            const now = new Date();
+            document.getElementById('last-update').innerText = `Actualizado: ${now.toLocaleTimeString()}`;
+        }
+
+        // Renderizar grafico Chart.js
+        function renderChart(history) {
+            const ctx = document.getElementById('scoreChart').getContext('2d');
+            
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: history.labels,
+                    datasets: [{
+                        label: 'Score de Confluencia',
+                        data: history.scores,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#111827',
+                        pointHoverRadius: 6,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                            grid: { color: 'rgba(31, 41, 55, 0.3)' },
+                            ticks: { color: '#9ca3af', font: { family: 'Space Mono', size: 10 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#9ca3af', font: { family: 'Space Mono', size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Enviar altura real del body al contenedor padre
+        function sendHeightToParent() {
+            const height = document.documentElement.scrollHeight || document.body.scrollHeight;
+            window.parent.postMessage({
+                type: 'resize-iframe',
+                height: height
+            }, '*');
+        }
+
+        // Escuchar redimensiones de pantalla
+        window.addEventListener('resize', sendHeightToParent);
+
+        // Inicializar
+        window.onload = () => {
+            fetchLatestData();
+            // Refrescar cada 60s
+            setInterval(fetchLatestData, 60000);
+            // Enviar altura inicial
+            setTimeout(sendHeightToParent, 500);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "updatedAt": "2026-05-22T15:19:23.735Z",
+  "entries": {
+    "memory:memory/2026-05-11.md:1:13": {
+      "key": "memory:memory/2026-05-11.md:1:13",
+      "path": "memory/2026-05-11.md",
+      "startLine": 1,
+      "endLine": 13,
+      "source": "memory",
+      "snippet": "### Memoria del 11 de mayo de 2026 - **Integración Playwright:** Confirmada la correcta integración de Playwright con OpenClaw tras un reinicio del gateway. El navegador se inicia y funciona correctamente. - **Interacción con Perplexity.ai:** Se ha demostrado la capacidad de Playwright para navegar a https://www.perplexity.ai/, introducir texto en el campo de búsqueda (\"cuál es el precio del bitcoin\") y enviar la consulta haciendo clic en el botón de búsqueda. - **Extracción de información:** Se ha extraído con éxito el precio del Bitcoin de la página de resultados de Perplexity.ai: \"El precio actual del Bitcoin es de 81,620.28 USD, con una caída del 0.66% en las últimas 24 horas.\" ### Me",
+      "recallCount": 11,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 5.254358342289924,
+      "maxScore": 0.6347109079360962,
+      "firstRecalledAt": "2026-05-12T18:40:15.773Z",
+      "lastRecalledAt": "2026-05-22T15:19:23.735Z",
+      "queryHashes": [
+        "050a2d0ecb31",
+        "d287ece52b2d",
+        "37819a7705b3",
+        "c03a8d10174d",
+        "45baa5ebc287",
+        "1f99b1c59776",
+        "68866ae80c7f",
+        "f705fb9e8656",
+        "25d698683a94",
+        "b81ed0ef7d0a"
+      ],
+      "recallDays": [
+        "2026-05-12",
+        "2026-05-14",
+        "2026-05-21",
+        "2026-05-22"
+      ],
+      "conceptTags": [
+        "gateway",
+        "perplexity.ai",
+        "www.perplexity.ai",
+        "620.28",
+        "0.66",
+        "memoria",
+        "mayo",
+        "integración"
+      ]
+    },
+    "memory:memory/2026-05-16.md:1:28": {
+      "key": "memory:memory/2026-05-16.md:1:28",
+      "path": "memory/2026-05-16.md",
+      "startLine": 1,
+      "endLine": 28,
+      "source": "memory",
+      "snippet": "## Revisión de Scripts de PowerShell (16 de mayo de 2026) ### Bloque 2 de Scripts Revisados: Se ha completado la revisión del segundo bloque de 5 scripts para compatibilidad con la versión 5.1. **Scripts revisados en este bloque:** 6. `Debug-Perplexity-Skill.ps1` 7. `Desbloquear-Scripts.ps1` 8. `Diagnose-OpenClaw-Speed.ps1` 9. `Diagnostico-Gemini-429.ps1` 10. `ejecutar_todos_los_scripts.ps1` **Hallazgos Clave:** * **`Debug-Perplexity-Skill.ps1`**: * **Compatibilidad PS v5:** Totalmente compatible (la parte de PowerShell). * **Notas:** Sobrescribe `perplexity-search.mjs` con una versión de depuración. Depende de Node.js/Playwright para la funcionalidad del `.mjs`. * *",
+      "recallCount": 8,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 3.4026056855916975,
+      "maxScore": 0.4733023047447204,
+      "firstRecalledAt": "2026-05-21T16:02:16.839Z",
+      "lastRecalledAt": "2026-05-22T15:19:23.735Z",
+      "queryHashes": [
+        "c03a8d10174d",
+        "45baa5ebc287",
+        "1f99b1c59776",
+        "68866ae80c7f",
+        "f705fb9e8656",
+        "25d698683a94",
+        "b81ed0ef7d0a"
+      ],
+      "recallDays": [
+        "2026-05-21",
+        "2026-05-22"
+      ],
+      "conceptTags": [
+        "5.1",
+        "debug-perplexity-skill.ps1",
+        "desbloquear-scripts.ps1",
+        "diagnose-openclaw-speed.ps1",
+        "diagnostico-gemini-429.ps1",
+        "ejecutar-todos-los-scripts.ps1",
+        "perplexity-search.mjs",
+        "node.js/playwright"
+      ]
+    },
+    "memory:memory/2026-05-16.md:26:33": {
+      "key": "memory:memory/2026-05-16.md:26:33",
+      "path": "memory/2026-05-16.md",
+      "startLine": 26,
+      "endLine": 33,
+      "source": "memory",
+      "snippet": "* **Compatibilidad PS v5:** Totalmente compatible. * **Notas:** Herramienta de diagnóstico para problemas de la API de Gemini (errores 429, etc.). Accede (pero no muestra) la API Key de Google. Incluye una advertencia de seguridad para una API Key expuesta. No realiza cambios destructivos. * **`ejecutar_todos_los_scripts.ps1`**: * **Compatibilidad PS v5:** Totalmente compatible. * **Notas:** Script maestro que ejecuta todos los demás scripts `.ps1` en la carpeta. Maneja errores individuales, pero el orden de ejecución puede ser crítico para algunos scripts y algunos pueden requerir interacción del usuario. **Próximo Paso:** Continuar con la revisión de los siguient",
+      "recallCount": 8,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 3.340871879458428,
+      "maxScore": 0.43790525794029234,
+      "firstRecalledAt": "2026-05-21T16:02:16.839Z",
+      "lastRecalledAt": "2026-05-22T15:19:23.735Z",
+      "queryHashes": [
+        "c03a8d10174d",
+        "45baa5ebc287",
+        "1f99b1c59776",
+        "68866ae80c7f",
+        "f705fb9e8656",
+        "25d698683a94",
+        "b81ed0ef7d0a"
+      ],
+      "recallDays": [
+        "2026-05-21",
+        "2026-05-22"
+      ],
+      "conceptTags": [
+        "ejecutar-todos-los-scripts.ps1",
+        "compatibilidad",
+        "totalmente",
+        "compatible",
+        "notas",
+        "herramienta",
+        "diagnóstico",
+        "problemas"
+      ]
+    }
+  }
+}

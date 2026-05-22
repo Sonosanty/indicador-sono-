@@ -1,0 +1,36 @@
+# Fino Edition Gitignore 👒
+
+# Credenciales y Archivos Sensibles
+pionex_credentials.json
+*credentials*.json
+*.env
+*.key
+*.pem
+
+# OpenClaw & Herramientas locales
+.openclaw/
+install.log
+rtk.exe
+rtk-x86_64-pc-windows-msvc.zip
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
+ENV/
+
+# Cloudflare & Netlify
+.wrangler/
+.netlify/
+
+# Node/npm
+node_modules/
+package-lock.json
+
+# Archivos de análisis temporales o grandes
+extracted_text.txt
+headings_list.txt
+historico.json

@@ -1,0 +1,10 @@
+{
+  "name": "perplexity-search",
+  "version": "1.0.10",
+  "private": true,
+  "type": "module",
+  "description": "Local helper for perplexity-search OpenClaw skill",
+  "dependencies": {
+    "playwright": "^1.44.0"
+  }
+}

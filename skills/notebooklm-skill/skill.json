@@ -1,0 +1,22 @@
+{
+  "name": "notebooklm-skill",
+  "version": "1.0.0",
+  "description": "Consulta documentos locales usando NotebookLM-py (RAG)",
+  "main": "index.js",
+  "tools": [
+    {
+      "name": "query",
+      "description": "Consulta la base de conocimiento local de documentos",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Pregunta sobre los documentos locales"
+          }
+        },
+        "required": ["query"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "fecha_consolidacion": "2026-05-22 17:39:25",
+  "sentimiento_mercado": {
+    "fear_greed": {
+      "value": 28,
+      "label": "Fear"
+    },
+    "vix": 16.62,
+    "google_trends_volume_btc": 50
+  },
+  "coins": {
+    "BTC": {
+      "name": "Bitcoin",
+      "desc": "La más segura y dominante del mercado. Se considera el 'oro digital'. Tiene la mayor adopción institucional y ETFs.",
+      "price_usd": 76708.44,
+      "price_eur": 70878.6,
+      "price_change_24h": -0.55,
+      "confluence_score": 40.0,
+      "estado": "NEUTRAL",
+      "accion": "RANGO",
+      "timeframes": {
+        "15m": {
+          "close": 76709.09,
+          "change_pct": -0.27,
+          "rsi": 22.62,
+          "ma20": 77191.88,
+          "ma50": 77376.39,
+          "ma200": 77530.74
+        },
+        "1h": {
+          "close": 76711.87,
+          "change_pct": -0.08,
+          "rsi": 24.39,
+          "ma20": 77433.29,
+          "ma50": 77516.41,
+          "ma200": 78083.7
+        },
+        "4h": {
+          "close": 76711.88,
+          "change_pct": -0.93,
+          "rsi": 42.42,
+          "ma20": 77300.2,
+          "ma50": 78067.21,
+          "ma200": 78499.31
+        },
+        "1d": {
+          "close": 76711.88,
+          "change_pct": -1.16,
+          "rsi": 36.22,
+          "ma20": 79347.91,
+          "ma50": 76416.21,
+          "ma200": 80822.66
+        }
+      }
+    },
+    "ETH": {
+      "name": "Ethereum",
+      "desc": "La base de muchísimas aplicaciones DeFi, IA y NFTs. Lidera los smart contracts. Muy usada por empresas y desarrolladores.",
+      "price_usd": 2118.57,
+      "price_eur": 1957.56,
+      "price_change_24h": -0.49,
+      "confluence_score": 10.0,
+      "estado": "PÁNICO",
+      "accion": "LONG",
+      "timeframes": {
+        "15m": {
+          "close": 2118.57,
+          "change_pct": -0.11,
+          "rsi": 28.1,
+          "ma20": 2126.01,
+          "ma50": 2128.13,
+          "ma200": 2132.11
+        },
+        "1h": {
+          "close": 2118.56,
+          "change_pct": 0.08,
+          "rsi": 35.1,
+          "ma20": 2129.95,
+          "ma50": 2131.82,
+          "ma200": 2167.87
+        },
+        "4h": {
+          "close": 2118.56,
+          "change_pct": -0.57,
+          "rsi": 45.8,
+          "ma20": 2127.12,
+          "ma50": 2167.22,
+          "ma200": 2280.3
+        },
+        "1d": {
+          "close": 2118.63,
+          "change_pct": -0.71,
+          "rsi": 27.0,
+          "ma20": 2249.71,
+          "ma50": 2263.42,
+          "ma200": 2560.59
+        }
+      }
+    },
+    "SOL": {
+      "name": "Solana",
+      "desc": "Muy rápida y barata. Gran crecimiento en gaming, IA y memecoins. Fuerte ecosistema de desarrolladores.",
+      "price_usd": 86.74,
+      "price_eur": 80.15,
+      "price_change_24h": 0.34,
+      "confluence_score": 40.0,
+      "estado": "NEUTRAL",
+      "accion": "RANGO",
+      "timeframes": {
+        "15m": {
+          "close": 86.75,
+          "change_pct": 0.01,
+          "rsi": 32.66,
+          "ma20": 87.11,
+          "ma50": 87.07,
+          "ma200": 86.67
+        },
+        "1h": {
+          "close": 86.75,
+          "change_pct": 0.16,
+          "rsi": 45.19,
+          "ma20": 87.12,
+          "ma50": 86.69,
+          "ma200": 87.02
+        },
+        "4h": {
+          "close": 86.75,
+          "change_pct": -0.66,
+          "rsi": 63.16,
+          "ma20": 85.9,
+          "ma50": 87.01,
+          "ma200": 87.39
+        },
+        "1d": {
+          "close": 86.75,
+          "change_pct": -0.69,
+          "rsi": 39.2,
+          "ma20": 88.97,
+          "ma50": 86.29,
+          "ma200": 107.89
+        }
+      }
+    },
+    "XRP": {
+      "name": "XRP",
+      "desc": "Especializada en pagos internacionales rápidos. Muy vinculada a bancos y sector financiero. Ha crecido mucho tras avances regulatorios.",
+      "price_usd": 1.35,
+      "price_eur": 1.25,
+      "price_change_24h": -0.49,
+      "confluence_score": 20.0,
+      "estado": "PÁNICO",
+      "accion": "LONG",
+      "timeframes": {
+        "15m": {
+          "close": 1.35,
+          "change_pct": -0.09,
+          "rsi": 36.84,
+          "ma20": 1.36,
+          "ma50": 1.36,
+          "ma200": 1.37
+        },
+        "1h": {
+          "close": 1.35,
+          "change_pct": 0.16,
+          "rsi": 32.05,
+          "ma20": 1.37,
+          "ma50": 1.37,
+          "ma200": 1.4
+        },
+        "4h": {
+          "close": 1.35,
+          "change_pct": -0.54,
+          "rsi": 43.18,
+          "ma20": 1.37,
+          "ma50": 1.4,
+          "ma200": 1.41
+        },
+        "1d": {
+          "close": 1.35,
+          "change_pct": -1.43,
+          "rsi": 40.1,
+          "ma20": 1.41,
+          "ma50": 1.4,
+          "ma200": 1.69
+        }
+      }
+    }
+  },
+  "pionex": {
+    "balances": [
+      {
+        "coin": "BTC",
+        "free": 0.0,
+        "frozen": 0.0,
+        "usd_value": 0.04,
+        "eur_value": 0.03
+      },
+      {
+        "coin": "ETH",
+        "free": 0.006938,
+        "frozen": 0.0,
+        "usd_value": 14.7,
+        "eur_value": 12.67
+      },
+      {
+        "coin": "SOL",
+        "free": 0.13392,
+        "frozen": 0.0,
+        "usd_value": 11.62,
+        "eur_value": 10.02
+      },
+      {
+        "coin": "USDT",
+        "free": 0.018454,
+        "frozen": 0.0,
+        "usd_value": 0.02,
+        "eur_value": 0.02
+      },
+      {
+        "coin": "XRP",
+        "free": 8.584889,
+        "frozen": 0.0,
+        "usd_value": 11.59,
+        "eur_value": 9.99
+      }
+    ],
+    "total_usd": 37.97,
+    "total_eur": 32.73,
+    "last_update": "2026-05-22 17:39:25"
+  },
+  "scalping_trades": []
+}
