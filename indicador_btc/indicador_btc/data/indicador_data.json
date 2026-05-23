@@ -1,143 +1,143 @@
 {
-  "fecha_consolidacion": "2026-05-23 08:53:49",
+  "fecha_consolidacion": "2026-05-23 16:05:23",
   "sentimiento_mercado": {
     "fear_greed": {
       "value": 28,
       "label": "Fear"
     },
     "vix": 16.7,
-    "google_trends_volume_btc": 81
+    "google_trends_volume_btc": 59
   },
   "coins": {
     "BTC": {
       "name": "Bitcoin",
       "desc": "La más segura y dominante del mercado. Se considera el 'oro digital'. Tiene la mayor adopción institucional y ETFs.",
-      "price_usd": 75408.86,
-      "price_eur": 69677.79,
-      "price_change_24h": -2.66,
-      "confluence_score": 20.0,
+      "price_usd": 75127.56,
+      "price_eur": 69417.87,
+      "price_change_24h": -2.6,
+      "confluence_score": 10.0,
       "estado": "PÁNICO",
       "accion": "LONG",
       "timeframes": {
         "15m": {
-          "close": 75408.86,
-          "change_pct": -0.06,
-          "rsi": 27.98,
-          "ma20": 75530.65,
-          "ma50": 75702.54,
-          "ma200": 77006.4
+          "close": 75127.56,
+          "change_pct": -0.11,
+          "rsi": 67.39,
+          "ma20": 74820.01,
+          "ma50": 75122.32,
+          "ma200": 76595.34
         },
         "1h": {
-          "close": 75408.86,
-          "change_pct": -0.1,
-          "rsi": 17.27,
-          "ma20": 76181.88,
-          "ma50": 76972.99,
-          "ma200": 77718.98
+          "close": 75127.56,
+          "change_pct": -0.11,
+          "rsi": 44.71,
+          "ma20": 75305.61,
+          "ma50": 76532.34,
+          "ma200": 77472.82
         },
         "4h": {
-          "close": 75408.85,
-          "change_pct": -0.3,
-          "rsi": 27.49,
-          "ma20": 77081.88,
-          "ma50": 77656.28,
-          "ma200": 78510.83
+          "close": 75127.56,
+          "change_pct": 0.45,
+          "rsi": 24.25,
+          "ma20": 76837.48,
+          "ma50": 77401.16,
+          "ma200": 78509.06
         },
         "1d": {
-          "close": 75408.85,
-          "change_pct": -0.17,
-          "rsi": 30.41,
-          "ma20": 79131.31,
-          "ma50": 76561.65,
-          "ma200": 80686.36
+          "close": 75127.56,
+          "change_pct": -0.55,
+          "rsi": 29.78,
+          "ma20": 79117.24,
+          "ma50": 76556.02,
+          "ma200": 80684.95
         }
       }
     },
     "ETH": {
       "name": "Ethereum",
       "desc": "La base de muchísimas aplicaciones DeFi, IA y NFTs. Lidera los smart contracts. Muy usada por empresas y desarrolladores.",
-      "price_usd": 2061.63,
-      "price_eur": 1904.95,
-      "price_change_24h": -3.05,
+      "price_usd": 2042.09,
+      "price_eur": 1886.89,
+      "price_change_24h": -3.92,
       "confluence_score": 10.0,
       "estado": "PÁNICO",
       "accion": "LONG",
       "timeframes": {
         "15m": {
-          "close": 2061.63,
-          "change_pct": -0.07,
-          "rsi": 30.72,
-          "ma20": 2066.67,
-          "ma50": 2070.96,
-          "ma200": 2114.93
+          "close": 2042.09,
+          "change_pct": -0.14,
+          "rsi": 64.75,
+          "ma20": 2033.45,
+          "ma50": 2048.32,
+          "ma200": 2101.16
         },
         "1h": {
-          "close": 2061.63,
-          "change_pct": -0.16,
-          "rsi": 19.29,
-          "ma20": 2089.86,
-          "ma50": 2113.93,
-          "ma200": 2152.39
+          "close": 2042.09,
+          "change_pct": -0.14,
+          "rsi": 35.04,
+          "ma20": 2054.48,
+          "ma50": 2099.02,
+          "ma200": 2142.91
         },
         "4h": {
-          "close": 2061.63,
-          "change_pct": -0.44,
-          "rsi": 31.0,
-          "ma20": 2118.05,
-          "ma50": 2149.83,
-          "ma200": 2275.51
+          "close": 2042.09,
+          "change_pct": 0.52,
+          "rsi": 26.52,
+          "ma20": 2108.01,
+          "ma50": 2139.87,
+          "ma200": 2272.79
         },
         "1d": {
-          "close": 2061.63,
-          "change_pct": -0.2,
-          "rsi": 20.4,
-          "ma20": 2234.02,
-          "ma50": 2262.52,
-          "ma200": 2554.2
+          "close": 2042.09,
+          "change_pct": -1.15,
+          "rsi": 19.55,
+          "ma20": 2233.05,
+          "ma50": 2262.13,
+          "ma200": 2554.1
         }
       }
     },
     "SOL": {
       "name": "Solana",
       "desc": "Muy rápida y barata. Gran crecimiento en gaming, IA y memecoins. Fuerte ecosistema de desarrolladores.",
-      "price_usd": 84.22,
-      "price_eur": 77.82,
-      "price_change_24h": -2.93,
+      "price_usd": 83.15,
+      "price_eur": 76.83,
+      "price_change_24h": -4.54,
       "confluence_score": 20.0,
       "estado": "PÁNICO",
       "accion": "LONG",
       "timeframes": {
         "15m": {
-          "close": 84.22,
-          "change_pct": -0.13,
-          "rsi": 32.14,
-          "ma20": 84.46,
-          "ma50": 84.68,
-          "ma200": 86.31
+          "close": 83.15,
+          "change_pct": -0.1,
+          "rsi": 73.68,
+          "ma20": 82.5,
+          "ma50": 83.37,
+          "ma200": 85.76
         },
         "1h": {
-          "close": 84.22,
-          "change_pct": -0.27,
-          "rsi": 20.52,
-          "ma20": 85.51,
-          "ma50": 86.28,
-          "ma200": 86.49
+          "close": 83.15,
+          "change_pct": -0.1,
+          "rsi": 34.89,
+          "ma20": 83.76,
+          "ma50": 85.68,
+          "ma200": 86.12
         },
         "4h": {
-          "close": 84.22,
-          "change_pct": -0.55,
-          "rsi": 39.25,
-          "ma20": 85.92,
-          "ma50": 86.39,
-          "ma200": 87.37
+          "close": 83.15,
+          "change_pct": 1.03,
+          "rsi": 34.21,
+          "ma20": 85.66,
+          "ma50": 85.99,
+          "ma200": 87.34
         },
         "1d": {
-          "close": 84.22,
-          "change_pct": -0.21,
-          "rsi": 32.71,
-          "ma20": 88.87,
-          "ma50": 86.32,
-          "ma200": 107.53
+          "close": 83.15,
+          "change_pct": -1.48,
+          "rsi": 31.41,
+          "ma20": 88.82,
+          "ma50": 86.3,
+          "ma200": 107.52
         }
       }
     },
@@ -146,39 +146,39 @@
       "desc": "Especializada en pagos internacionales rápidos. Muy vinculada a bancos y sector financiero. Ha crecido mucho tras avances regulatorios.",
       "price_usd": 1.33,
       "price_eur": 1.23,
-      "price_change_24h": -2.1,
+      "price_change_24h": -1.83,
       "confluence_score": 20.0,
       "estado": "PÁNICO",
       "accion": "LONG",
       "timeframes": {
         "15m": {
           "close": 1.33,
-          "change_pct": -0.04,
-          "rsi": 29.05,
-          "ma20": 1.34,
-          "ma50": 1.34,
-          "ma200": 1.36
+          "change_pct": -0.06,
+          "rsi": 71.16,
+          "ma20": 1.32,
+          "ma50": 1.33,
+          "ma200": 1.35
         },
         "1h": {
           "close": 1.33,
-          "change_pct": 0.16,
-          "rsi": 27.19,
-          "ma20": 1.35,
-          "ma50": 1.36,
+          "change_pct": -0.06,
+          "rsi": 48.28,
+          "ma20": 1.33,
+          "ma50": 1.35,
           "ma200": 1.39
         },
         "4h": {
           "close": 1.33,
-          "change_pct": -0.57,
-          "rsi": 35.58,
+          "change_pct": 0.59,
+          "rsi": 33.66,
           "ma20": 1.36,
-          "ma50": 1.39,
+          "ma50": 1.38,
           "ma200": 1.41
         },
         "1d": {
           "close": 1.33,
-          "change_pct": -0.09,
-          "rsi": 37.25,
+          "change_pct": -0.16,
+          "rsi": 37.15,
           "ma20": 1.41,
           "ma50": 1.4,
           "ma200": 1.69
@@ -199,15 +199,15 @@
         "coin": "ETH",
         "free": 0.006938,
         "frozen": 0.0,
-        "usd_value": 14.3,
-        "eur_value": 12.33
+        "usd_value": 14.17,
+        "eur_value": 12.21
       },
       {
         "coin": "SOL",
         "free": 0.13392,
         "frozen": 0.0,
-        "usd_value": 11.28,
-        "eur_value": 9.72
+        "usd_value": 11.14,
+        "eur_value": 9.6
       },
       {
         "coin": "USDT",
@@ -224,9 +224,9 @@
         "eur_value": 9.84
       }
     ],
-    "total_usd": 37.06,
-    "total_eur": 31.95,
-    "last_update": "2026-05-23 08:53:49"
+    "total_usd": 36.79,
+    "total_eur": 31.71,
+    "last_update": "2026-05-23 16:05:23"
   },
   "scalping_trades": []
 }
