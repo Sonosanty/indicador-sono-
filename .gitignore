@@ -2,10 +2,14 @@
 
 # Credenciales y Archivos Sensibles
 pionex_credentials.json
+pionex_credentials.rar
 *credentials*.json
+*credentials*.rar
 *.env
 *.key
 *.pem
+*.rar
+*.zip
 
 # OpenClaw & Herramientas locales
 .openclaw/

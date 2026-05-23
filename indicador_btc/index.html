@@ -1,703 +1,181 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Indicador Cripto Pro - Fino Edition 👒</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome para iconos -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&family=Space+Mono:wght@400;700&display=swap" rel="family">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        cardBg: '#1f2937',
-                        cardBorder: '#374151',
-                        accentBlue: '#3b82f6',
-                        accentGreen: '#10b981',
-                        accentRed: '#ef4444',
-                        accentOrange: '#f59e0b',
-                    },
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                        mono: ['Space Mono', 'monospace'],
-                    }
-                }
-            }
-        }
-    </script>
+ <!-- SEO Mejorado -->
+ <title>Indicador Cripto Pro - Sono Edition | BTC ETH SOL XRP</title>
+ <meta name="description" content="Dashboard profesional de criptomonedas con score 0-100, Fear & Greed, VIX y señales de trading en tiempo real">
 
-    <style>
-        body {
-            background-color: #0b0f19;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(17, 24, 39, 0.8) 0, transparent 50%), 
-                radial-gradient(at 50% 0%, rgba(31, 41, 55, 0.4) 0, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(15, 23, 42, 0.9) 0, transparent 50%);
-            background-attachment: fixed;
-        }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0b0f19;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #374151;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #4b5563;
-        }
-        .glow-box-green {
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.1);
-            border-color: rgba(16, 185, 129, 0.2);
-        }
-        .glow-box-red {
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.1);
-            border-color: rgba(239, 68, 68, 0.2);
-        }
-        .glow-box-blue {
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
-            border-color: rgba(59, 130, 246, 0.2);
-        }
-    </style>
+ <!-- Open Graph -->
+ <meta property="og:title" content="Indicador Cripto Pro - Sono Edition">
+ <meta property="og:description" content="Score maestro, señales y análisis técnico para BTC, ETH, SOL y XRP">
+ <meta property="og:type" content="website">
+ <meta property="og:url" content="https://indicador-sono.pages.dev/">
+
+ <!-- Favicon -->
+ <link rel="icon" href="favicon.ico">
+
+ <!-- CSS -->
+ <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="p-4 min-h-screen flex items-center justify-center">
+<body>
+ <!-- HEADER -->
+ <div class="header">
+ <div class="header-title">
+ <span class="status-indicator connected" id="status-indicator"></span>
+ <h1 id="coin-title">🟠 Bitcoin (BTC)</h1>
+ </div>
 
-    <!-- CONTENEDOR PRINCIPAL -->
-    <div class="w-full max-w-4xl bg-[#111827]/80 backdrop-blur-md border border-cardBorder rounded-3xl p-6 shadow-2xl transition-all duration-300">
-        
-        <!-- CABECERA DE LA APP -->
-        <header class="flex flex-col sm:flex-row justify-between items-center border-b border-cardBorder pb-4 mb-6 gap-4">
-            <div class="flex items-center gap-3">
-                <span id="coin-logo-emoji" class="text-3xl">🟠</span>
-                <div>
-                    <h1 id="coin-title" class="text-xl font-black text-white uppercase tracking-wider flex items-center gap-2">
-                        Indicador Bitcoin Pro
-                        <span class="text-xs bg-accentBlue/20 text-accentBlue px-2.5 py-0.5 rounded-full font-mono font-bold border border-accentBlue/30">MULTIMONEDA</span>
-                    </h1>
-                    <p id="coin-desc" class="text-xs text-gray-400 mt-1 max-w-md">La más segura y dominante del mercado. Se considera el “oro digital”.</p>
-                </div>
-            </div>
-            
-            <!-- Selector de Criptomoneda y Estado -->
-            <div class="flex items-center gap-2">
-                <select id="coin-selector" onchange="onCoinChanged(this.value)" class="bg-[#1f2937] text-white text-xs border border-cardBorder rounded-lg px-2.5 py-1.5 font-bold focus:outline-none focus:ring-1 focus:ring-accentBlue cursor-pointer">
-                    <option value="BTC">🟠 Bitcoin (BTC)</option>
-                    <option value="ETH">🔵 Ethereum (ETH)</option>
-                    <option value="SOL">🟣 Solana (SOL)</option>
-                    <option value="XRP">🟢 XRP (XRP)</option>
-                </select>
-                <span id="source-badge" class="bg-[#1f2937] text-gray-400 text-[10px] font-mono font-bold px-2.5 py-1.5 rounded-md border border-cardBorder">
-                    <i class="fas fa-circle-notch fa-spin mr-1"></i> CONECTANDO...
-                </span>
-                <button onclick="fetchLatestData()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white p-2 rounded-lg text-sm border border-cardBorder transition">
-                    <i class="fas fa-arrows-rotate"></i>
-                </button>
-            </div>
-        </header>
+ <div class="coin-selector-group">
+ <button class="coin-selector active" data-coin="BTC">🟠 BTC</button>
+ <button class="coin-selector" data-coin="ETH">🔵 ETH</button>
+ <button class="coin-selector" data-coin="SOL">🟣 SOL</button>
+ <button class="coin-selector" data-coin="XRP">🟢 XRP</button>
+ </div>
+ </div>
 
-        <!-- SECCIÓN DE MÉTRICAS PRINCIPALES -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            
-            <!-- TARJETA 1: SCORE DE CONFLUENCIA -->
-            <div id="score-card" class="bg-black/40 border border-cardBorder p-5 rounded-2xl flex flex-col justify-between transition-all duration-300">
-                <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">Score Maestro</span>
-                    <i class="fas fa-gauge-high text-accentBlue"></i>
-                </div>
-                <div class="flex items-baseline gap-2 my-2">
-                    <span id="maestro-score" class="text-5xl font-black font-mono text-accentBlue">--</span>
-                    <span class="text-gray-500 font-bold">/100</span>
-                </div>
-                <div>
-                    <div class="w-full bg-gray-800 h-2.5 rounded-full mb-2 overflow-hidden">
-                        <div id="score-bar" class="bg-accentBlue h-full transition-all duration-1000" style="width: 0%"></div>
-                    </div>
-                    <span id="score-status" class="text-xs font-mono text-gray-400 uppercase tracking-wider">Calculando confluencias...</span>
-                </div>
-            </div>
+ <!-- MAIN CONTENT -->
+ <div class="container">
 
-            <!-- TARJETA 2: PRECIO CRIPTO -->
-            <div class="bg-black/40 border border-cardBorder p-5 rounded-2xl flex flex-col justify-between">
-                <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">Cotización Spot</span>
-                    <i class="fa-solid fa-coins text-amber-500 text-lg"></i>
-                </div>
-                <div class="my-2">
-                    <div id="price-usd" class="text-3xl font-black font-mono text-white">$ --,---</div>
-                    <div id="price-eur" class="text-sm font-mono text-gray-400">€ --,---</div>
-                </div>
-                <div class="flex justify-between items-center text-xs text-gray-500 font-mono">
-                    <span>Binance Live</span>
-                    <span id="price-change" class="text-gray-400 font-bold">--% (24h)</span>
-                </div>
-            </div>
+ <!-- Status bar to display local db or api connection -->
+ <div class="text-right mb-sm text-muted text-bold" style="font-size: 11px;">
+   ESTADO: <span id="status-text">CARGANDO...</span>
+ </div>
 
-            <!-- TARJETA 3: ESTADO DEL MERCADO -->
-            <div class="bg-black/40 border border-cardBorder p-5 rounded-2xl flex flex-col justify-between">
-                <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">Sentimiento & Volatilidad</span>
-                    <i class="fas fa-compass text-accentOrange"></i>
-                </div>
-                <div class="grid grid-cols-2 gap-4 my-2">
-                    <div>
-                        <span class="text-[10px] text-gray-500 uppercase block font-bold">Fear & Greed</span>
-                        <span id="fear-greed" class="text-lg font-bold text-white font-mono">--</span>
-                    </div>
-                    <div>
-                        <span class="text-[10px] text-gray-500 uppercase block font-bold">VIX S&P500</span>
-                        <span id="vix-index" class="text-lg font-bold text-white font-mono">--</span>
-                    </div>
-                </div>
-                <div class="text-xs text-gray-500 font-mono border-t border-cardBorder/50 pt-2 flex justify-between gap-2">
-                    <div>F&G 24h: <span id="fg-24h" class="text-gray-300">--</span></div>
-                    <div>Google Trends: <span id="google-trends" class="text-gray-300">--/100</span></div>
-                </div>
-            </div>
+ <!-- Score Maestro Card -->
+ <div class="card">
+ <div class="card-header">
+ <h2 class="card-title">Score Maestro</h2>
+ <div class="loading-spinner hidden" id="loading-spinner"></div>
+ </div>
 
-        </div>
+ <div class="score-display">
+ <div class="score-value" id="score-value">--</div>
+ <div class="score-label">/100</div>
+ <div class="score-bar-container">
+ <div class="score-bar" id="score-bar" style="width: 0%"></div>
+ </div>
+ <div class="score-status" id="score-status">Calculando confluencias...</div>
+ </div>
+ </div>
 
-        <!-- PANELES INTERACTIVOS (TABS) -->
-        <div class="border-b border-cardBorder mb-6 flex gap-4 overflow-x-auto pb-1">
-            <button onclick="switchTab('chart-tab', this)" class="tab-btn px-4 py-2 border-b-2 border-accentBlue text-white font-semibold text-sm transition-all">
-                <i class="fas fa-chart-area mr-2"></i>Historial de Score
-            </button>
-            <button onclick="switchTab('ma-tab', this)" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-400 hover:text-white font-semibold text-sm transition-all">
-                <i class="fas fa-layer-group mr-2"></i>Medias Móviles
-            </button>
-            <button onclick="switchTab('scalping-tab', this)" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-400 hover:text-white font-semibold text-sm transition-all">
-                <i class="fas fa-satellite-dish mr-2"></i>Señales Scalping
-            </button>
-            <button onclick="switchTab('signal-tab', this)" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-400 hover:text-white font-semibold text-sm transition-all">
-                <i class="fas fa-circle-exclamation mr-2"></i>Plantillas de Señales
-            </button>
-        </div>
+ <!-- Precio Card -->
+ <div class="card">
+ <div class="card-header">
+ <h2 class="card-title">Cotización Spot</h2>
+ </div>
 
-        <!-- CONTENIDO DE TABS -->
-        <div class="min-h-[220px]">
-            
-            <!-- TAB 1: GRAFICO -->
-            <div id="chart-tab" class="tab-content block">
-                <div class="relative w-full h-[220px]">
-                    <canvas id="scoreChart"></canvas>
-                </div>
-            </div>
+ <div class="price-display">
+ <div class="price-row" style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
+ <span class="price-label" style="font-weight: bold; color: var(--color-text-secondary);">USD:</span>
+ <span class="price-value" id="price-usd" style="font-size: 24px; font-weight: bold; color: var(--color-text-primary);">$--,---</span>
+ </div>
+ <div class="price-row" style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
+ <span class="price-label" style="font-weight: bold; color: var(--color-text-secondary);">EUR:</span>
+ <span class="price-value" id="price-eur" style="font-size: 20px; font-weight: bold; color: var(--color-text-secondary);">€--,---</span>
+ </div>
+ <div class="price-row" style="display: flex; justify-content: space-between;">
+ <span class="price-label" style="font-weight: bold; color: var(--color-text-secondary);">24h:</span>
+ <span class="price-change" id="price-change" style="font-weight: bold; font-size: 16px;">--%</span>
+ </div>
+ </div>
+ </div>
 
-            <!-- TAB 2: MEDIAS MOVILES -->
-            <div id="ma-tab" class="tab-content hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse font-mono text-xs">
-                        <thead>
-                            <tr class="border-b border-cardBorder text-gray-500">
-                                <th class="pb-2 font-bold uppercase">Timeframe</th>
-                                <th class="pb-2 font-bold uppercase">MA20 (Rápida)</th>
-                                <th class="pb-2 font-bold uppercase">MA50 (Media)</th>
-                                <th class="pb-2 font-bold uppercase">MA200 (Institucional)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ma-table-body" class="divide-y divide-cardBorder/40">
-                            <!-- Inyectado dinámicamente -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+ <!-- Sentimiento Card -->
+ <div class="card">
+ <div class="card-header">
+ <h2 class="card-title">Sentimiento & Volatilidad</h2>
+ </div>
 
-            <!-- TAB 3: SEÑALES SCALPING -->
-            <div id="scalping-tab" class="tab-content hidden">
-                <div class="overflow-x-auto max-h-[220px]">
-                    <table class="w-full text-left border-collapse font-mono text-xs">
-                        <thead>
-                            <tr class="border-b border-cardBorder text-gray-500">
-                                <th class="pb-2 font-bold uppercase">Fecha / Hora</th>
-                                <th class="pb-2 font-bold uppercase">Tipo</th>
-                                <th class="pb-2 font-bold uppercase">Entrada</th>
-                                <th class="pb-2 font-bold uppercase">Salida</th>
-                                <th class="pb-2 font-bold uppercase">Resultado</th>
-                                <th class="pb-2 font-bold uppercase">Patrón / Motivo</th>
-                            </tr>
-                        </thead>
-                        <tbody id="scalping-table-body" class="divide-y divide-cardBorder/40">
-                            <!-- Inyectado dinámicamente -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+ <div class="sentiment-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: var(--spacing-md); text-align: center;">
+ <div class="sentiment-item" style="background-color: var(--color-bg-tertiary); padding: var(--spacing-md); border-radius: var(--border-radius-md);">
+ <div class="sentiment-label" style="font-size: 11px; color: var(--color-text-muted); margin-bottom: var(--spacing-xs); text-transform: uppercase;">Fear & Greed</div>
+ <div class="sentiment-value" id="fear-greed" style="font-size: 24px; font-weight: bold;">--</div>
+ </div>
+ <div class="sentiment-item" style="background-color: var(--color-bg-tertiary); padding: var(--spacing-md); border-radius: var(--border-radius-md);">
+ <div class="sentiment-label" style="font-size: 11px; color: var(--color-text-muted); margin-bottom: var(--spacing-xs); text-transform: uppercase;">VIX S&P500</div>
+ <div class="sentiment-value" id="vix" style="font-size: 24px; font-weight: bold;">--</div>
+ </div>
+ <div class="sentiment-item" style="background-color: var(--color-bg-tertiary); padding: var(--spacing-md); border-radius: var(--border-radius-md);">
+ <div class="sentiment-label" style="font-size: 11px; color: var(--color-text-muted); margin-bottom: var(--spacing-xs); text-transform: uppercase;">Google Trends</div>
+ <div class="sentiment-value" id="google-trends" style="font-size: 24px; font-weight: bold;">--/100</div>
+ </div>
+ </div>
+ </div>
 
-            <!-- TAB 4: PLANTILLAS DE SEÑALES -->
-            <div id="signal-tab" class="tab-content hidden">
-                <div id="signals-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Inyectado dinámicamente -->
-                </div>
-            </div>
+ <!-- Navigation Link to Technical Dashboard -->
+ <div style="text-align: center; margin: var(--spacing-lg) 0;">
+   <a href="dashboard_sono.html" style="display: inline-block; padding: var(--spacing-md) var(--spacing-xl); background-color: var(--color-bg-secondary); color: var(--color-long); border: 2px solid var(--color-long); border-radius: var(--border-radius-lg); font-weight: bold; text-decoration: none; transition: all var(--transition-fast);" onmouseover="this.style.backgroundColor='var(--color-long)'; this.style.color='#000';" onmouseout="this.style.backgroundColor='var(--color-bg-secondary)'; this.style.color='var(--color-long)';">
+     📊 ACCEDER AL PANEL TÉCNICO COMPLETO (SISTEMA HÍBRIDO)
+   </a>
+ </div>
 
-        </div>
+ <!-- Medias Móviles Card -->
+ <div class="card">
+ <div class="card-header">
+ <h2 class="card-title">Medias Móviles</h2>
+ </div>
 
-        <!-- PIE DE PAGINA -->
-        <footer class="border-t border-cardBorder mt-6 pt-4 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-500 font-mono gap-2">
-            <div>Fino Edition 👒 — Sono Premium Terminal</div>
-            <div id="last-update">Actualizado: --:--:--</div>
-        </footer>
+ <div class="table-container">
+ <table>
+ <thead>
+ <tr>
+ <th>Timeframe</th>
+ <th>MA20 (Rápida)</th>
+ <th>MA50 (Media)</th>
+ <th>MA200 (Institucional)</th>
+ </tr>
+ </thead>
+ <tbody id="ma-table-body">
+ <tr>
+ <td colspan="4" class="text-center text-muted">Cargando...</td>
+ </tr>
+ </tbody>
+ </table>
+ </div>
+ </div>
 
-    </div>
+ <!-- Señales Scalping Card -->
+ <div class="card">
+ <div class="card-header">
+ <h2 class="card-title">Señales Scalping</h2>
+ </div>
 
-    <!-- SCRIPTS DE COMPORTAMIENTO -->
-    <script>
-        let chartInstance = null;
-        let activeCoin = "BTC";
-        let allCoinsData = {};
-        let globalMarketSentiment = {};
-        let globalScalpingTrades = [];
+ <div class="table-container">
+ <table>
+ <thead>
+ <tr>
+ <th>Fecha / Hora</th>
+ <th>Tipo</th>
+ <th>Entrada</th>
+ <th>Salida</th>
+ <th>Resultado</th>
+ <th>Patrón / Motivo</th>
+ </tr>
+ </thead>
+ <tbody id="signals-table-body">
+ <tr>
+ <td colspan="6" class="text-center text-muted">Sin señales recientes</td>
+ </tr>
+ </tbody>
+ </table>
+ </div>
+ </div>
 
-        // Emojis representativos
-        const COIN_EMOJIS = {
-            "BTC": "🟠",
-            "ETH": "🔵",
-            "SOL": "🟣",
-            "XRP": "🟢"
-        };
+ </div>
 
-        // Fallback robusto
-        const mockFallbackData = {
-            coin_name: "Bitcoin",
-            coin_desc: "La más segura y dominante del mercado. Se considera el 'oro digital'. Tiene la mayor adopción institucional y ETFs.",
-            maestro_score: 45,
-            estado_texto: "NEUTRAL",
-            btc_price_usd: 77508.55,
-            btc_price_eur: 66811.96,
-            price_change_24h: 0.94,
-            fear_greed: 28,
-            vix_index: 16.74,
-            btc_dominance: 58.34,
-            google_trends: 79,
-            chart_history: {
-                labels: ["05-15", "05-16", "05-17", "05-18", "05-19", "05-20", "05-21"],
-                scores: [30, 35, 48, 55, 40, 42, 45],
-                prices: [75200, 75700, 76200, 77100, 76800, 77400, 77508]
-            },
-            moving_averages: [
-                { tf: "15m", ma20: "BULL", ma50: "BULL", ma200: "BULL" },
-                { tf: "1h", ma20: "BULL", ma50: "BULL", ma200: "BULL" },
-                { tf: "4h", ma20: "BULL", ma50: "BEAR", ma200: "BULL" },
-                { tf: "1d", ma20: "BULL", ma50: "BULL", ma200: "BULL" }
-            ],
-            scalping_trades: []
-        };
+ <!-- Footer -->
+ <footer class="footer" style="text-align: center; padding: var(--spacing-lg) 0; border-top: 1px solid var(--color-bg-tertiary); margin-top: var(--spacing-xl);">
+ <p>Fino Edition 👒 — Sono Premium Terminal</p>
+ <p class="text-muted" style="font-size: 12px; margin-top: var(--spacing-xs);">Actualizado: <span id="last-update">--:--:--</span></p>
+ </footer>
 
-        // Cambiar de Pestaña (Tab)
-        function switchTab(tabId, element) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.add('hidden');
-                tab.classList.remove('block');
-            });
-            document.getElementById(tabId).classList.remove('hidden');
-            document.getElementById(tabId).classList.add('block');
+ <!-- Notifications Container -->
+ <div id="notifications" class="notifications-container"></div>
 
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.add('border-transparent', 'text-gray-400');
-                btn.classList.remove('border-accentBlue', 'text-white');
-            });
-            element.classList.remove('border-transparent', 'text-gray-400');
-            element.classList.add('border-accentBlue', 'text-white');
-
-            sendHeightToParent();
-        }
-
-        // Listener de Selección de Criptomoneda
-        function onCoinChanged(coinKey) {
-            activeCoin = coinKey;
-            document.getElementById("coin-logo-emoji").textContent = COIN_EMOJIS[coinKey] || "🟠";
-            if (Object.keys(allCoinsData).length > 0) {
-                const mapped = getLoadedDataForCoin(coinKey);
-                renderData(mapped);
-            }
-        }
-
-        // Mapea la estructura consolidada para la criptomoneda activa
-        function getLoadedDataForCoin(coinKey) {
-            const coin = allCoinsData[coinKey];
-            if (!coin) return mockFallbackData;
-            
-            const mAs = Object.keys(coin.timeframes).map(tf => {
-                const item = coin.timeframes[tf];
-                return {
-                    tf: tf,
-                    ma20: item.close >= item.ma20 ? "BULL" : "BEAR",
-                    ma50: item.close >= item.ma50 ? "BULL" : "BEAR",
-                    ma200: item.close >= item.ma200 ? "BULL" : "BEAR"
-                };
-            });
-            
-            return {
-                coin_name: coin.name,
-                coin_desc: coin.desc,
-                maestro_score: coin.confluence_score,
-                estado_texto: coin.estado,
-                btc_price_usd: coin.price_usd,
-                btc_price_eur: coin.price_eur,
-                price_change_24h: coin.price_change_24h,
-                fear_greed: globalMarketSentiment.fear_greed ? (globalMarketSentiment.fear_greed.value || 50) : 50,
-                vix_index: globalMarketSentiment.vix || 16.74,
-                btc_dominance: coinKey === "BTC" ? (globalMarketSentiment.btc_dominance || 58.34) : 58.34,
-                google_trends: globalMarketSentiment.google_trends_volume_btc || 50,
-                chart_history: {
-                    labels: ["15m", "1h", "4h", "1d"],
-                    scores: [Math.max(10, coin.confluence_score - 12), Math.max(10, coin.confluence_score - 5), coin.confluence_score, coin.confluence_score],
-                    prices: [coin.price_usd * 0.99, coin.price_usd * 0.995, coin.price_usd, coin.price_usd]
-                },
-                moving_averages: mAs,
-                scalping_trades: globalScalpingTrades
-            };
-        }
-
-        // Solicitar datos reales o API
-        async function fetchLatestData() {
-            const badge = document.getElementById('source-badge');
-            const pathsToTry = [
-                '/api/latest',
-                'data/indicador_data.json',
-                'indicador_data.json'
-            ];
-
-            let loadedData = null;
-
-            for (const path of pathsToTry) {
-                try {
-                    const response = await fetch(path);
-                    if (response.ok) {
-                        const raw = await response.json();
-                        
-                        // Validar si el JSON contiene soporte multimoneda
-                        if (raw.coins) {
-                            allCoinsData = raw.coins;
-                            globalMarketSentiment = raw.sentimiento_mercado || {};
-                            globalScalpingTrades = raw.scalping_trades || [];
-                            
-                            loadedData = getLoadedDataForCoin(activeCoin);
-                            
-                            badge.innerHTML = `<i class="fas fa-circle-check mr-1 text-emerald-400"></i> API CONECTADA`;
-                            badge.className = "bg-[#1f2937] text-emerald-400 text-[10px] font-mono font-bold px-2.5 py-1.5 rounded-md border border-emerald-500/30";
-                            break;
-                        }
-                    }
-                } catch (e) {
-                    // Sigue buscando
-                }
-            }
-
-            // Fallback en caso de API desconectada (modo demo de alta calidad)
-            if (!loadedData) {
-                try {
-                    // Intento directo a Binance API pública para BTC spot
-                    const binanceRes = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${activeCoin === 'BTC' ? 'BTCUSDT' : activeCoin + 'USDT'}`);
-                    if (binanceRes.ok) {
-                        const ticker = await binanceRes.json();
-                        loadedData = { ...mockFallbackData };
-                        loadedData.btc_price_usd = parseFloat(ticker.lastPrice);
-                        loadedData.btc_price_eur = loadedData.btc_price_usd * 0.924;
-                        loadedData.price_change_24h = parseFloat(ticker.priceChangePercent);
-                        
-                        badge.innerHTML = `<i class="fas fa-tower-broadcast mr-1 text-amber-400"></i> BINANCE LIVE (DEMO)`;
-                        badge.className = "bg-[#1f2937] text-amber-400 text-[10px] font-mono font-bold px-2.5 py-1.5 rounded-md border border-amber-500/30";
-                    }
-                } catch (err) {
-                    // Fallback absoluto
-                }
-            }
-
-            if (!loadedData) {
-                loadedData = mockFallbackData;
-                badge.innerHTML = `<i class="fas fa-database mr-1 text-sky-400"></i> MODO DEMO`;
-                badge.className = "bg-[#1f2937] text-sky-400 text-[10px] font-mono font-bold px-2.5 py-1.5 rounded-md border border-sky-500/30";
-            }
-
-            renderData(loadedData);
-        }
-
-        // Renderizar los datos en el HTML
-        function renderData(data) {
-            // Títulos y descripciones dinámicas
-            document.getElementById('coin-title').innerHTML = `Indicador ${data.coin_name} Pro <span class="text-xs bg-accentBlue/20 text-accentBlue px-2.5 py-0.5 rounded-full font-mono font-bold border border-accentBlue/30">${activeCoin}</span>`;
-            document.getElementById('coin-desc').innerText = data.coin_desc;
-
-            // Precio
-            document.getElementById('price-usd').innerText = `$ ${data.btc_price_usd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            document.getElementById('price-eur').innerText = `€ ${data.btc_price_eur.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            
-            const changeEl = document.getElementById('price-change');
-            changeEl.innerText = `${data.price_change_24h >= 0 ? '+' : ''}${data.price_change_24h.toFixed(2)}%`;
-            changeEl.className = data.price_change_24h >= 0 ? 'text-accentGreen font-bold font-mono' : 'text-accentRed font-bold font-mono';
-
-            // Sentimiento y macro
-            document.getElementById('fear-greed').innerText = data.fear_greed;
-            document.getElementById('vix-index').innerText = data.vix_index;
-            document.getElementById('fg-24h').innerText = `${globalMarketSentiment.fear_greed ? (globalMarketSentiment.fear_greed.label || 'Fear') : 'Fear'}`;
-            if (document.getElementById('google-trends')) {
-                document.getElementById('google-trends').innerText = `${data.google_trends || '--'}/100`;
-            }
-
-            // Score principal
-            const scoreEl = document.getElementById('maestro-score');
-            const scoreBar = document.getElementById('score-bar');
-            const scoreStatus = document.getElementById('score-status');
-            const scoreCard = document.getElementById('score-card');
-
-            scoreEl.innerText = Math.round(data.maestro_score);
-            scoreBar.style.width = `${data.maestro_score}%`;
-
-            // Evaluar alertas y colores del Score Maestro
-            scoreCard.className = "bg-black/40 border p-5 rounded-2xl flex flex-col justify-between transition-all duration-300";
-            if (data.maestro_score <= 30) {
-                scoreEl.className = "text-5xl font-black font-mono text-accentGreen";
-                scoreBar.className = "bg-accentGreen h-full transition-all duration-1000";
-                scoreStatus.innerText = "SOPORTE MACRO: COMPRA (LONG)";
-                scoreStatus.className = "text-xs font-mono text-accentGreen uppercase tracking-wider font-bold";
-                scoreCard.classList.add('glow-box-green');
-            } else if (data.maestro_score >= 70) {
-                scoreEl.className = "text-5xl font-black font-mono text-accentRed";
-                scoreBar.className = "bg-accentRed h-full transition-all duration-1000";
-                scoreStatus.innerText = "DISTRIBUCIÓN EXT.: VENTA (SHORT)";
-                scoreStatus.className = "text-xs font-mono text-accentRed uppercase tracking-wider font-bold";
-                scoreCard.classList.add('glow-box-red');
-            } else {
-                scoreEl.className = "text-5xl font-black font-mono text-accentBlue";
-                scoreBar.className = "bg-accentBlue h-full transition-all duration-1000";
-                scoreStatus.innerText = "RANGO ACUMULATIVO (NEUTRAL)";
-                scoreStatus.className = "text-xs font-mono text-accentBlue uppercase tracking-wider font-bold";
-                scoreCard.classList.add('glow-box-blue');
-            }
-
-            // Renderizar tabla de medias móviles
-            const tableBody = document.getElementById('ma-table-body');
-            tableBody.innerHTML = '';
-            data.moving_averages.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = "border-b border-cardBorder/30 py-2 hover:bg-gray-800/10 transition";
-                tr.innerHTML = `
-                    <td class="py-2 text-white font-bold">${item.tf}</td>
-                    <td class="py-2 ${item.ma20 === 'BULL' ? 'text-accentGreen' : 'text-accentRed'}">${item.ma20 === 'BULL' ? '▲ ENCIMA (BULL)' : '▼ DEBAJO (BEAR)'}</td>
-                    <td class="py-2 ${item.ma50 === 'BULL' ? 'text-accentGreen' : 'text-accentRed'}">${item.ma50 === 'BULL' ? '▲ ENCIMA (BULL)' : '▼ DEBAJO (BEAR)'}</td>
-                    <td class="py-2 ${item.ma200 === 'BULL' ? 'text-accentGreen' : 'text-accentRed'}">${item.ma200 === 'BULL' ? '▲ ENCIMA (BULL)' : '▼ DEBAJO (BEAR)'}</td>
-                `;
-                tableBody.appendChild(tr);
-            });
-
-            // Renderizar tabla de señales scalping (compartida o de BTC)
-            const scalpingTableBody = document.getElementById('scalping-table-body');
-            if (scalpingTableBody) {
-                scalpingTableBody.innerHTML = '';
-                if (data.scalping_trades && data.scalping_trades.length > 0) {
-                    data.scalping_trades.forEach(item => {
-                        const tr = document.createElement('tr');
-                        tr.className = "border-b border-cardBorder/30 py-2 hover:bg-gray-800/10 transition";
-                        const isWin = item.resultado === 'WIN';
-                        const isLoss = item.resultado === 'LOSS';
-                        const badgeColor = isWin ? 'text-accentGreen bg-accentGreen/10 border-accentGreen/20 font-bold' : isLoss ? 'text-accentRed bg-accentRed/10 border-accentRed/20 font-bold' : 'text-gray-400 bg-gray-800/20 border-gray-700/20';
-                        const typeColor = item.tipo === 'LONG' ? 'text-accentGreen font-bold' : 'text-accentRed font-bold';
-                        
-                        tr.innerHTML = `
-                            <td class="py-2 text-gray-400 font-mono">${item.fecha ? item.fecha.substring(11, 19) : 'N/A'}</td>
-                            <td class="py-2 ${typeColor}">${item.tipo}</td>
-                            <td class="py-2 text-white font-bold">${item.entrada}</td>
-                            <td class="py-2 text-gray-300 font-mono">${item.salida_precio || 'Abierta'}</td>
-                            <td class="py-2"><span class="px-1.5 py-0.5 rounded border text-[10px] ${badgeColor}">${item.resultado}</span></td>
-                            <td class="py-2 text-gray-400 truncate max-w-[180px]" title="${item.motivos || item.pattern || ''}">${item.motivos || item.pattern || ''}</td>
-                        `;
-                        scalpingTableBody.appendChild(tr);
-                    });
-                } else {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `<td colspan="6" class="py-4 text-center text-gray-500">No hay señales de scalping registradas</td>`;
-                    scalpingTableBody.appendChild(tr);
-                }
-            }
-
-            // Renderizar plantillas de señales fijas de alta confianza
-            const signalsContainer = document.getElementById('signals-container');
-            if (signalsContainer) {
-                signalsContainer.innerHTML = '';
-                
-                const templates = [
-                    {
-                        type: "LONG / COMPRA",
-                        color: "accentGreen",
-                        title: `Señal de Reversión Alcista en ${activeCoin}`,
-                        desc: `Detectado fuerte soporte técnico y confluencia de sobreventa en timeframes mayores. El Score Maestro indica zona de acumulación inteligente.`,
-                        trigger: "RSI < 25 (1H) + Bollinger Rebote Inferior confirmado por volumen."
-                    },
-                    {
-                        type: "SHORT / VENTA",
-                        color: "accentRed",
-                        title: `Señal de Distribución en ${activeCoin}`,
-                        desc: `Señales de agotamiento de momentum alcista en resistencia institucional. El Score Maestro indica toma de beneficios inmediata por sobrecompra.`,
-                        trigger: "RSI > 82 (1H) + Bollinger Rebote Superior."
-                    }
-                ];
-
-                templates.forEach(t => {
-                    const card = document.createElement('div');
-                    card.className = "bg-black/40 border border-cardBorder/40 p-4 rounded-xl flex flex-col justify-between";
-                    card.innerHTML = `
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-[10px] font-bold font-mono ${t.color === 'accentGreen' ? 'text-accentGreen' : 'text-accentRed'} uppercase tracking-wider">${t.type}</span>
-                            <i class="fas ${t.color === 'accentGreen' ? 'fa-circle-arrow-up text-accentGreen' : 'fa-circle-arrow-down text-accentRed'} text-sm"></i>
-                        </div>
-                        <h4 class="text-sm font-bold text-white mb-1">${t.title}</h4>
-                        <p class="text-xs text-gray-400 leading-relaxed mb-3">${t.desc}</p>
-                        <div class="border-t border-cardBorder/30 pt-2 text-[10px] font-mono text-gray-500">
-                            <strong>Disparador:</strong> ${t.trigger}
-                        </div>
-                    `;
-                    signalsContainer.appendChild(card);
-                });
-            }
-
-            // Actualizar Gráfico
-            renderChart(data.chart_history);
-
-            // Hora de actualización
-            const now = new Date();
-            document.getElementById('last-update').innerText = `Actualizado: ${now.toLocaleTimeString()}`;
-        }
-
-        // Renderizar grafico Chart.js
-        function renderChart(history) {
-            const ctx = document.getElementById('scoreChart').getContext('2d');
-            
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
-
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: history.labels,
-                    datasets: [{
-                        label: 'Score Técnico',
-                        data: history.scores,
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                        borderWidth: 3,
-                        pointBackgroundColor: '#3b82f6',
-                        pointBorderColor: '#111827',
-                        pointHoverRadius: 6,
-                        tension: 0.3,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            min: 0,
-                            max: 100,
-                            grid: { color: 'rgba(31, 41, 55, 0.3)' },
-                            ticks: { color: '#9ca3af', font: { family: 'Space Mono', size: 10 } }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: '#9ca3af', font: { family: 'Space Mono', size: 10 } }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Conectar al Canal WebSocket en Tiempo Real para Ticks y Precios en vivo
-        function connectWebSocket() {
-            const wsUrl = "ws://localhost:8000/ws";
-            let socket = null;
-            
-            try {
-                socket = new WebSocket(wsUrl);
-                
-                socket.onopen = () => {
-                    console.log("[WS] Conectado exitosamente al canal en tiempo real.");
-                };
-                
-                socket.onmessage = (event) => {
-                    try {
-                        const msg = JSON.parse(event.data);
-                        
-                        // Evento 1: Ticker en vivo (precios al segundo)
-                        if (msg.event === "ticker" && msg.prices) {
-                            // Actualizar precios en memoria
-                            Object.keys(msg.prices).forEach(coin => {
-                                if (allCoinsData[coin]) {
-                                    allCoinsData[coin].price_usd = msg.prices[coin];
-                                    allCoinsData[coin].price_eur = msg.prices[coin] * 0.924;
-                                }
-                            });
-                            
-                            // Re-renderizar precio de la moneda activa
-                            if (allCoinsData[activeCoin]) {
-                                const currentPriceUsd = allCoinsData[activeCoin].price_usd;
-                                const currentPriceEur = allCoinsData[activeCoin].price_eur;
-                                
-                                document.getElementById('price-usd').innerText = `$ ${currentPriceUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                                document.getElementById('price-eur').innerText = `€ ${currentPriceEur.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                            }
-                        }
-                        
-                        // Evento 2: Actualización macro de indicadores (cada 10 minutos)
-                        if (msg.event === "update") {
-                            console.log("[WS] Recibida actualización técnica global. Recargando...");
-                            fetchLatestData();
-                        }
-                    } catch (err) {
-                        // Error de parseo silencioso
-                    }
-                };
-                
-                socket.onerror = () => {
-                    // Reintentar en caso de fallo
-                };
-                
-                socket.onclose = () => {
-                    // Reintentar en 5 segundos
-                    setTimeout(connectWebSocket, 5000);
-                };
-            } catch (e) {
-                // Silencioso
-            }
-        }
-
-        // Enviar altura real del body al contenedor padre
-        function sendHeightToParent() {
-            const height = document.documentElement.scrollHeight || document.body.scrollHeight;
-            window.parent.postMessage({
-                type: 'resize-iframe',
-                height: height
-            }, '*');
-        }
-
-        // Escuchar redimensiones de pantalla
-        window.addEventListener('resize', sendHeightToParent);
-
-        // Inicializar
-        window.onload = () => {
-            fetchLatestData();
-            // Conectar WebSockets para datos tick-by-tick instantáneos
-            connectWebSocket();
-            // Refrescar vía REST cada 60s como respaldo de contingencia
-            setInterval(fetchLatestData, 60000);
-            // Enviar altura inicial
-            setTimeout(sendHeightToParent, 500);
-        };
-    </script>
+ <!-- JavaScript -->
+ <script src="js/app.js"></script>
 </body>
 </html>
