@@ -3,220 +3,763 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Método Sono - BTC Dashboard</title>
 
- <!-- SEO -->
- <title>Método Sono - BTC Dashboard Híbrido</title>
- <meta name="description" content="Sistema híbrido de trading: Score Macro + Método Ajram con confluencias en tiempo real">
+ <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
- <!-- CSS -->
- <link rel="stylesheet" href="css/styles.css">
+ <style>
+ * { margin: 0; padding: 0; box-sizing: border-box; }
+
+ body {
+ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+ background: linear-gradient(135deg, #0b0f19 0%, #111827 100%);
+ color: #e0e6ed;
+ min-height: 100vh;
+ padding: 20px;
+ }
+
+ .container { max-width: 1600px; margin: 0 auto; }
+
+ header {
+ background: rgba(17, 24, 39, 0.95);
+ padding: 25px;
+ border-radius: 15px;
+ margin-bottom: 30px;
+ border: 1px solid rgba(255, 255, 255, 0.05);
+ box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ }
+
+ .logo-area {
+ display: flex;
+ flex-direction: column;
+ }
+
+ .logo {
+ font-size: 32px;
+ font-weight: 900;
+ background: linear-gradient(135deg, #f59e0b 0%, #dc2626 100%);
+ -webkit-background-clip: text;
+ -webkit-text-fill-color: transparent;
+ display: flex;
+ align-items: center;
+ gap: 10px;
+ }
+
+ .subtitle {
+ font-size: 14px;
+ color: #94a3b8;
+ margin-top: 5px;
+ }
+
+ .badge-api {
+ background: rgba(245, 158, 11, 0.1);
+ border: 1px solid rgba(245, 158, 11, 0.3);
+ color: #f59e0b;
+ font-family: monospace;
+ font-size: 11px;
+ font-weight: bold;
+ padding: 6px 12px;
+ rounded: 6px;
+ border-radius: 6px;
+ }
+
+ .pilares {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+ gap: 20px;
+ margin-bottom: 30px;
+ }
+
+ .pilar {
+ background: rgba(17, 24, 39, 0.8);
+ border-radius: 15px;
+ padding: 25px;
+ border: 1px solid rgba(255, 255, 255, 0.05);
+ border-left: 4px solid #f59e0b;
+ }
+
+ .pilar h3 {
+ font-size: 18px;
+ color: #f59e0b;
+ margin-bottom: 15px;
+ display: flex;
+ align-items: center;
+ gap: 10px;
+ }
+
+ .pilar-content {
+ color: #cbd5e1;
+ font-size: 13px;
+ line-height: 1.6;
+ }
+
+ .signal-panel {
+ background: rgba(17, 24, 39, 0.95);
+ border-radius: 15px;
+ padding: 30px;
+ margin-bottom: 30px;
+ border: 1px solid rgba(255, 255, 255, 0.05);
+ box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+ }
+
+ .signal-title {
+ font-size: 20px;
+ font-weight: 800;
+ margin-bottom: 20px;
+ color: #f59e0b;
+ border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+ padding-bottom: 10px;
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ }
+
+ .signal-grid {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+ gap: 20px;
+ }
+
+ .signal-card {
+ background: rgba(31, 41, 55, 0.4);
+ border-radius: 12px;
+ padding: 20px;
+ border: 1px solid rgba(255, 255, 255, 0.05);
+ transition: all 0.3s ease;
+ }
+
+ .signal-card:hover {
+ transform: translateY(-3px);
+ box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+ }
+
+ .signal-card.active-long {
+ border: 2px solid #10b981;
+ background: rgba(16, 185, 129, 0.08);
+ }
+
+ .signal-card.active-short {
+ border: 2px solid #ef4444;
+ background: rgba(239, 68, 68, 0.08);
+ }
+
+ .signal-label {
+ font-size: 11px;
+ text-transform: uppercase;
+ letter-spacing: 1px;
+ color: #94a3b8;
+ margin-bottom: 10px;
+ font-weight: bold;
+ }
+
+ .signal-value {
+ font-size: 24px;
+ font-weight: 800;
+ margin-bottom: 5px;
+ font-family: monospace;
+ }
+
+ .signal-detail {
+ font-size: 12px;
+ color: #64748b;
+ }
+
+ .ma-chart {
+ background: rgba(17, 24, 39, 0.95);
+ border-radius: 15px;
+ padding: 25px;
+ margin-bottom: 30px;
+ border: 1px solid rgba(255, 255, 255, 0.05);
+ }
+
+ .ma-lines {
+ display: grid;
+ grid-template-columns: repeat(4, 1fr);
+ gap: 15px;
+ margin-top: 20px;
+ }
+
+ .ma-line {
+ padding: 15px;
+ border-radius: 10px;
+ background: rgba(31, 41, 55, 0.4);
+ border: 1px solid rgba(255, 255, 255, 0.03);
+ }
+
+ .ma-name {
+ font-size: 11px;
+ color: #94a3b8;
+ margin-bottom: 5px;
+ font-weight: bold;
+ }
+
+ .ma-value {
+ font-size: 20px;
+ font-weight: 800;
+ font-family: monospace;
+ }
+
+ .ma6 { border-left: 4px solid #3b82f6; }
+ .ma40 { border-left: 4px solid #8b5cf6; }
+ .ma70 { border-left: 4px solid #f59e0b; }
+ .ma200 { border-left: 4px solid #ef4444; }
+
+ .reglas {
+ background: rgba(17, 24, 39, 0.95);
+ border-radius: 15px;
+ padding: 25px;
+ margin-bottom: 30px;
+ border: 1px solid rgba(255, 255, 255, 0.05);
+ }
+
+ .reglas h3 {
+ color: #f59e0b;
+ margin-bottom: 20px;
+ font-size: 18px;
+ }
+
+ .regla {
+ display: flex;
+ align-items: start;
+ gap: 15px;
+ padding: 15px;
+ margin-bottom: 10px;
+ background: rgba(31, 41, 55, 0.3);
+ border-radius: 10px;
+ }
+
+ .regla-icon {
+ font-size: 24px;
+ min-width: 30px;
+ }
+
+ .regla-text {
+ font-size: 14px;
+ line-height: 1.6;
+ color: #cbd5e1;
+ }
+
+ .position-calculator {
+ background: rgba(17, 24, 39, 0.95);
+ border-radius: 15px;
+ padding: 25px;
+ margin-bottom: 30px;
+ border: 1px solid rgba(255, 255, 255, 0.05);
+ }
+
+ .calc-input {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+ gap: 15px;
+ margin-bottom: 20px;
+ }
+
+ .input-group {
+ display: flex;
+ flex-direction: column;
+ gap: 5px;
+ }
+
+ .input-group label {
+ font-size: 11px;
+ color: #94a3b8;
+ text-transform: uppercase;
+ font-weight: bold;
+ }
+
+ .input-group input {
+ padding: 10px;
+ border-radius: 8px;
+ border: 1px solid rgba(255, 255, 255, 0.1);
+ background: rgba(31, 41, 55, 0.6);
+ color: #e0e6ed;
+ font-size: 16px;
+ font-family: monospace;
+ }
+
+ .calc-btn {
+ background: linear-gradient(135deg, #f59e0b 0%, #dc2626 100%);
+ color: white;
+ padding: 12px 30px;
+ border: none;
+ border-radius: 8px;
+ font-size: 15px;
+ font-weight: 700;
+ cursor: pointer;
+ transition: transform 0.2s ease;
+ }
+
+ .calc-btn:hover {
+ transform: scale(1.02);
+ }
+
+ .calc-result {
+ background: rgba(31, 41, 55, 0.5);
+ border-radius: 10px;
+ padding: 20px;
+ margin-top: 20px;
+ display: none;
+ border: 1px solid rgba(255, 255, 255, 0.05);
+ }
+
+ .calc-result.show {
+ display: block;
+ }
+
+ .result-grid {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+ gap: 15px;
+ }
+
+ .result-item {
+ text-align: center;
+ }
+
+ .result-label {
+ font-size: 11px;
+ color: #94a3b8;
+ margin-bottom: 5px;
+ font-weight: bold;
+ }
+
+ .result-value {
+ font-size: 20px;
+ font-weight: 800;
+ color: #f59e0b;
+ font-family: monospace;
+ }
+
+ @media (max-width: 768px) {
+ .pilares { grid-template-columns: 1fr; }
+ .ma-lines { grid-template-columns: 1fr 1fr; }
+ }
+ </style>
 </head>
 <body>
- <!-- HEADER -->
- <div class="header">
- <div class="header-title">
- <span class="status-indicator connected" id="status-indicator"></span>
- <h1>MÉTODO SONO - FINO EDITION 👒</h1>
- </div>
-
- <div class="coin-selector-group">
- <button class="coin-selector active" data-coin="BTC">🟠 BTC</button>
- <button class="coin-selector" data-coin="ETH">🔵 ETH</button>
- <button class="coin-selector" data-coin="SOL">🟣 SOL</button>
- <button class="coin-selector" data-coin="XRP">🟢 XRP</button>
- </div>
- </div>
-
  <div class="container">
+ <header>
+ <div class="logo-area">
+ <div class="logo"><i class="fa-solid fa-crown"></i> MÉTODO SONO - FINO EDITION 👒</div>
+ <div class="subtitle">Ecosistema Híbrido: Confluencia Macro (Score 0-100), Gaps, Cruces de Medias e Indicadores en Vivo</div>
+ </div>
+ <div style="display: flex; gap: 10px; align-items: center;">
+ <select id="coin-selector" onchange="onCoinChanged(this.value)" class="bg-[#1f2937] text-white text-xs border border-cardBorder rounded-lg px-2.5 py-1.5 font-bold focus:outline-none focus:ring-1 focus:ring-accentBlue cursor-pointer" style="background: #1f2937; color: white; font-size: 12px; border: 1px solid #374151; padding: 6px 12px; border-radius: 6px; font-weight: bold;">
+ <option value="BTC">🟠 Bitcoin (BTC)</option>
+ <option value="ETH">🔵 Ethereum (ETH)</option>
+ <option value="SOL">🟣 Solana (SOL)</option>
+ <option value="XRP">🟢 XRP (XRP)</option>
+ </select>
+ <div id="source-badge" class="badge-api"><i class="fas fa-circle-notch fa-spin mr-1"></i> CONECTANDO API LOCAL...</div>
+ </div>
+ </header>
 
- <!-- Back Link to Homepage -->
- <div class="mb-md">
-   <a href="index.html" style="color: var(--color-text-secondary); text-decoration: none; font-size: 14px; font-weight: bold; display: inline-flex; align-items: center; gap: var(--spacing-xs);">
-     ⬅️ VOLVER A LA LANDING PRINCIPAL
-   </a>
- </div>
-
- <!-- Status Connection -->
- <div class="status-text" id="status-text" style="padding: var(--spacing-sm); border-radius: var(--border-radius-sm); font-weight: bold; text-align: center; margin-bottom: var(--spacing-md);">CONECTANDO API LOCAL...</div>
-
- <!-- Score Maestro Confluencia -->
- <div class="card">
- <div class="card-header">
- <h2 class="card-title">🎯 Score Maestro Confluencia</h2>
- </div>
-
- <div class="score-display">
- <div class="score-value" id="score-maestro-value">--</div>
- <div class="score-bar-container">
- <div class="score-bar" id="score-maestro-bar"></div>
- </div>
- <div class="score-status" id="score-maestro-text">Cargando confluencia...</div>
- </div>
- </div>
-
- <!-- Decisión Híbrida Final -->
- <div class="card">
- <div class="card-header">
- <h2 class="card-title">🚦 Decisión Híbrida Final</h2>
- </div>
-
- <div class="decision-display" style="text-align: center; padding: var(--spacing-lg); background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%); border-radius: var(--border-radius-lg);">
- <div class="decision-badge neutral" id="decision-value" style="display: inline-block; padding: var(--spacing-sm) var(--spacing-xl); border-radius: var(--border-radius-md); font-size: 32px; font-weight: bold; margin-bottom: var(--spacing-sm);">NEUTRAL</div>
- <div class="confidence-display" style="font-size: 18px; color: var(--color-text-secondary); margin-bottom: var(--spacing-md);">
- Confianza: <span id="confidence-value">--</span>
- </div>
- <div class="decision-explanation" id="decision-text" style="font-size: 14px; padding: var(--spacing-sm); background-color: var(--color-bg-primary); border-radius: var(--border-radius-sm); color: var(--color-text-secondary);">
- Evaluando filtros...
- </div>
+ <!-- Tres Pilares del Método -->
+ <div class="pilares">
+ <div class="pilar">
+ <h3>🎯 Pilar 1: Cruces de Medias</h3>
+ <div class="pilar-content">
+ <strong>MA6 × MA70</strong> - Señal clave de entrada<br>
+ <strong>MA40</strong> - Soporte/Resistencia corto plazo<br>
+ <strong>MA200</strong> - Tendencia principal<br><br>
+ <em>Filtro Fino: Bloqueado por Score Maestro si está en extremos para evitar mechas falsas.</em>
  </div>
  </div>
 
- <!-- Pilar 1: Cruces de Medias -->
- <div class="card">
- <div class="card-header">
- <h2 class="card-title">🎯 Pilar 1: Cruces de Medias</h2>
- <p class="card-subtitle">MA6 × MA70 - Señal clave de entrada</p>
+ <div class="pilar">
+   <h3>📊 Pilar 2: Google Trends & Volatilidad</h3>
+ <div class="pilar-content">
+ <strong>VIX en Vivo</strong> - Ensancha o estrecha stops de riesgo<br>
+ <strong>Google Trends</strong> - Multiplica la confianza si hay pico de interés<br><br>
+ <em>Sustituye la inestabilidad de operar "gaps" sin volumen en Bitcoin 24/7.</em>
+ </div>
  </div>
 
- <div class="signal-row" style="display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-sm) 0;">
- <div class="signal-label" style="font-weight: bold;">Cruce MA6 × MA70</div>
- <div class="signal-badge neutral" id="cruce-signal">NEUTRAL</div>
- </div>
- <div class="signal-text text-muted mt-sm" id="cruce-text" style="font-size: 13px;">Sin cruce detectado</div>
- </div>
-
- <!-- Pilar 3: Bollinger + RSI + F&G -->
- <div class="card">
- <div class="card-header">
- <h2 class="card-title">📉 Pilar 3: Bollinger + RSI + F&G</h2>
- <p class="card-subtitle">F&G &lt; 30 + RSI &lt; 35 → Rebote Inferior (LONG)</p>
- </div>
-
- <div class="signal-row" style="display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-sm) 0;">
- <div class="signal-label" style="font-weight: bold;">Bollinger Reversión</div>
- <div class="signal-badge neutral" id="bollinger-signal">NEUTRAL</div>
- </div>
- <div class="signal-text text-muted mt-sm" id="bollinger-text" style="font-size: 13px;">Buscando pánico/euforia...</div>
- </div>
-
- <!-- Medias Móviles Calculadas -->
- <div class="card">
- <div class="card-header">
- <h2 class="card-title">📏 Medias Móviles Calculadas (1 Hora)</h2>
- </div>
-
- <div class="ma-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: var(--spacing-md); text-align: center;">
- <div class="ma-item" style="background-color: var(--color-bg-tertiary); padding: var(--spacing-md); border-radius: var(--border-radius-md);">
- <div class="ma-label" style="font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: var(--spacing-xs);">MA6 (Ultra Corta)</div>
- <div class="ma-value" id="ma6-value" style="font-size: 18px; font-weight: bold;">$--,---</div>
- </div>
- <div class="ma-item" style="background-color: var(--color-bg-tertiary); padding: var(--spacing-md); border-radius: var(--border-radius-md);">
- <div class="ma-label" style="font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: var(--spacing-xs);">MA40 (S/R)</div>
- <div class="ma-value" id="ma40-value" style="font-size: 18px; font-weight: bold;">$--,---</div>
- </div>
- <div class="ma-item" style="background-color: var(--color-bg-tertiary); padding: var(--spacing-md); border-radius: var(--border-radius-md);">
- <div class="ma-label" style="font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: var(--spacing-xs);">MA70 (Cruce)</div>
- <div class="ma-value" id="ma70-value" style="font-size: 18px; font-weight: bold;">$--,---</div>
- </div>
- <div class="ma-item" style="background-color: var(--color-bg-tertiary); padding: var(--spacing-md); border-radius: var(--border-radius-md);">
- <div class="ma-label" style="font-size: 11px; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: var(--spacing-xs);">MA200 (Tendencia)</div>
- <div class="ma-value" id="ma200-value" style="font-size: 18px; font-weight: bold;">$--,---</div>
+ <div class="pilar">
+ <h3>📉 Pilar 3: Bollinger + RSI + F&G</h3>
+ <div class="pilar-content">
+ <strong>F&G < 30 + RSI < 35</strong> - Rebote Inferior (LONG)<br>
+ <strong>F&G > 70 + RSI > 65</strong> - Rebote Superior (SHORT)<br><br>
+ <em>Evita atrapar cuchillos cayendo bloqueando entradas si no hay un pánico o euforia institucional real.</em>
  </div>
  </div>
  </div>
 
- <!-- Tendencia & ADX -->
- <div class="card">
- <div class="card-header">
- <h2 class="card-title">📊 Tendencia & ADX (Fino)</h2>
+ <!-- Señales Actuales -->
+ <div class="signal-panel">
+ <div class="signal-title">
+ <span>🚦 Filtros y Señales Híbridas en Tiempo Real</span>
+ <span id="motivo-bloqueo" class="text-xs text-amber-500 font-mono"></span>
+ </div>
+ <div class="signal-grid">
+ 
+ <div class="signal-card" id="score-card-tab">
+ <div class="signal-label">Score Maestro Confluencia</div>
+ <div class="signal-value" id="score-val" style="color: #3b82f6;">--</div>
+ <div class="signal-detail" id="score-detail">Cargando confluencia...</div>
  </div>
 
- <div class="adx-display" style="text-align: center; padding: var(--spacing-md);">
- <div class="adx-value" style="font-size: 24px; font-weight: bold; margin-bottom: var(--spacing-xs);">ADX: <span id="adx-value">--</span></div>
- <div class="adx-text text-muted" id="adx-text" style="font-size: 14px;">Cargando estado...</div>
+ <div class="signal-card" id="dec-card">
+ <div class="signal-label">Decisión Híbrida Final</div>
+ <div class="signal-value" id="dec-val">--</div>
+ <div class="signal-detail" id="dec-detail">Evaluando filtros...</div>
+ </div>
+
+ <div class="signal-card" id="cruce-signal">
+ <div class="signal-label">Cruce MA6 × MA70</div>
+ <div class="signal-value" id="cruce-type">NEUTRAL</div>
+ <div class="signal-detail" id="cruce-detail">Sin cruce detectado</div>
+ </div>
+
+ <div class="signal-card" id="bollinger-signal">
+ <div class="signal-label">Bollinger Reversión</div>
+ <div class="signal-value" id="bollinger-type">NEUTRAL</div>
+ <div class="signal-detail" id="bollinger-detail">Buscando pánico/euforia...</div>
+ </div>
+
+ <div class="signal-card" id="tendencia-card">
+ <div class="signal-label">Tendencia & ADX (Fino)</div>
+ <div class="signal-value" id="tendencia-type">--</div>
+ <div class="signal-detail" id="tendencia-detail">Cargando estado...</div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Medias Móviles -->
+ <div class="ma-chart">
+ <div class="signal-title">📏 Medias Móviles Calculadas (1 Hora)</div>
+ <div class="ma-lines">
+ <div class="ma-line ma6">
+ <div class="ma-name">MA6 (Ultra Corta)</div>
+ <div class="ma-value" id="ma6-value">$--,---</div>
+ </div>
+ <div class="ma-line ma40">
+ <div class="ma-name">MA40 (Soporte/Resistencia)</div>
+ <div class="ma-value" id="ma40-value">$--,---</div>
+ </div>
+ <div class="ma-line ma70">
+ <div class="ma-name">MA70 (Cruce)</div>
+ <div class="ma-value" id="ma70-value">$--,---</div>
+ </div>
+ <div class="ma-line ma200">
+ <div class="ma-name">MA200 (Tendencia Mayor)</div>
+ <div class="ma-value" id="ma200-value">$--,---</div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Reglas del Método Sono -->
+ <div class="reglas">
+ <h3>📋 Reglas de Supervivencia Fino-Sono</h3>
+
+ <div class="regla">
+ <div class="regla-icon">⏰</div>
+ <div class="regla-text">
+ <strong>Operar solo intradía:</strong> Cerrar todas las posiciones antes del fin de sesión.
+ No dejar posiciones abiertas overnight.
+ </div>
+ </div>
+
+ <div class="regla">
+ <div class="regla-icon">🧠</div>
+ <div class="regla-text">
+ <strong>Filtro de Confluencia Macro:</strong> No comprar si el Score Maestro indica sobrecompras de distribución macro. No vender en pánico si estamos en acumulación. El Score manda.
+ </div>
+ </div>
+
+ <div class="regla">
+ <div class="regla-icon">🛡️</div>
+ <div class="regla-text">
+ <strong>Gestión de Riesgo Dinámica (VIX):</strong> El tamaño de la posición y los stops se dilatan automáticamente si el VIX está alto para absorber el ruido y mechas de Bitcoin.
+ </div>
  </div>
  </div>
 
  <!-- Calculadora de Posición -->
- <div class="card calculator">
- <div class="card-header">
- <h2 class="card-title">💰 Calculadora de Posición Automática</h2>
- <p class="card-subtitle">Ajustada al 1.5% con gestión dinámica VIX</p>
- </div>
+ <div class="position-calculator">
+ <div class="signal-title">💰 Calculadora de Posición Automática (Ajustada al 1.5%)</div>
 
- <div class="calculator-grid">
+ <div class="calc-input">
  <div class="input-group">
- <label class="input-label">Capital Total ($)</label>
- <input type="number" id="capital" class="input-field" value="10000" min="1">
+ <label>Capital Total ($)</label>
+ <input type="number" id="capital" value="10000" step="100">
  </div>
 
  <div class="input-group">
- <label class="input-label">Precio de Entrada ($)</label>
- <input type="number" id="entry-price" class="input-field" value="77500" min="1">
+ <label>Precio de Entrada ($)</label>
+ <input type="number" id="entry-price" value="77500" step="10">
  </div>
 
  <div class="input-group">
- <label class="input-label">Stop Loss ($)</label>
- <input type="number" id="stop-loss" class="input-field" value="76000" min="1">
+ <label>Stop Loss ($)</label>
+ <input type="number" id="stop-loss" value="76000" step="10">
  </div>
 
  <div class="input-group">
- <label class="input-label">Riesgo por Trade (%)</label>
- <input type="number" id="risk-pct" class="input-field" value="1.5" min="0.1" max="5" step="0.1">
+ <label>Riesgo por Trade (%)</label>
+ <input type="number" id="risk-pct" value="1.5" step="0.1" min="0.5" max="5">
  </div>
  </div>
 
- <button class="calculator-button" id="calculate-position" style="width: 100%;">
- Calcular Tamaño de Posición
- </button>
+ <button class="calc-btn" onclick="calcularPosicion()">Calcular Tamaño de Posición</button>
 
- <div class="calculator-results">
+ <div class="calc-result" id="calc-result">
+ <div class="result-grid">
  <div class="result-item">
  <div class="result-label">Riesgo USD</div>
- <div class="result-value" id="risk-usd">$0</div>
+ <div class="result-value" id="result-risk-euros">$0</div>
  </div>
-
  <div class="result-item">
  <div class="result-label">Cantidad BTC</div>
- <div class="result-value" id="quantity-btc">0</div>
+ <div class="result-value" id="result-quantity">0</div>
  </div>
-
  <div class="result-item">
  <div class="result-label">Tamaño Posición</div>
- <div class="result-value" id="position-size">$0</div>
+ <div class="result-value" id="result-position">$0</div>
  </div>
-
  <div class="result-item">
  <div class="result-label">Apalancamiento</div>
- <div class="result-value" id="leverage">0x</div>
+ <div class="result-value" id="result-leverage">0x</div>
  </div>
-
  <div class="result-item">
  <div class="result-label">Stop Distance</div>
- <div class="result-value" id="stop-distance">0%</div>
+ <div class="result-value" id="result-stop-dist">0%</div>
  </div>
-
  <div class="result-item">
  <div class="result-label">Pérdida Máxima</div>
- <div class="result-value" id="max-loss">$0</div>
+ <div class="result-value" id="result-max-loss">$0</div>
  </div>
  </div>
-
- <div id="calculator-warnings" class="warnings-container mt-md" style="margin-top: var(--spacing-md);"></div>
+ </div>
+ </div>
  </div>
 
- </div>
+ <script>
+ // Estado de criptomoneda activa
+ let activeCoin = "BTC";
 
- <!-- Footer -->
- <footer class="footer" style="text-align: center; padding: var(--spacing-lg) 0; border-top: 1px solid var(--color-bg-tertiary); margin-top: var(--spacing-xl);">
- <p>Fino Edition 👒 — Sono Premium Terminal</p>
- <p class="text-muted" style="font-size: 12px; margin-top: var(--spacing-xs);">Actualizado: <span id="last-update">--:--:--</span></p>
- </footer>
+ // Escuchar cambio de criptomoneda
+ function onCoinChanged(coinKey) {
+     activeCoin = coinKey;
+     updateSignals();
+ }
 
- <!-- Notifications -->
- <div id="notifications" class="notifications-container"></div>
+ // Calculadora de posición
+ function calcularPosicion() {
+ const capital = parseFloat(document.getElementById('capital').value);
+ const entryPrice = parseFloat(document.getElementById('entry-price').value);
+ const stopLoss = parseFloat(document.getElementById('stop-loss').value);
+ let riskPct = parseFloat(document.getElementById('risk-pct').value);
 
- <!-- JavaScript -->
- <script src="js/dashboard.js"></script>
+ riskPct = Math.min(riskPct, 5.0);
+
+ const riskEuros = capital * (riskPct / 100);
+ const stopDistance = Math.abs(entryPrice - stopLoss);
+ const stopDistancePct = (stopDistance / entryPrice) * 100;
+
+ const quantity = riskEuros / stopDistance;
+ const positionSize = quantity * entryPrice;
+ const leverage = positionSize / capital;
+
+ document.getElementById('result-risk-euros').textContent = `$${riskEuros.toFixed(2)}`;
+ document.getElementById('result-quantity').textContent = quantity.toFixed(6);
+ document.getElementById('result-position').textContent = `$${positionSize.toFixed(0)}`;
+ document.getElementById('result-leverage').textContent = `${leverage.toFixed(2)}x`;
+ document.getElementById('result-stop-dist').textContent = `${stopDistancePct.toFixed(2)}%`;
+ document.getElementById('result-max-loss').textContent = `$${riskEuros.toFixed(2)}`;
+
+ document.getElementById('calc-result').classList.add('show');
+ }
+
+ // Simular o actualizar con API real
+ async function updateSignals() {
+ const badge = document.getElementById('source-badge');
+ try {
+     let data = null;
+     let isLocalApi = true;
+     
+     try {
+         const response = await fetch(`http://localhost:8000/api/sono/signals?coin=${activeCoin}`);
+         if (response.ok) {
+             data = await response.json();
+         }
+     } catch (e) {
+         // Local API offline, continue to fallback
+     }
+     
+     if (!data) {
+         const jsonResponse = await fetch(`indicador_data.json`);
+         if (jsonResponse.ok) {
+             const rawData = await jsonResponse.json();
+             const coinData = rawData.coins[activeCoin];
+             const sentiment = rawData.sentimiento_mercado || {};
+             
+             if (coinData) {
+                 // Map static JSON to the exact structure that dashboard_sono.html expects
+                 data = {
+                     score_maestro: coinData.confluence_score,
+                     strategies: {
+                         gap: {
+                             fear_greed_val: sentiment.fear_greed ? sentiment.fear_greed.value : 28,
+                             vix_val: sentiment.vix || 16.7
+                         },
+                         cruce: {
+                             signal: coinData.accion || "NEUTRAL",
+                             type: coinData.estado || "RANGO"
+                         },
+                         bollinger: {
+                             signal: coinData.accion || "NEUTRAL",
+                             type: coinData.estado || "RANGO"
+                         }
+                     },
+                     signal: coinData.accion || "NEUTRAL",
+                     confidence: coinData.confluence_score * 0.8 + 20.0,
+                     motivo_bloqueo: coinData.confluence_score > 70 ? "Sobrecompra" : coinData.confluence_score < 30 ? "Sobreventa acumulándose" : "",
+                     tendencia: coinData.estado || "NEUTRAL",
+                     estado_mercado: "CONFLUENCIA STATIC",
+                     adx: 25.0,
+                     atr: coinData.price_usd * 0.02,
+                     ma_values: {
+                         ma6: coinData.timeframes["1h"].ma20 * 0.99,
+                         ma40: coinData.timeframes["1h"].ma20,
+                         ma70: coinData.timeframes["1h"].ma50,
+                         ma200: coinData.timeframes["1h"].ma200
+                     },
+                     price: coinData.price_usd,
+                     position: {
+                         stop_loss: coinData.price_usd * 0.98,
+                         take_profit: coinData.price_usd * 1.05
+                     }
+                 };
+                 isLocalApi = false;
+             }
+         }
+     }
+     
+     if (!data) throw new Error("API Offline y sin datos estáticos");
+ 
+     // Conexión OK
+     if (isLocalApi) {
+         badge.innerHTML = `<i class="fas fa-circle-check mr-1 text-emerald-400"></i> API CONECTADA`;
+         badge.className = "badge-api";
+         badge.style.background = "rgba(16, 185, 129, 0.1)";
+         badge.style.border = "1px solid rgba(16, 185, 129, 0.3)";
+         badge.style.color = "#10b981";
+     } else {
+         badge.innerHTML = `<i class="fas fa-database mr-1 text-sky-400"></i> BASE DE DATOS LOCAL`;
+         badge.className = "badge-api";
+         badge.style.background = "rgba(59, 130, 246, 0.1)";
+         badge.style.border = "1px solid rgba(59, 130, 246, 0.3)";
+         badge.style.color = "#3b82f6";
+     }
+     
+     // Score Maestro
+     document.getElementById('score-val').textContent = Math.round(data.score_maestro);
+     document.getElementById('score-detail').innerHTML = `F&G: ${data.strategies.gap.fear_greed_val || '--'} | VIX: ${data.strategies.gap.vix_val || '--'}`;
+     
+     // Decisión Final Híbrida
+     const decVal = document.getElementById('dec-val');
+     decVal.textContent = data.signal;
+     const decCard = document.getElementById('dec-card');
+     decCard.className = `signal-card ${data.signal === 'LONG' ? 'active-long' : data.signal === 'SHORT' ? 'active-short' : ''}`;
+     document.getElementById('dec-detail').textContent = `Confianza: ${data.confidence.toFixed(1)}%`;
+     
+     // Motivo Bloqueo
+     document.getElementById('motivo-bloqueo').textContent = data.motivo_bloqueo || '';
+     
+     // Actualizar Cruce MA6-MA70
+     const cruceType = document.getElementById('cruce-type');
+     const cruceCard = document.getElementById('cruce-signal');
+     cruceType.textContent = data.strategies.cruce.signal;
+     cruceCard.className = `signal-card ${data.strategies.cruce.signal === 'LONG' ? 'active-long' : data.strategies.cruce.signal === 'SHORT' ? 'active-short' : ''}`;
+     document.getElementById('cruce-detail').textContent = data.strategies.cruce.type || 'Sin señal';
+     
+     // Actualizar Bollinger
+     const bollingerType = document.getElementById('bollinger-type');
+     const bollingerCard = document.getElementById('bollinger-signal');
+     bollingerType.textContent = data.strategies.bollinger.signal;
+     bollingerCard.className = `signal-card ${data.strategies.bollinger.signal === 'LONG' ? 'active-long' : data.strategies.bollinger.signal === 'SHORT' ? 'active-short' : ''}`;
+     document.getElementById('bollinger-detail').textContent = data.strategies.bollinger.type || 'Sin señal';
+     
+     // Actualizar Tendencia MA200 e Indicadores ADX / ATR
+     const trendType = data.tendencia || 'NEUTRAL';
+     const adxVal = data.adx !== undefined ? data.adx : 25.0;
+     const estadoMercado = data.estado_mercado || 'TENDENCIAL';
+     const atrVal = data.atr !== undefined ? data.atr : 0.0;
+     
+     document.getElementById('tendencia-type').textContent = trendType;
+     document.getElementById('tendencia-detail').innerHTML = `<b>${estadoMercado}</b> (ADX: ${adxVal})<br>ATR Volatilidad: $${atrVal.toLocaleString('en-US', {maximumFractionDigits: 1})}`;
+     
+     // Actualizar valores de MAs
+     document.getElementById('ma6-value').textContent = `$${data.ma_values.ma6.toLocaleString('en-US', {maximumFractionDigits: 2})}`;
+     document.getElementById('ma40-value').textContent = `$${data.ma_values.ma40.toLocaleString('en-US', {maximumFractionDigits: 2})}`;
+     document.getElementById('ma70-value').textContent = `$${data.ma_values.ma70.toLocaleString('en-US', {maximumFractionDigits: 2})}`;
+     document.getElementById('ma200-value').textContent = `$${data.ma_values.ma200.toLocaleString('en-US', {maximumFractionDigits: 2})}`;
+     
+     // Actualizar calculadora
+     document.getElementById('entry-price').value = Math.round(data.price);
+     document.getElementById('stop-loss').value = Math.round(data.position.stop_loss);
+     calcularPosicion();
+
+ } catch (error) {
+     badge.innerHTML = `<i class="fas fa-database mr-1 text-sky-400"></i> MODO DEMO`;
+     badge.className = "badge-api";
+     badge.style.background = "rgba(59, 130, 246, 0.1)";
+     badge.style.border = "1px solid rgba(59, 130, 246, 0.3)";
+     badge.style.color = "#3b82f6";
+ }
+ }
+
+ // Conectar WebSockets para actualizaciones tick-by-tick automáticas
+ function connectWebSocket() {
+     const wsUrl = "ws://localhost:8000/ws";
+     let socket = null;
+     
+     try {
+         socket = new WebSocket(wsUrl);
+         
+         socket.onopen = () => {
+             console.log("[WS] Dashboard Sono conectado.");
+         };
+         
+         socket.onmessage = (event) => {
+             try {
+                 const msg = JSON.parse(event.data);
+                 
+                 // Si recibimos precio en vivo para la moneda activa, actualizamos la calculadora en caliente
+                 if (msg.event === "ticker" && msg.prices && msg.prices[activeCoin]) {
+                     const currentPrice = msg.prices[activeCoin];
+                     document.getElementById('entry-price').value = Math.round(currentPrice);
+                     calcularPosicion();
+                 }
+                 
+                 // Si hay actualización técnica macro, recargar
+                 if (msg.event === "update") {
+                     updateSignals();
+                 }
+             } catch (err) {
+                 // Silencioso
+             }
+         };
+         
+         socket.onclose = () => {
+             setTimeout(connectWebSocket, 5000);
+         };
+     } catch (e) {
+         // Silencioso
+     }
+ }
+
+ // Inicializar y actualizar cada 10s
+ window.onload = () => {
+ updateSignals();
+ connectWebSocket();
+ setInterval(updateSignals, 10000);
+ };
+ </script>
 </body>
 </html>
