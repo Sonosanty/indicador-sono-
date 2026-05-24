@@ -1368,9 +1368,11 @@
  let isLocalApi = true;
  
  try {
+ if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
  const response = await fetch(`http://localhost:8000/api/sono/signals?coin=${activeCoin}`);
  if (response.ok) {
  data = await response.json();
+ }
  }
  } catch (e) {
  // API local no disponible, pasar a fallback
@@ -1525,6 +1527,9 @@
  // WEBSOCKETS TICK-BY-TICK
  // ============================================
  function connectWebSocket() {
+ if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+ return;
+ }
  const wsUrl = "ws://localhost:8000/ws";
  let socket = null;
  

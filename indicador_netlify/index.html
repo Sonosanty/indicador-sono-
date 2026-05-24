@@ -619,6 +619,9 @@
 
         // Conectar al Canal WebSocket en Tiempo Real para Ticks y Precios en vivo
         function connectWebSocket() {
+            if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                return;
+            }
             const wsUrl = "ws://localhost:8000/ws";
             let socket = null;
             
