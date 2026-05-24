@@ -146,7 +146,7 @@ async function loadData(forceRefresh = false) {
  decision: coinData.accion || 'NEUTRAL',
  confidence: coinData.confluence_score * 0.8 + 20.0,
  score_signal: coinData.estado || 'NEUTRAL',
- ajram_signal: coinData.accion || 'RANGO',
+ sono_signal: coinData.accion || 'RANGO',
  adx: 25.0,
  volume_confirmed: true,
  entry: coinData.price_usd,
@@ -250,7 +250,7 @@ function useMockData() {
  decision: 'LONG',
  confidence: 72.5,
  score_signal: 'ACCUMULATION',
- ajram_signal: 'LONG',
+ sono_signal: 'LONG',
 
  // Pilares
  pilar1_cruce: {
@@ -611,8 +611,8 @@ function getDecisionExplanation(signal) {
  parts.push(`<strong>Score:</strong> ${signal.score_signal}`);
  }
 
- if (signal.ajram_signal) {
- parts.push(`<strong>Ajram:</strong> ${signal.ajram_signal}`);
+ if (signal.sono_signal) {
+ parts.push(`<strong>Sono:</strong> ${signal.sono_signal}`);
  }
 
  if (signal.adx && signal.adx > CONFIG.SONO_CONFIG.ADX_TREND_THRESHOLD) {

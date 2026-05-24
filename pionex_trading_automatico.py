@@ -29,7 +29,7 @@ COINS = ["BTC", "ETH", "SOL", "XRP"]
 CREDENTIALS_FILE = "pionex_credentials.json"
 TRADE_LOG_FILE = "memory/pionex_trades.json"
 STATUS_FILE = "memory/trading_automatico_status.json"
-LIMIT_TIME = datetime(2026, 5, 24, 12, 0, 0) # Domingo 24 de Mayo 2026, 12:00 PM
+LIMIT_TIME = datetime(2026, 12, 31, 23, 59, 59) # Fin de año 2026 (sin límite inmediato)
 LOOP_INTERVAL = 900 # Cada 15 minutos (900s)
 
 # Límites de precisión de decimales para órdenes en Pionex (Size de Venta)
@@ -48,6 +48,38 @@ def load_credentials():
         if not creds.get("api_key") or not creds.get("api_secret"):
             raise ValueError("Credenciales inválidas en el archivo JSON.")
         return creds["api_key"], creds["api_secret"]
+
+def send_telegram_message(message):
+    """Envía un mensaje a Telegram si la configuración está presente"""
+    config_file = "telegram_config.json"
+    if not os.path.exists(config_file):
+        return
+    try:
+        with open(config_file, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+        token = config.get("telegram_bot_token")
+        chat_id = config.get("telegram_chat_id")
+        if not token or not chat_id or token == "TU_TELEGRAM_BOT_TOKEN" or chat_id == "TU_TELEGRAM_CHAT_ID":
+            return
+            
+        import urllib.request
+        import urllib.parse
+        
+        # Saneamos el markdown reemplazando caracteres de formato si parse_mode está fallando, 
+        # o simplemente enviamos como texto plano para evitar Bad Request de la API de Telegram.
+        clean_msg = message.replace("*", "").replace("•", "-")
+        
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        payload = {
+            "chat_id": chat_id,
+            "text": clean_msg
+        }
+        data = urllib.parse.urlencode(payload).encode('utf-8')
+        req = urllib.request.Request(url, data=data, method="POST")
+        with urllib.request.urlopen(req, timeout=5) as response:
+            pass # Éxito
+    except Exception as e:
+        print(f"[BOT WARNING] Error enviando notificación de Telegram: {e}")
 
 def truncate_decimal(val, decimals):
     """Trunca un valor hacia abajo al número de decimales permitidos por el exchange"""
@@ -77,6 +109,19 @@ def log_trade(trade_type, coin, price, amount_or_size, details=""):
     
     with open(TRADE_LOG_FILE, 'w', encoding='utf-8') as f:
         json.dump(trades, f, indent=2, ensure_ascii=False)
+
+    # Construir y enviar notificación de Telegram
+    emoji = "🟢 COMPRA (BUY)" if trade_type == "BUY" else "🔴 VENTA (SELL)"
+    msg = (
+        f"🔔 *Operación Ejecutada - Bot Sono* 👒\n\n"
+        f"• *Tipo:* {emoji}\n"
+        f"• *Moneda:* {coin}\n"
+        f"• *Precio USD:* ${price:,.4f}\n"
+        f"• *Cantidad/Monto:* {amount_or_size}\n"
+        f"• *Detalles:* {details}\n\n"
+        f"💻 _Dashboard:_ [https://indicador-sono.pages.dev/dashboard_sono.html](https://indicador-sono.pages.dev/dashboard_sono.html)"
+    )
+    send_telegram_message(msg)
 
 def update_status_file(balances, active_positions, next_run_time):
     """Guarda una captura de estado del bot para auditorías rápidas"""
@@ -174,6 +219,17 @@ def main():
         api_key, api_secret = load_credentials()
         account_client = Account(api_key, api_secret)
         orders_client = Orders(api_key, api_secret)
+        
+        # Enviar notificación de inicio exitoso a Telegram
+        start_msg = (
+            f"🚀 *Bot de Trading Autónomo Método Sono Iniciado* 👒\n\n"
+            f"📅 *Fecha:* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+            f"⏳ *Frecuencia:* Cada {LOOP_INTERVAL / 60} minutos\n"
+            f"🎯 *Monedas:* {', '.join(COINS)}\n"
+            f"🛑 *Límite de seguridad:* {LIMIT_TIME.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+            f"El sistema se encuentra activo monitoreando señales."
+        )
+        send_telegram_message(start_msg)
     except Exception as err:
         print(f"[BOT CRITICAL ERROR] Falló la carga de credenciales / inicialización: {err}")
         return
