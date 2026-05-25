@@ -74,7 +74,7 @@ def send_telegram_message(message):
             "chat_id": chat_id,
             "text": clean_msg
         }
-        data = urllib.parse.urlencode(payload).encode('utf-8')
+        data = urllib.parse.urlencode(payload, encoding='utf-8').encode('utf-8')
         req = urllib.request.Request(url, data=data, method="POST")
         with urllib.request.urlopen(req, timeout=5) as response:
             pass # Éxito
@@ -298,6 +298,15 @@ def main():
         # D. Evaluación de Operaciones
         active_positions = {}
         
+        # Intentar cargar posiciones y stops guardados anteriormente
+        prev_active_positions = {}
+        if os.path.exists(STATUS_FILE):
+            try:
+                with open(STATUS_FILE, "r", encoding="utf-8") as sf:
+                    prev_active_positions = json.load(sf).get("active_positions", {})
+            except Exception:
+                pass
+
         if signals_data and balances_map:
             coins_data = signals_data.get("coins", {})
             
@@ -318,14 +327,53 @@ def main():
                 # Decidir si hay una posición activa abierta
                 has_active_position = position_usd_value > 4.0 # Filtro: posición superior a $4 USD
                 
+                # Definición de Stop Loss realista basado en niveles de soporte técnico y volatilidad:
+                # BTC: ~$73,768.00 (3.5% de la entrada de $76,443.52)
+                # ETH: ~$2,011.00 (4.0% de la entrada de $2,095.48)
+                # SOL: ~$81.00 (5.0% de la entrada de $85.32)
+                # XRP: ~$1.30 (3.7% de la entrada de $1.35)
+                default_stops = {
+                    "BTC": 73768.0,
+                    "ETH": 2011.0,
+                    "SOL": 81.0,
+                    "XRP": 1.30
+                }
+                
                 if has_active_position:
+                    prev_pos = prev_active_positions.get(coin, {})
+                    entry_price = prev_pos.get("entry_price") or round(current_price, 2)
+                    stop_loss = prev_pos.get("stop_loss") or default_stops.get(coin)
+                    
                     active_positions[coin] = {
                         "qty": total_qty,
                         "usd_val": round(position_usd_value, 2),
-                        "entry_price": round(current_price, 2) # Estimado a precio actual
+                        "entry_price": entry_price,
+                        "stop_loss": stop_loss
                     }
                 
                 print(f"  [{coin}] Precio: ${current_price} | Senal: {signal} | Tenencia: {total_qty} (${position_usd_value:.2f} USD) | Posicion Activa: {has_active_position}")
+                
+                # --- OPERATIVA REGLA 3: STOP LOSS DE SEGURIDAD REALISTA ---
+                if has_active_position:
+                    stop_loss_val = active_positions[coin].get("stop_loss")
+                    if stop_loss_val and current_price <= stop_loss_val:
+                        print(f"    [ALERTA STOP LOSS] El precio actual de {coin} (${current_price}) ha cruzado el Stop Loss de ${stop_loss_val}. Liquidando posición...")
+                        precision = PRECISION_CONFIG.get(coin, 4)
+                        rounded_qty = truncate_decimal(free_qty, precision)
+                        if rounded_qty > 0.0:
+                            try:
+                                response = orders_client.new_order(
+                                    symbol=f"{coin}_USDT",
+                                    side="SELL",
+                                    type="MARKET",
+                                    size=str(rounded_qty)
+                                )
+                                print(f"      [SUCCESS] Venta por Stop Loss ejecutada. ID Orden: {response.get('data', {}).get('orderId', 'N/A')}")
+                                log_trade("SELL", coin, current_price, rounded_qty, f"EJECUCIÓN DE STOP LOSS DE SEGURIDAD (Límite: ${stop_loss_val})")
+                                has_active_position = False
+                                del active_positions[coin]
+                            except Exception as err_stop:
+                                print(f"      [ERROR STOP LOSS] No se pudo ejecutar venta de stop loss para {coin}: {err_stop}")
                 
                 # --- OPERATIVA REGLA 1: ENTRAR LONG ---
                 if signal == "LONG" and not has_active_position:
