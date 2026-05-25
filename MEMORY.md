@@ -33,3 +33,6 @@
 - **Automatización**: Ejecución de procesador técnico (`process_indicador_data.py`) que enriquece los datos en tiempo real y se conecta de forma segura a Pionex API para extraer saldos en vivo de la cuenta.
 - **Despliegue**: Sincronizado automáticamente hacia la carpeta de distribución de Cloudflare (`indicador_cloudflare/`) y subido a producción a través de Wrangler CLI.
 - **Credenciales**: Guardadas localmente en `pionex_credentials.json` en la raíz del workspace para interactuar con la API oficial mediante la librería `pionex_python`.
+
+## Protocolo de contingencia de IA y Resiliencia
+- **Directiva de Caídas de Google**: En caso de caída de los servidores de Google (Gemini) o timeouts recurrentes que dejen incomunicado al asistente en su modelo principal, jarvisClaw se conectará automáticamente a Perplexity.ai (mediante el navegador integrado o la habilidad local de Perplexity Search con el perfil Pro persistente) para seguir realizando consultas y respondiendo las peticiones de Santy de forma ininterrumpida.
