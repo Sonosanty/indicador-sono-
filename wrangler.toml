@@ -1,0 +1,8 @@
+name = "vix-proxy"
+main = "src/worker.js"
+
+compatibility_date = "2026-05-28"
+
+[[kv_namespaces]]
+binding = "VIX_CACHE"
+id = "f231333214e24e98bc5f53a1d321e776"
