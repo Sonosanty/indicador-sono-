@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 const YAHOO_URL = 'https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX?interval=1d&range=1d'
+const EUR_RATE_URL = 'https://api.exchangerate-api.com/v4/latest/USD'
 const CACHE_TTL = 120 // segundos (2 min, en vez de 5 min para más frescura)
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -22,6 +23,30 @@ export default {
       return new Response(null, { headers: CORS_HEADERS })
     }
 
+    // ── Proxy para exchangerate-api ──────────────────────────
+    if (url.pathname === '/eur') {
+      const cached = env.VIX_CACHE ? await env.VIX_CACHE.get('eur', { type: 'json' }) : null
+      if (cached && Date.now() - cached.timestamp < CACHE_TTL * 1000) {
+        return new Response(JSON.stringify(cached), {
+          headers: { ...CORS_HEADERS, 'X-Cache': 'HIT' },
+        })
+      }
+      try {
+        const res = await fetch(EUR_RATE_URL)
+        if (!res.ok) throw new Error(res.status)
+        const data = await res.json()
+        const rate = data.rates?.EUR
+        if (rate == null) throw new Error('EUR rate not found')
+        const payload = { eur: +rate, timestamp: Date.now() }
+        if (env.VIX_CACHE) {
+          await env.VIX_CACHE.put('eur', JSON.stringify(payload), { expirationTtl: CACHE_TTL + 30 })
+        }
+        return new Response(JSON.stringify(payload), { headers: { ...CORS_HEADERS, 'X-Cache': 'MISS' } })
+      } catch (err) {
+        return new Response(JSON.stringify({ error: String(err) }), { status: 502, headers: CORS_HEADERS })
+      }
+    }
+
     // ── Endpoint de health check ──────────────────────────────
     if (url.pathname === '/health') {
       return new Response(JSON.stringify({ status: 'ok', ts: Date.now() }), {
@@ -29,7 +54,7 @@ export default {
       })
     }
 
-    // ── Intentar cache ────────────────────────────────────────
+    // ── VIX: intentar cache ───────────────────────────────────
     if (env.VIX_CACHE) {
       const cached = await env.VIX_CACHE.get('vix', { type: 'json' })
       if (cached && Date.now() - cached.timestamp < CACHE_TTL * 1000) {
