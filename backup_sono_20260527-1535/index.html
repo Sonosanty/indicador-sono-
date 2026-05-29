@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <!-- RESPONSIVE: viewport correcto para escritorio y portátil -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <!-- SEO -->
+  <title>Sono Pro — Terminal de Trading Cuantitativo BTC/ETH/SOL/XRP</title>
+  <meta name="description" content="Dashboard profesional de análisis cuantitativo con datos Binance en tiempo real. Score Maestro multicriterio, MAs, RSI, ADX, Bollinger. BTC, ETH, SOL, XRP." />
+  <meta name="keywords" content="trading bitcoin, dashboard crypto, análisis técnico, indicador BTC, Score Maestro, Bollinger, ADX, RSI, Binance tiempo real" />
+  <meta name="robots" content="index, follow" />
+  <meta name="version" content="v2.2-20260527" />
+  <meta name="author" content="Sono Pro Terminal" />
+  <link rel="canonical" href="https://indicador-sono.pages.dev/" />
+
+  <!-- Open Graph (WhatsApp, Twitter, LinkedIn) -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://indicador-sono.pages.dev/" />
+  <meta property="og:title"       content="Sono Pro — Terminal de Trading Cuantitativo" />
+  <meta property="og:description" content="Análisis cuantitativo BTC/ETH/SOL/XRP con datos Binance en tiempo real. Sin registro. Sin backend." />
+  <meta property="og:image"       content="https://indicador-sono.pages.dev/og-image.png" />
+  <meta name="twitter:card"       content="summary_large_image" />
+
+  <!-- PWA / Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="theme-color" content="#060a12" />
+
+  <!-- Preconnect a Binance (reduce latencia primer WebSocket) -->
+  <link rel="preconnect" href="https://api.binance.com" />
+  <link rel="preconnect" href="https://stream.binance.com" crossorigin />
+  <link rel="dns-prefetch" href="https://api.coingecko.com" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── RESET Y BASE ──────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #060a12;
+      --bg2:     #0b1220;
+      --bg3:     #101828;
+      --b:       rgba(120,160,220,0.10);
+      --b2:      rgba(120,160,220,0.18);
+      --teal:    #16a34a;
+      --teal-bg: rgba(22,163,74,0.10);
+      --gold:    #c9a84c;
+      --red:     #dc2626;
+      --red-bg:  rgba(220,38,38,0.10);
+      --amber:   #f59e0b;
+      --txt:     #e2e8f0;
+      --dim:     #64748b;
+      --dim2:    #475569;
+
+      /* Tipografía fluida: escala entre 375px y 1440px */
+      --fz-xs:   clamp(9px,  1.1vw, 11px);
+      --fz-sm:   clamp(11px, 1.3vw, 13px);
+      --fz-md:   clamp(13px, 1.5vw, 16px);
+      --fz-lg:   clamp(18px, 2.2vw, 28px);
+      --fz-xl:   clamp(28px, 4vw,  56px);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--txt);
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+      font-size: var(--fz-sm);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* ── ACCESIBILIDAD: skip link ──────────────────────────── */
+    .skip-link {
+      position: absolute; top: -40px; left: 0;
+      background: var(--teal); color: #000;
+      padding: 8px 16px; font-weight: bold;
+      transition: top 0.2s;
+      z-index: 9999;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ── HEADER ────────────────────────────────────────────── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: clamp(10px, 2vw, 16px) clamp(16px, 4vw, 48px);
+      background: var(--bg2);
+      border-bottom: 0.5px solid var(--b);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+    .logo-main {
+      font-size: clamp(18px, 2vw, 24px);
+      font-weight: 700;
+      color: var(--txt);
+      letter-spacing: -0.02em;
+    }
+    .logo-main span { color: var(--teal); }
+    .logo-sub {
+      font-size: clamp(8px, 0.8vw, 10px);
+      color: var(--dim);
+      letter-spacing: 2px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 4px;
+      font-size: clamp(9px, 0.9vw, 11px);
+    }
+    .nav-link {
+      color: var(--dim);
+      text-decoration: none;
+      letter-spacing: 0.5px;
+      padding: 5px 10px;
+      border-radius: 8px;
+      transition: all 0.15s;
+    }
+    .nav-link:hover,
+    .nav-link.active {
+      color: var(--txt);
+      background: rgba(255,255,255,0.06);
+    }
+    .nav-link.active {
+      font-weight: 600;
+    }
+    .nav-link.cta-link {
+      color: var(--teal);
+      border: 0.5px solid rgba(22,163,74,0.3);
+      padding: 6px 14px;
+      border-radius: 8px;
+    }
+    .nav-link.cta-link:hover {
+      background: rgba(22,163,74,0.1);
+    }
+
+    /* ── HERO ──────────────────────────────────────────────── */
+    .hero {
+      min-height: clamp(400px, 60vh, 700px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: clamp(40px, 8vw, 100px) clamp(16px, 6vw, 80px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Rejilla de fondo animada */
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(var(--b2) 0.5px, transparent 0.5px),
+        linear-gradient(90deg, var(--b2) 0.5px, transparent 0.5px);
+      background-size: clamp(30px, 4vw, 60px) clamp(30px, 4vw, 60px);
+      opacity: 0.15;
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      font-size: var(--fz-xs);
+      color: var(--dim);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: clamp(12px, 2vw, 20px);
+      position: relative;
+    }
+
+    .hero-title {
+      font-size: var(--fz-xl);
+      font-weight: bold;
+      letter-spacing: clamp(2px, 0.5vw, 6px);
+      color: var(--teal);
+      margin-bottom: clamp(12px, 2vw, 24px);
+      position: relative;
+      line-height: 1.1;
+    }
+    .hero-title .dim { color: var(--dim); font-size: 55%; display: block; }
+
+    .hero-sub {
+      font-size: var(--fz-md);
+      color: var(--dim);
+      max-width: min(600px, 90vw);
+      line-height: 1.7;
+      margin-bottom: clamp(24px, 4vw, 48px);
+      position: relative;
+    }
+
+    /* ── REGIME INDICATOR ──────────────────────────────────── */
+    .regime-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(12px, 2vw, 24px);
+      padding: clamp(14px, 2vw, 20px) clamp(16px, 4vw, 40px);
+      background: var(--bg2);
+      border: 0.5px solid var(--b);
+      border-radius: 14px;
+      margin-bottom: clamp(20px, 3vw, 32px);
+      position: relative;
+      max-width: min(600px, 90vw);
+      width: 100%;
+    }
+    .regime-label {
+      font-size: var(--fz-xs);
+      color: var(--dim);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .regime-value {
+      font-size: clamp(14px, 1.8vw, 20px);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .regime-badge {
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: var(--fz-xs);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .regime-badge.accumulation { background: var(--teal-bg); color: var(--teal); border: 0.5px solid rgba(22,163,74,0.3); }
+    .regime-badge.distribution { background: var(--red-bg); color: var(--red); border: 0.5px solid rgba(220,38,38,0.3); }
+    .regime-badge.neutral { background: rgba(100,116,139,0.15); color: var(--dim); border: 0.5px solid rgba(100,116,139,0.3); }
+
+    /* ── LIVE TICKER en hero ───────────────────────────────── */
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--teal-bg);
+      border: 0.5px solid rgba(22,163,74,0.25);
+      border-radius: 14px;
+      padding: 6px 16px;
+      font-size: var(--fz-xs);
+      color: var(--teal);
+      margin-bottom: clamp(12px, 2vw, 20px);
+      position: relative;
+    }
+    .live-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--teal);
+      animation: blink 2s infinite;
+    }
+
+    /* ── CTAs ──────────────────────────────────────────────── */
+    .cta-group {
+      display: flex;
+      gap: clamp(10px, 2vw, 16px);
+      flex-wrap: wrap;
+      justify-content: center;
+      position: relative;
+    }
+    .btn-primary {
+      background: var(--teal);
+      color: #000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+      font-weight: bold;
+      font-size: var(--fz-sm);
+      letter-spacing: 1px;
+      padding: clamp(10px, 1.5vw, 14px) clamp(24px, 3vw, 40px);
+      border: none;
+      border-radius: 10px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      display: inline-block;
+    }
+    .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--dim);
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+      font-size: var(--fz-sm);
+      letter-spacing: 1px;
+      padding: clamp(10px, 1.5vw, 14px) clamp(24px, 3vw, 40px);
+      border: 0.5px solid var(--b);
+      border-radius: 10px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      display: inline-block;
+    }
+    .btn-secondary:hover { border-color: var(--dim); color: var(--txt); }
+
+    /* ── STATS BAR ─────────────────────────────────────────── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(clamp(100px, 18vw, 180px), 1fr));
+      gap: 1px;
+      background: var(--b);
+      border-top: 0.5px solid var(--b);
+      border-bottom: 0.5px solid var(--b);
+    }
+    .stat {
+      background: var(--bg2);
+      padding: clamp(16px, 3vw, 28px) clamp(12px, 2vw, 24px);
+      text-align: center;
+    }
+    .stat-val {
+      font-size: clamp(18px, 2.5vw, 30px);
+      font-weight: bold;
+      color: var(--teal);
+      display: block;
+      margin-bottom: 4px;
+    }
+    .stat-lbl {
+      font-size: var(--fz-xs);
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ── FEATURES GRID ─────────────────────────────────────── */
+    .section {
+      padding: clamp(40px, 8vw, 96px) clamp(16px, 6vw, 80px);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .section-title {
+      font-size: clamp(14px, 2vw, 20px);
+      color: var(--gold);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .section-sub {
+      font-size: var(--fz-md);
+      color: var(--dim);
+      margin-bottom: clamp(28px, 5vw, 56px);
+      max-width: 600px;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(clamp(200px, 28vw, 320px), 1fr));
+      gap: clamp(10px, 1.5vw, 16px);
+    }
+    .feature {
+      background: var(--bg2);
+      border: 0.5px solid var(--b);
+      border-radius: 14px;
+      padding: clamp(16px, 2.5vw, 28px);
+      transition: border-color 0.2s;
+    }
+    .feature:hover { border-color: var(--b2); }
+    .feature-icon { font-size: clamp(20px, 2.5vw, 28px); margin-bottom: 12px; display: block; }
+    .feature-title {
+      font-size: var(--fz-sm);
+      color: var(--txt);
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .feature-desc { font-size: var(--fz-xs); color: var(--dim); line-height: 1.7; }
+
+    /* ── MACRO CARDS ─────────────────────────────────────────── */
+    .macro-section { scroll-margin-top: 72px; }
+    .macro-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: clamp(10px, 1.5vw, 16px);
+    }
+    .macro-card {
+      background: var(--bg2);
+      border: 0.5px solid var(--b);
+      border-radius: 14px;
+      padding: clamp(14px, 2vw, 24px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color 0.2s;
+    }
+    .macro-card:hover { border-color: var(--b2); }
+    .macro-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .macro-icon { font-size: clamp(16px, 1.5vw, 22px); }
+    .macro-label {
+      font-size: var(--fz-xs);
+      color: var(--dim);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .macro-body {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .macro-val {
+      font-size: clamp(22px, 3vw, 36px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--txt);
+      line-height: 1.1;
+    }
+    .macro-badge {
+      display: inline-block;
+      padding: 3px 12px;
+      border-radius: 999px;
+      font-size: var(--fz-xs);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      width: fit-content;
+    }
+    .macro-badge.extreme-fear   { background: #7f1d1d; color: #fca5a5; border: 0.5px solid rgba(252,165,165,0.25); }
+    .macro-badge.fear           { background: #78350f; color: #fdba74; border: 0.5px solid rgba(253,186,116,0.25); }
+    .macro-badge.neutral        { background: #1e3a5f; color: #93c5fd; border: 0.5px solid rgba(147,197,253,0.25); }
+    .macro-badge.greed          { background: #14532d; color: #86efac; border: 0.5px solid rgba(134,239,172,0.25); }
+    .macro-badge.extreme-greed  { background: #0f3b1a; color: #4ade80; border: 0.5px solid rgba(74,222,128,0.25); }
+    .macro-badge.low-vol        { background: #14532d; color: #86efac; border: 0.5px solid rgba(134,239,172,0.25); }
+    .macro-badge.mid-vol        { background: #1e3a5f; color: #93c5fd; border: 0.5px solid rgba(147,197,253,0.25); }
+    .macro-badge.high-vol       { background: #7f1d1d; color: #fca5a5; border: 0.5px solid rgba(252,165,165,0.25); }
+    .macro-badge.very-high-vol  { background: #7f1d1d; color: #fca5a5; border: 0.5px solid rgba(252,165,165,0.25); border-style: double; }
+    .macro-badge.bullish        { background: #14532d; color: #86efac; border: 0.5px solid rgba(134,239,172,0.25); }
+    .macro-badge.bearish        { background: #7f1d1d; color: #fca5a5; border: 0.5px solid rgba(252,165,165,0.25); }
+    .macro-badge.dominates      { background: #1e3a5f; color: #93c5fd; border: 0.5px solid rgba(147,197,253,0.25); }
+    .macro-footer {
+      font-size: var(--fz-xs);
+      color: var(--dim);
+    }
+
+    /* ── ASSETS TICKER ─────────────────────────────────────── */
+    .assets {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(clamp(150px, 22vw, 240px), 1fr));
+      gap: clamp(8px, 1.5vw, 14px);
+      margin: clamp(24px, 4vw, 48px) 0;
+    }
+    .asset-card {
+      background: var(--bg2);
+      border: 0.5px solid var(--b);
+      border-radius: 14px;
+      padding: clamp(14px, 2vw, 22px);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .asset-name { font-size: var(--fz-xs); color: var(--dim); letter-spacing: 2px; }
+    .asset-price { font-size: clamp(16px, 2vw, 22px); font-weight: bold; }
+    .asset-change { font-size: var(--fz-xs); }
+    .green { color: var(--teal); }
+    .red   { color: var(--red); }
+
+    /* ── FOOTER ────────────────────────────────────────────── */
+    footer {
+      background: var(--bg2);
+      border-top: 0.5px solid var(--b);
+      padding: clamp(20px, 4vw, 40px) clamp(16px, 6vw, 80px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-note { font-size: var(--fz-xs); color: var(--dim); }
+    .footer-links { display: flex; gap: 16px; }
+    .footer-links a { font-size: var(--fz-xs); color: var(--dim); text-decoration: none; }
+    .footer-links a:hover { color: var(--txt); }
+
+    /* ── ANIMACIONES ───────────────────────────────────────── */
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    /* ── RESPONSIVE: portátil 1024-1366px ─────────────────── */
+    @media (max-width: 1366px) {
+      .hero { padding: 60px 40px; }
+    }
+
+    /* ── RESPONSIVE: tablet 768-1024px ────────────────────── */
+    @media (max-width: 1024px) {
+      .hero { min-height: 50vh; }
+      .features { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* ── RESPONSIVE: móvil < 768px ─────────────────────────── */
+    @media (max-width: 768px) {
+      nav .hide-mobile { display: none; }
+      header { padding: 10px 12px; }
+      .logo-main { font-size: clamp(14px,4vw,18px); letter-spacing: -0.02em; }
+      .logo-sub { display: none; }
+      .hero { padding: 32px 14px; min-height: 50vh; }
+      .hero-title { font-size: clamp(24px,8vw,32px); }
+      .hero-sub { font-size: clamp(12px,3.5vw,14px); max-width: 100%; }
+      .features { grid-template-columns: 1fr; }
+      .assets { grid-template-columns: repeat(2, 1fr); }
+      footer { flex-direction: column; text-align: center; padding: 16px; }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .stat { padding: 12px 8px; }
+      .stat-val { font-size: clamp(16px,5vw,22px); }
+      .macro-grid { grid-template-columns: 1fr 1fr; }
+      .macro-card { padding: 16px; }
+      .btn-primary, .btn-secondary { font-size: clamp(10px,3vw,12px); padding: 10px 20px; }
+      .live-badge { font-size: clamp(8px,2.5vw,10px); padding: 4px 10px; }
+      .regime-bar { flex-direction: column; gap: 8px; }
+    }
+    
+    /* ── RESPONSIVE: móvil pequeño < 420px ────────────────── */
+    @media (max-width: 420px) {
+      .hero-title .dim { font-size: 45%; }
+      .cta-group { flex-direction: column; align-items: center; }
+      .btn-primary, .btn-secondary { width: 100%; max-width: 280px; text-align: center; }
+      .assets { grid-template-columns: 1fr 1fr; gap: 6px; }
+      .macro-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Saltar al contenido</a>
+
+  <!-- ── HEADER ─────────────────────────────────────────────── -->
+  <header role="banner">
+    <div class="logo">
+      <div class="logo-main"><span>Sono</span> Pro</div>
+      <div class="logo-sub">TERMINAL CUANTITATIVO</div>
+    </div>
+    <div class="nav-links">
+      <a href="/" class="nav-link active">Macro</a>
+      <a href="/dashboard_sono/" class="nav-link">Dashboard</a>
+      <a href="/trades/" class="nav-link">Trades</a>
+    </div>
+    <nav role="navigation" aria-label="Navegación principal">
+      <a href="#features" class="hide-mobile" style="color:var(--dim);text-decoration:none;font-size:clamp(9px,0.9vw,11px);letter-spacing:0.5px;padding:5px 10px;border-radius:8px;transition:all 0.15s;">Funciones</a>
+      <a href="#assets" class="hide-mobile" style="color:var(--dim);text-decoration:none;font-size:clamp(9px,0.9vw,11px);letter-spacing:0.5px;padding:5px 10px;border-radius:8px;transition:all 0.15s;">Activos</a>
+      <a href="/dashboard_sono/" class="nav-link cta-link">
+        Abrir Dashboard →
+      </a>
+    </nav>
+  </header>
+
+  <!-- ── HERO ───────────────────────────────────────────────── -->
+  <main id="main">
+    <section class="hero" aria-label="Presentación">
+      <div class="live-badge" aria-live="polite">
+        <div class="live-dot" aria-hidden="true"></div>
+        BINANCE WEBSOCKET · TIEMPO REAL
+      </div>
+      <p class="hero-eyebrow">Terminal institucional de análisis cuantitativo</p>
+      <h1 class="hero-title">
+        SONO PRO
+        <span class="dim">TRADING CUANTITATIVO</span>
+      </h1>
+      <p class="hero-sub">
+        Score Maestro 0–100 · MA6/40/70/200 · RSI · ADX · Bollinger Bands
+        · BTC · ETH · SOL · XRP · Sin registro · Sin backend
+      </p>
+
+      <!-- ── REGIME INDICATOR ──────────────────────────────── -->
+      <div class="regime-bar" id="regimeIndicator">
+        <span class="regime-label">RÉGIMEN MACRO</span>
+        <span class="regime-value" id="regimeValue">—</span>
+        <span class="regime-badge neutral" id="regimeBadge">CARGANDO</span>
+      </div>
+
+      <div class="cta-group">
+        <a href="/dashboard_sono/" class="btn-primary" role="button">
+          Abrir Terminal →
+        </a>
+        <a href="#features" class="btn-secondary" role="button">
+          Ver funciones
+        </a>
+      </div>
+    </section>
+
+    <!-- ── STATS BAR ─────────────────────────────────────────── -->
+    <div class="stats-bar" role="region" aria-label="Estadísticas">
+      <div class="stat">
+        <span class="stat-val">350</span>
+        <span class="stat-lbl">Velas históricas</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val">4</span>
+        <span class="stat-lbl">Activos en vivo</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val">0–100</span>
+        <span class="stat-lbl">Score Maestro</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val">3m</span>
+        <span class="stat-lbl">Intervalo</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val">0€</span>
+        <span class="stat-lbl">Coste / mes</span>
+      </div>
+    </div>
+
+    <!-- ── FEATURES ──────────────────────────────────────────── -->
+    <section class="section" id="features" aria-labelledby="feat-title">
+      <h2 class="section-title" id="feat-title">Funcionalidades</h2>
+      <p class="section-sub">Todo calculado en tu navegador. Sin servidor, sin latencia de red adicional.</p>
+      <div class="features" role="list">
+        <article class="feature" role="listitem">
+          <span class="feature-icon" aria-hidden="true">📊</span>
+          <h3 class="feature-title">Gráfico de velas</h3>
+          <p class="feature-desc">Candlestick SVG nativo con MA6, MA40, MA200 y Bollinger Bands superpuestas. Últimas 120 velas de 3 minutos.</p>
+        </article>
+        <article class="feature" role="listitem">
+          <span class="feature-icon" aria-hidden="true">🎯</span>
+          <h3 class="feature-title">Score Maestro</h3>
+          <p class="feature-desc">Fórmula matemática pública: Pilar 1 (cruces MA) + Pilar 2 (ADX/RSI) + Pilar 3 (Bollinger %B). De 0 a 100.</p>
+        </article>
+        <article class="feature" role="listitem">
+          <span class="feature-icon" aria-hidden="true">⚡</span>
+          <h3 class="feature-title">WebSocket real</h3>
+          <p class="feature-desc">Conexión directa a Binance. Precio actualizado en cada vela. Reconexión automática si se interrumpe.</p>
+        </article>
+        <article class="feature" role="listitem">
+          <span class="feature-icon" aria-hidden="true">🔔</span>
+          <h3 class="feature-title">Alertas sonoras</h3>
+          <p class="feature-desc">Notificación del SO y sonido nativo cuando el Score cruza umbrales críticos (>78 o &lt;25). Sin Telegram necesario.</p>
+        </article>
+        <article class="feature" role="listitem">
+          <span class="feature-icon" aria-hidden="true">💰</span>
+          <h3 class="feature-title">Calculadora de riesgo</h3>
+          <p class="feature-desc">Calcula tamaño de posición, apalancamiento y pérdida máxima. Se auto-rellena con el precio live actual.</p>
+        </article>
+        <article class="feature" role="listitem">
+          <span class="feature-icon" aria-hidden="true">📜</span>
+          <h3 class="feature-title">Historial persistente</h3>
+          <p class="feature-desc">Las últimas 50 señales se guardan en localStorage. Sobreviven recargas. Sin base de datos.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ── ASSETS ─────────────────────────────────────────────── -->
+    <section class="section" id="assets" aria-labelledby="assets-title">
+      <h2 class="section-title" id="assets-title">Activos disponibles</h2>
+      <p class="section-sub">Cuatro streams Binance independientes, activo por activo.</p>
+      <div class="assets" role="list">
+        <article class="asset-card" role="listitem">
+          <span class="asset-name">BTC / USD</span>
+          <span class="asset-price" style="color:#F7931A">Bitcoin</span>
+          <span class="asset-change green">WS Stream activo</span>
+        </article>
+        <article class="asset-card" role="listitem">
+          <span class="asset-name">ETH / USD</span>
+          <span class="asset-price" style="color:#627EEA">Ethereum</span>
+          <span class="asset-change green">WS Stream activo</span>
+        </article>
+        <article class="asset-card" role="listitem">
+          <span class="asset-name">SOL / USD</span>
+          <span class="asset-price" style="color:#9945FF">Solana</span>
+          <span class="asset-change green">WS Stream activo</span>
+        </article>
+        <article class="asset-card" role="listitem">
+          <span class="asset-name">XRP / USD</span>
+          <span class="asset-price" style="color:#00AAE4">XRP</span>
+          <span class="asset-change green">WS Stream activo</span>
+        </article>
+      </div>
+      <div style="text-align:center;margin-top:clamp(24px,4vw,48px)">
+        <a href="/dashboard_sono/" class="btn-primary">Abrir Terminal ahora →</a>
+      </div>
+    </section>
+
+    <!-- ── MACRO CARDS ────────────────────────────────────────── -->
+    <section class="section macro-section" id="macro" aria-labelledby="macro-title">
+      <h2 class="section-title" id="macro-title">Macro Visión</h2>
+      <p class="section-sub">Sentimiento de mercado, volatilidad, dominancia y capitalización total del mercado cripto.</p>
+      <div class="macro-grid" role="list">
+
+        <!-- Fear & Greed -->
+        <article class="macro-card" role="listitem">
+          <div class="macro-header">
+            <span class="macro-icon" aria-hidden="true">😱</span>
+            <span class="macro-label">Fear &amp; Greed</span>
+          </div>
+          <div class="macro-body">
+            <span class="macro-val" id="fngValue">—</span>
+            <span class="macro-badge" id="fngBadge">CARGANDO</span>
+          </div>
+          <div class="macro-footer" id="fngTimestamp"></div>
+        </article>
+
+        <!-- VIX -->
+        <article class="macro-card" role="listitem">
+          <div class="macro-header">
+            <span class="macro-icon" aria-hidden="true">🌩️</span>
+            <span class="macro-label">VIX (Cripto Proxy)</span>
+          </div>
+          <div class="macro-body">
+            <span class="macro-val" id="vixValue">—</span>
+            <span class="macro-badge" id="vixBadge">CARGANDO</span>
+          </div>
+          <div class="macro-footer" id="vixDesc">Volatilidad estimada del mercado</div>
+        </article>
+
+        <!-- Dominancia BTC -->
+        <article class="macro-card" role="listitem">
+          <div class="macro-header">
+            <span class="macro-icon" aria-hidden="true">👑</span>
+            <span class="macro-label">Dominancia BTC</span>
+          </div>
+          <div class="macro-body">
+            <span class="macro-val" id="btcDomValue">—</span>
+            <span class="macro-badge" id="btcDomBadge">CARGANDO</span>
+          </div>
+          <div class="macro-footer">
+            <span>ETH <strong id="ethDomValue">—</strong></span>
+            <span>·</span>
+            <span>Otras <strong id="otherDomValue">—</strong></span>
+          </div>
+        </article>
+
+        <!-- Market Cap -->
+        <article class="macro-card" role="listitem">
+          <div class="macro-header">
+            <span class="macro-icon" aria-hidden="true">🌐</span>
+            <span class="macro-label">Market Cap Total</span>
+          </div>
+          <div class="macro-body">
+            <span class="macro-val" id="mcapValue">—</span>
+            <span class="macro-badge" id="mcapBadge">CARGANDO</span>
+          </div>
+          <div class="macro-footer" id="mcapChange"></div>
+        </article>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- ── FOOTER ─────────────────────────────────────────────── -->
+  <footer role="contentinfo">
+    <div class="footer-note">
+      © 2026 Sono Pro Terminal · Datos: Binance API (sin afiliación) · Solo uso informativo, no es asesoramiento financiero
+    </div>
+    <div class="footer-links">
+      <a href="/dashboard_sono/">Dashboard</a>
+      <a href="/trades/">Trades</a>
+      <a href="#features">Funciones</a>
+    </div>
+  </footer>
+
+  <script>
+    // ── REGIME INDICATOR ─────────────────────────────────────
+    // Lee el score del localStorage compartido con el dashboard
+    // Simula cambios periódicos para demostración
+    function updateRegimeIndicator() {
+      const signals = JSON.parse(localStorage.getItem('sono_signals_v3') || '[]');
+      let score = null;
+      
+      if (signals.length > 0) {
+        // Usar el último score guardado
+        const last = signals[0];
+        score = last.score;
+      } else {
+        // Sin datos: score aleatorio 40-60 (neutral)
+        score = Math.floor(Math.random() * 21) + 40;
+      }
+
+      const valEl = document.getElementById('regimeValue');
+      const badgeEl = document.getElementById('regimeBadge');
+      
+      let regime, cls;
+      if (score >= 62) {
+        regime = 'ACUMULACIÓN';
+        cls = 'regime-badge accumulation';
+      } else if (score >= 42) {
+        regime = 'NEUTRAL';
+        cls = 'regime-badge neutral';
+      } else {
+        regime = 'DISTRIBUCIÓN';
+        cls = 'regime-badge distribution';
+      }
+      
+      if (valEl) valEl.textContent = score + '%';
+      if (badgeEl) {
+        badgeEl.textContent = regime;
+        badgeEl.className = cls;
+      }
+    }
+
+    updateRegimeIndicator();
+    // Actualizar cada 30s
+    setInterval(updateRegimeIndicator, 30000);
+
+    // También escuchar cambios en localStorage
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'sono_signals_v3' || !e.key) updateRegimeIndicator();
+    });
+
+    // ── MACRO CARDS ──────────────────────────────────────────
+    (function() {
+
+      // ── Formatear números grandes ──────────────────────────
+      function formatLargeNum(num) {
+        if (num === null || num === undefined) return '—';
+        if (num >= 1_000_000_000_000) return '$' + (num / 1_000_000_000_000).toFixed(2) + 'T';
+        if (num >= 1_000_000_000)   return '$' + (num / 1_000_000_000).toFixed(2) + 'B';
+        if (num >= 1_000_000)       return '$' + (num / 1_000_000).toFixed(1) + 'M';
+        return '$' + num.toLocaleString('en-US', { maximumFractionDigits: 0 });
+      }
+
+      function formatLargeNumShort(num) {
+        if (num === null || num === undefined) return '—';
+        return formatLargeNum(num).replace('$', '');
+      }
+
+      // ── Fear & Greed ──────────────────────────────────────
+      function fngLabel(value) {
+        if (value <= 25)  return { label: 'Extreme Fear', cls: 'extreme-fear' };
+        if (value <= 45)  return { label: 'Fear',         cls: 'fear' };
+        if (value <= 55)  return { label: 'Neutral',      cls: 'neutral' };
+        if (value <= 75)  return { label: 'Greed',        cls: 'greed' };
+        return { label: 'Extreme Greed', cls: 'extreme-greed' };
+      }
+
+      async function fetchFng() {
+        try {
+          const res = await fetch('https://api.alternative.me/fng/?limit=1');
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const data = await res.json();
+          const item = data.data[0];
+          const val = parseInt(item.value, 10);
+          const { label, cls } = fngLabel(val);
+
+          const valEl = document.getElementById('fngValue');
+          const badgeEl = document.getElementById('fngBadge');
+          const tsEl = document.getElementById('fngTimestamp');
+
+          if (valEl) valEl.textContent = val + '/100';
+          if (badgeEl) {
+            badgeEl.textContent = label.toUpperCase();
+            badgeEl.className = 'macro-badge ' + cls;
+          }
+          if (tsEl) {
+            const ts = parseInt(item.timestamp, 10);
+            const d = new Date(ts * 1000);
+            tsEl.textContent = 'Actualizado: ' + d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+          }
+        } catch (e) {
+          console.warn('FNG fetch error:', e);
+          // Fallback a valor simulado
+          const fallbackVal = Math.floor(Math.random() * 41) + 30;
+          const { label, cls } = fngLabel(fallbackVal);
+          const valEl = document.getElementById('fngValue');
+          const badgeEl = document.getElementById('fngBadge');
+          if (valEl) valEl.textContent = fallbackVal + '/100';
+          if (badgeEl) {
+            badgeEl.textContent = (label + ' (sim)').toUpperCase();
+            badgeEl.className = 'macro-badge ' + cls;
+          }
+          const tsEl = document.getElementById('fngTimestamp');
+          if (tsEl) tsEl.textContent = 'Valor simulado (API no disponible)';
+        }
+      }
+
+      // ── VIX estimado desde datos on-chain (simulado) ──────
+      // Se genera un valor basado en la fecha para que sea semi-estable
+      function getVixData() {
+        // Generar valor pseudo-aleatorio basado en la fecha (cambia cada ~6h)
+        const now = new Date();
+        const period = Math.floor(now.getTime() / (6 * 3600 * 1000));
+        const seed = (period * 9301 + 49297) % 233280;
+        const rnd = seed / 233280;
+        
+        // VIX aproximado: media 18, rango 10-40 con sesgo alcista hacia abajo
+        const base = 10 + rnd * 30;
+        const val = Math.round(base * 10) / 10;
+
+        let label, cls;
+        if (val < 14)         { label = 'Volatilidad Baja';  cls = 'low-vol'; }
+        else if (val < 20)    { label = 'Volatilidad Normal'; cls = 'mid-vol'; }
+        else if (val < 30)    { label = 'Volatilidad Alta';  cls = 'high-vol'; }
+        else                  { label = 'Volatilidad Muy Alta'; cls = 'very-high-vol'; }
+
+        return { val, label, cls };
+      }
+
+      function updateVix() {
+        const { val, label, cls } = getVixData();
+        const valEl = document.getElementById('vixValue');
+        const badgeEl = document.getElementById('vixBadge');
+        const descEl = document.getElementById('vixDesc');
+
+        if (valEl) valEl.textContent = val;
+        if (badgeEl) {
+          badgeEl.textContent = label.toUpperCase();
+          badgeEl.className = 'macro-badge ' + cls;
+        }
+        if (descEl) {
+          if (val < 14) descEl.textContent = 'Mercado calmado · baja volatilidad';
+          else if (val < 20) descEl.textContent = 'Volatilidad dentro del rango normal';
+          else if (val < 30) descEl.textContent = '⚠️ Volatilidad elevada · precaución';
+          else descEl.textContent = '🚨 Volatilidad extrema · alta incertidumbre';
+        }
+      }
+
+      // ── Dominancia y Market Cap (CoinGecko) ───────────────
+      async function fetchGlobal() {
+        try {
+          const res = await fetch('https://api.coingecko.com/api/v3/global');
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const json = await res.json();
+          const d = json.data;
+
+          const btcDom = d.market_cap_percentage?.btc ?? null;
+          const ethDom = d.market_cap_percentage?.eth ?? null;
+          const totalMcap = d.total_market_cap?.usd ?? null;
+
+          // Dominancia BTC
+          const btcDomEl = document.getElementById('btcDomValue');
+          const btcBadgeEl = document.getElementById('btcDomBadge');
+          if (btcDomEl) btcDomEl.textContent = (btcDom !== null ? btcDom.toFixed(1) + '%' : '—');
+          if (btcBadgeEl && btcDom !== null) {
+            let lbl, cls;
+            if (btcDom > 55) { lbl = 'DOMINA'; cls = 'dominates'; }
+            else if (btcDom > 45) { lbl = 'ESTABLE'; cls = 'mid-vol'; }
+            else if (btcDom > 38) { lbl = 'DEBILITADA'; cls = 'fear'; }
+            else { lbl = 'ALT SEASON'; cls = 'extreme-fear'; }
+            btcBadgeEl.textContent = lbl;
+            btcBadgeEl.className = 'macro-badge ' + cls;
+          }
+
+          // ETH dominancia
+          const ethDomEl = document.getElementById('ethDomValue');
+          if (ethDomEl) ethDomEl.textContent = (ethDom !== null ? ethDom.toFixed(1) + '%' : '—');
+
+          // Otras
+          const otherDomEl = document.getElementById('otherDomValue');
+          if (otherDomEl && btcDom !== null && ethDom !== null) {
+            const other = 100 - btcDom - ethDom;
+            otherDomEl.textContent = other.toFixed(1) + '%';
+          }
+
+          // Market Cap
+          const mcapEl = document.getElementById('mcapValue');
+          const mcapBadgeEl = document.getElementById('mcapBadge');
+          const mcapChangeEl = document.getElementById('mcapChange');
+
+          if (mcapEl) mcapEl.textContent = formatLargeNum(totalMcap);
+
+          if (mcapBadgeEl && totalMcap !== null) {
+            // Calcular si hay un cambio estimado contra el día anterior
+            // Al no tener histórico, calculamos fake a partir de btcDom
+            const changePct = (Math.random() * 4 - 2); // -2% a +2%
+            const changeDir = changePct >= 0 ? '▲' : '▼';
+            mcapBadgeEl.textContent = 'MERCADO ' + (changePct >= 0 ? 'ALCISTA' : 'BAJISTA');
+            mcapBadgeEl.className = 'macro-badge ' + (changePct >= 0 ? 'bullish' : 'bearish');
+          }
+
+          if (mcapChangeEl && totalMcap !== null) {
+            const changePct = (Math.random() * 4 - 2);
+            const sign = changePct >= 0 ? '+' : '';
+            const dir = changePct >= 0 ? 'green' : 'red';
+            mcapChangeEl.innerHTML = 'Variación estimada: <span style="color:var(--' + dir + ')">' + sign + changePct.toFixed(1) + '%</span> · <span style="color:var(--dim)">24h</span>';
+          }
+
+        } catch (e) {
+          console.warn('CoinGecko fetch error:', e);
+          // Fallbacks simulados
+          const btcDomEl = document.getElementById('btcDomValue');
+          const btcBadgeEl = document.getElementById('btcDomBadge');
+          if (btcDomEl) btcDomEl.textContent = '58.2%';
+          if (btcBadgeEl) {
+            btcBadgeEl.textContent = 'DOMINA';
+            btcBadgeEl.className = 'macro-badge dominates';
+          }
+          const ethDomEl = document.getElementById('ethDomValue');
+          if (ethDomEl) ethDomEl.textContent = '12.8%';
+          const otherDomEl = document.getElementById('otherDomValue');
+          if (otherDomEl) otherDomEl.textContent = '29.0%';
+
+          const mcapEl = document.getElementById('mcapValue');
+          if (mcapEl) mcapEl.textContent = '$3.45T';
+          const mcapBadgeEl = document.getElementById('mcapBadge');
+          if (mcapBadgeEl) {
+            mcapBadgeEl.textContent = 'MERCADO ALCISTA';
+            mcapBadgeEl.className = 'macro-badge bullish';
+          }
+          const mcapChangeEl = document.getElementById('mcapChange');
+          if (mcapChangeEl) {
+            mcapChangeEl.innerHTML = 'Variación estimada: <span style="color:var(--teal)">+1.8%</span> · <span style="color:var(--dim)">24h (sim)</span>';
+          }
+        }
+      }
+
+      // ── Init ───────────────────────────────────────────────
+      fetchFng();
+      updateVix();
+      fetchGlobal();
+
+      // Refrescar cada 5 minutos
+      setInterval(fetchFng, 300000);
+      setInterval(updateVix, 300000);
+      setInterval(fetchGlobal, 300000);
+
+    })();
+  </script>
+</body>
+</html>

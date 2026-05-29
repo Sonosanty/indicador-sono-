@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Sono Pro — Trades</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#060a12;color:#e2e8f0;font-family:system-ui,sans-serif;min-height:100vh}
+#loadOverlay{position:fixed;inset:0;background:#060a12;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:12px}
+#loadOverlay.hidden{display:none}
+#app{opacity:0;transition:opacity .5s}
+.spinner{width:32px;height:32px;border:3px solid #1a2a40;border-top-color:#16a34a;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.nav{display:flex;gap:6px;padding:14px 18px;background:#0a1628;border-bottom:1px solid #1a2a40;align-items:center}
+.nav .brand{color:#e2e8f0;font-weight:700;font-size:14px;margin-right:20px}
+.nav a{color:#64748b;text-decoration:none;padding:5px 16px;border-radius:999px;font-size:12px;font-weight:500}
+.nav a.active{background:#16a34a18;color:#16a34a}
+.row{display:flex;gap:12px;padding:12px 18px;flex-wrap:wrap}
+.card{background:#0a1628;border:1px solid #1a2a40;border-radius:14px;padding:16px;flex:1;min-width:140px;text-align:center}
+.card h3{color:#64748b;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.card .val{font-size:20px;font-weight:600;font-family:'JetBrains Mono',Consolas,monospace}
+.green{color:#16a34a}.red{color:#dc2626}.neutral{color:#64748b}
+</style>
+</head>
+<body>
+<div id="loadOverlay"><div class="spinner"></div><div style="color:#64748b;font-size:13px">Conectando con Binance...</div></div>
+<div id="app">
+<div class="nav"><span class="brand">SONO PRO</span><a href="/">Macro</a><a href="/dashboard_sono/">Dashboard</a><a href="/trades/" class="active">Trades</a></div>
+<div class="row" id="tickerRow"></div>
+<div class="row"><div class="card"><h3>TRADES ABIERTOS</h3><div class="val green" id="openCount">0</div></div><div class="card"><h3>TRADES CERRADOS</h3><div class="val neutral" id="closedCount">0</div></div></div>
+</div>
+<script>
+const API='https://api.binance.com/api/v3';
+const ASSETS_CFG={BTC:{sym:'BTCUSDT',dec:2},ETH:{sym:'ETHUSDT',dec:2},SOL:{sym:'SOLUSDT',dec:3},XRP:{sym:'XRPUSDT',dec:4}};
+let tickers={};
+const el=(id,txt)=>{const e=document.getElementById(id);if(e)e.textContent=txt};
+const fmt=(n,d)=>n==null?'--':Number(n).toFixed(d);
+
+async function init(){
+  const results=await Promise.allSettled(Object.keys(ASSETS_CFG).map(async k=>{
+    const r=await fetch(API+'/ticker/24hr?symbol='+ASSETS_CFG[k].sym);
+    const d=await r.json();
+    tickers[k]={price:+d.lastPrice,change:+d.priceChangePercent};
+  }));
+  const row=document.getElementById('tickerRow');
+  if(row){
+    row.innerHTML=Object.keys(ASSETS_CFG).map(k=>{
+      const t=tickers[k];
+      if(!t)return'';
+      const c=t.change>=0?'green':'red';
+      return'<div class="card" style="min-width:100px"><h3>'+k+'</h3><div class="val '+c+'">$'+fmt(t.price,ASSETS_CFG[k].dec)+'</div><div class="sub '+c+'" style="font-size:10px;color:'+(t.change>=0?'#16a34a':'#dc2626')+'">'+(t.change>=0?'+':'')+t.change.toFixed(2)+'%</div></div>';
+    }).filter(Boolean).join('');
+  }
+  el('openCount','0');
+  el('closedCount','0');
+  setTimeout(()=>{
+    document.getElementById('loadOverlay').classList.add('hidden');
+    document.getElementById('app').style.opacity='1';
+  },300);
+}
+init();
+</script>
+</body>
+</html>

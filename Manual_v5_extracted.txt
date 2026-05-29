@@ -1,0 +1,147 @@
+OPENCLAW
+Manual Completo — Instalacion, Configuracion y Optimizacion para Windows
+INDICE DE CONTENIDOS
+1.  QUE ES OPENCLAW?
+OpenClaw es un asistente de inteligencia artificial de codigo abierto que funciona directamente en tu ordenador. Tus datos no salen de tu PC salvo cuando llama a la API del modelo de IA configurado.
+Que puede hacer en Windows
+Chatear con IA desde el navegador en http://127.0.0.1:18789
+Conectarse con Telegram, WhatsApp, Discord, Slack
+Ejecutar tareas en tu PC con tu aprobacion explicita
+Usar modelos: Gemini (gratis), Claude, GPT-4, Nvidia, o modelos locales via Ollama
+Recordar contexto entre sesiones con MEMORY.md y AGENTS.md
+Buscar informacion en la web en tiempo real (skill Perplexity Search via Playwright)
+Ejecutar skills personalizados escritos en Node.js
+2.  ARQUITECTURA DEL SISTEMA
+Rutas y archivos clave
+Variables de entorno del arrancar-openclaw.bat
+3.  ESTADO ACTUAL VERIFICADO
+Estado verificado al 9 de mayo de 2026 segun openclaw-info.ps1:
+4.  REQUISITOS DEL SISTEMA
+5.  INSTALACION INICIAL
+5.1  Preparar PowerShell (una sola vez)
+5.2  Instalar con el script automatico Instalar-OpenClaw.ps1
+Que hace el script en orden:
+5.3  Instalacion manual rapida
+6.  CONFIGURACION DE SEGURIDAD
+Las 4 capas de proteccion
+Verificar el puerto con netstat
+7.  COMO INICIAR OPENCLAW
+Que ocurre al hacer doble clic
+Se abre una ventana negra — titulo "OpenClaw Gateway"
+El script establece las variables de entorno
+Gateway arranca en modo manual (sin instalar ningun servicio)
+El navegador abre http://127.0.0.1:18789
+El panel web aparece — ya puedes chatear
+Como DETENER OpenClaw
+Opcion 1: Cierra la ventana negra del terminal
+Opcion 2: En la ventana negra, presiona Ctrl+C
+Crear acceso directo en el Escritorio
+8.  CONFIGURAR GEMINI (GRATIS)
+8.1  Obtener la API Key gratuita de Google AI Studio
+Ve a: https://aistudio.google.com/apikey
+Inicia sesion con tu cuenta de Google
+Clic en "Create API Key" → selecciona un proyecto (gratis)
+Copia la key — empieza por AIzaSy...
+8.2  Configurar Gemini en openclaw.json
+Edita el archivo directamente con este script PS5:
+8.3  Estructura openclaw.json con Gemini
+8.4  Limites de uso recomendados (free tier)
+9.  ANALISIS DE COSTE DE APIs
+Por que se disparo la factura: OpenClaw ejecuta entre 8 y 12 llamadas al modelo por instruccion y reenvía todo el contexto historico en cada una, multiplicando el consumo exponencialmente.
+Tabla comparativa de coste real en agentes
+10.  ARQUITECTURA DE AHORRO (20 EUR/MES)
+Estrategia de 3 niveles
+Estimacion real de coste mensual
+Las 5 reglas de ahorro mas efectivas
+Desactivar heartbeat: HEARTBEAT.md vacio + agents.defaults.heartbeat.every=""
+Limitar contexto: reiniciar sesion al acabar cada tarea (evita la bola de nieve)
+Gemini Free como default: 1M tokens/dia gratis con Google AI Studio
+No usar modo Thinking/Reasoning por defecto (5.000 tokens vs 80.000 en modo thinking)
+Usar Perplexity API para busquedas web en vez de herramientas de browsing costosas
+11.  MIGRAR DE ANTHROPIC A GEMINI
+Usa el script Switch-To-Gemini-Only.ps1 (ya disponible en C:\OpenClaw):
+Que hace el script
+Hace backup del openclaw.json antes de modificarlo
+Elimina todos los perfiles anthropic:* del config
+Desactiva el plugin de Anthropic
+Aplica google/gemini-2.5-flash como modelo en agents.defaults
+Reinicia el gateway
+Verificar que Anthropic esta eliminado
+12.  MEMORIA PERSISTENTE Y PLUGINS
+12.1  Plugin active-memory
+El plugin active-memory permite que el agente recuerde informacion entre sesiones. Ya esta activo en tu sistema.
+12.2  Desactivar el Heartbeat (ahorro de API)
+OpenClaw envía por defecto una llamada a la API cada 30 minutos. Hay 3 metodos para desactivarlo:
+Metodo 1 — Permanente (RECOMENDADO):
+Metodo 2 — HEARTBEAT.md vacio:
+12.3  MEMORY.md — memoria del agente
+Escribe tu nombre, proyectos, idioma preferido y cualquier contexto permanente.
+12.4  Desactivar el modo Thinking
+El modo Thinking usa 10-15x mas tokens que el modo normal. Para desactivarlo, en el openclaw.json dentro del bloque del agente:
+13.  SKILL PERPLEXITY SEARCH
+Que es y como funciona
+El skill perplexity-search permite que OpenClaw busque informacion actual en Internet usando Perplexity.ai. Funciona con Node.js + Playwright + Chromium headless.
+Rutas del skill
+Instalacion completa del skill
+Probar el skill directamente
+Diagnosticar el skill
+Ejemplos de uso desde Telegram o chat web
+"busca el precio del ethereum hoy"
+"que noticias hay sobre la reserva federal"
+"busca en perplexity los mejores modelos AI de 2025"
+14.  TELEGRAM — CANAL DE MENSAJERIA
+Conectar Telegram
+Aprobar un remitente nuevo (pairing)
+Configuracion de IPv4 (ya aplicada)
+La variable OPENCLAW_TELEGRAM_IPV4_ONLY=1 en el start-openclaw.bat fuerza la conexion por IPv4 y resuelve errores de timeout con Telegram.
+15.  SOLUCION AL PROBLEMA GOOGLE:MANUAL
+Causa raiz
+Cuando configuras Gemini via CLI con la opcion "Google AI Studio" + "Google auth method: Back" (cancelando), OpenClaw registra un perfil google:manual que intenta autenticarse via sesion de navegador en vez de API key. Ese token de sesion expira rapidamente y causa los timeouts.
+Solucion: reemplazar google:manual por API key directa
+Script PS5 completo para corregir el perfil:
+Verificar que el perfil manual fue eliminado
+16.  OPTIMIZAR SESSION-RESOURCE-LOADER
+Causa: contextTokens demasiado bajo
+El valor ctx=60000 indica que agents.defaults.contextTokens esta configurado en 60000 (o que el config se redujo por el size-drop protection). Gemini 2.5 Flash soporta hasta 1 millon de tokens.
+Correccion directa via PowerShell (sin openclaw config set)
+Limpiar sesiones bloqueadas
+El session-resource-loader se ralentiza cuando hay sesiones viejas con historial pesado. Limpia periodicamente:
+17.  AUDITORIA DEL GATEWAY
+Scripts de diagnostico disponibles
+Auditoria rapida
+Reparacion automatica
+18.  SCRIPT OPENCLAW-INFO.PS1
+Este script genera un inventario completo del estado de OpenClaw. Es compatible con PowerShell 5.1 (sin operadores ?? ni -Depth en ConvertFrom-Json).
+Como ejecutarlo
+Que muestra
+19.  USO BASICO Y COMANDOS
+Panel web
+Con el gateway activo, abre el navegador en: http://127.0.0.1:18789
+Comandos utiles desde PowerShell
+20.  MANTENIMIENTO Y ACTUALIZACIONES
+20.1  Actualizar OpenClaw
+21.  RESTAURAR DESDE BACKUP
+Cuando restaurar
+Actualizaste y algo dejo de funcionar
+Cambiaste el config y quieres volver atras
+El gateway no arranca por JSON invalido
+Opcion A — Backup rapido (.bak)
+Opcion B — Backup con fecha
+22.  SOLUCION DE PROBLEMAS COMPLETA
+Problema 1: ECONNREFUSED 127.0.0.1:18789
+Problema 2: google:manual timed out
+Problema 3: session-resource-loader muy lento (5-17 segundos)
+Problema 4: Config rechazado (size-drop)
+Problema 5: Config JSON invalido (agents: Unrecognized key)
+Problema 6: ConvertFrom-Json -Depth no funciona
+Problema 7: Skill Perplexity devuelve texto vacio
+Problema 8: Package.json tipo commonjs con script ESM
+Problema 9: Tarea Programada tras actualizacion
+Problema 10: openclaw no se reconoce como comando
+Problema 11: Desinstalar completamente
+23.  BUENAS PRACTICAS DE SEGURIDAD
+Referencias oficiales
+Documentacion oficial: https://docs.openclaw.ai
+Guia Windows: https://docs.openclaw.ai/platforms/windows
+GitHub: https://github.com/openclaw/openclaw
+npm: https://www.npmjs.com/package/openclaw

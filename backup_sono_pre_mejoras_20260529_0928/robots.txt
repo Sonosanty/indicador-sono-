@@ -1,0 +1,31 @@
+# ══════════════════════════════════════════════════
+# robots.txt — Sono Pro
+# ══════════════════════════════════════════════════
+# Permitir indexación de contenido público
+User-agent: *
+Allow: /
+Allow: /#/
+Allow: /#/macro
+Allow: /#/metodo
+
+# No indexar páginas internas de trading
+Disallow: /#/trades
+Disallow: /#/rangos
+Disallow: /#/agentes
+Disallow: /#/dashboard
+Disallow: /#/dashboard_sono
+
+# Crawl delay para no saturar
+Crawl-delay: 10
+
+# Sitemap (si existe)
+Sitemap: https://indicador-sono.pages.dev/sitemap.xml
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /

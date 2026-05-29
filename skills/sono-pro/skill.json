@@ -1,0 +1,25 @@
+{
+  "name": "sono-pro",
+  "version": "1.0.0",
+  "description": "Skill de despliegue y monitoreo para Sono Pro Terminal de Trading",
+  "run": {
+    "command": "node",
+    "args": ["sono-deploy.mjs"]
+  },
+  "triggers": [
+    "despliega sono",
+    "deploy sono pro",
+    "actualiza sono",
+    "publica sono",
+    "estado sono",
+    "monitorea sono"
+  ],
+  "inputs": {
+    "action": {
+      "type": "string",
+      "description": "Acción a ejecutar: deploy | status | monitor | help",
+      "required": false,
+      "default": "deploy"
+    }
+  }
+}

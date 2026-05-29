@@ -14,7 +14,7 @@ import os
 import json
 import time
 import subprocess
-from datetime import datetime
+from datetime import datetime, timedelta
 import math
 
 try:
@@ -435,14 +435,7 @@ def main():
             print(f"[BOT WARNING] No se pudo limpiar órdenes pendientes: {e_clean}")
 
         # F. Registrar estado en caliente
-        next_run = datetime.now() + time.timedelta(seconds=LOOP_INTERVAL) if "timedelta" in dir(time) else datetime.now()
-        # Fallback sencillo de tiempo
-        try:
-            import datetime as dt_lib
-            next_run = datetime.now() + dt_lib.timedelta(seconds=LOOP_INTERVAL)
-        except Exception:
-            pass
-            
+        next_run = datetime.now() + timedelta(seconds=LOOP_INTERVAL)
         update_status_file(balances_map, active_positions, next_run)
         
         print(f"[BOT CYCLE COMPLETE] Durmiendo durante {LOOP_INTERVAL / 60} minutos. Próxima corrida: {next_run.strftime('%Y-%m-%d %H:%M:%S')}")

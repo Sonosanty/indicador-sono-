@@ -1,0 +1,127 @@
+// ═══════════════════════════════════════════════════════════════
+// 🎯 MÉTODO AJRAM - Dashboard Pine Script v5
+// Indicador overlay con Score Maestro, Pilares, Señales y Medias
+// ═══════════════════════════════════════════════════════════════
+//@version=5
+indicator("🎯 MÉTODO AJRAM - Dashboard", overlay=true, max_labels_count=200)
+
+// ═══════════════════════════════════════════
+// INPUTS
+// ═══════════════════════════════════════════
+risk_pct = input.float(2.0, "Riesgo máximo % por trade")
+gap_min = input.float(2.0, "Gap mínimo para señal (%)")
+show_ma200 = input.bool(true, "Mostrar MA200")
+
+// ═══════════════════════════════════════════
+// MEDIAS MÓVILES AJRAM
+// ═══════════════════════════════════════════
+ma6 = ta.sma(close, 6)
+ma40 = ta.sma(close, 40)
+ma70 = ta.sma(close, 70)
+ma200 = ta.sma(close, 200)
+
+plot(ma6, "MA6 Rápida", color=color.new(color.yellow, 0), linewidth=1)
+plot(ma40, "MA40 Media", color=color.new(color.orange, 0), linewidth=1)
+plot(ma70, "MA70 Lenta", color=color.new(color.blue, 0), linewidth=2)
+plot(ma200, "MA200", color=color.new(color.white, 20), linewidth=2, display=show_ma200 ? display.all : display.none)
+
+// ═══════════════════════════════════════════
+// BANDAS DE BOLLINGER
+// ═══════════════════════════════════════════
+[bb_mid, bb_up, bb_dn] = ta.bb(close, 20, 2)
+plot(bb_up, "BB Superior", color=color.new(color.teal, 60), linewidth=1)
+plot(bb_dn, "BB Inferior", color=color.new(color.teal, 60), linewidth=1)
+
+// ═══════════════════════════════════════════
+// DETECCIÓN DE GAP
+// ═══════════════════════════════════════════
+gap_pct = (open - close[1]) / close[1] * 100
+gap_alcist = gap_pct > gap_min
+gap_bajist = gap_pct < -gap_min
+
+// ═══════════════════════════════════════════
+// SEÑALES AJRAM
+// ═══════════════════════════════════════════
+cruce_alc = ta.crossover(ma6, ma70)
+cruce_baj = ta.crossunder(ma6, ma70)
+rebote_dn = close[1] <= bb_dn[1] and close > bb_dn
+rebote_up = close[1] >= bb_up[1] and close < bb_up
+sobre_ma200 = close > ma200
+
+// ═══════════════════════════════════════════
+// SCORE MAESTRO (0-100)
+// ═══════════════════════════════════════════
+score = 0
+score := score + (cruce_alc ? 35 : 0)
+score := score + (cruce_baj ? -35 : 0)
+score := score + (gap_bajist ? 25 : 0)
+score := score + (gap_alcist ? -25 : 0)
+score := score + (rebote_dn ? 20 : 0)
+score := score + (rebote_up ? -20 : 0)
+score := score + (sobre_ma200 ? 10 : 0)
+score := score + (ma6 > ma70 ? 10 : -10)
+
+decision = score >= 30 ? "COMPRA" : score <= -30 ? "VENTA" : "NEUTRO"
+dec_color = score >= 30 ? color.green : score <= -30 ? color.red : color.gray
+score_abs = math.abs(score)
+confianza = math.min(score_abs, 100)
+
+// ═══════════════════════════════════════════
+// DASHBOARD - TABLA PRINCIPAL
+// ═══════════════════════════════════════════
+var table dash = table.new(position.top_left, 2, 9,
+ bgcolor=color.new(color.black, 10),
+ border_color=color.new(color.gray, 40),
+ border_width=1, frame_color=color.gray, frame_width=1)
+
+if barstate.islast
+ table.cell(dash, 0, 0, "🎯 MÉTODO AJRAM", text_color=color.white,
+  bgcolor=color.new(color.navy, 0), text_size=size.small, colspan=2)
+
+ sc_col = score >= 30 ? color.new(color.green,20) : score <= -30 ? color.new(color.red,20) : color.new(color.gray,20)
+ table.cell(dash, 0, 1, "SCORE", text_color=color.silver, bgcolor=color.new(color.black,0), text_size=size.tiny)
+ table.cell(dash, 1, 1, str.tostring(score) + "/100", text_color=color.white, bgcolor=sc_col, text_size=size.normal)
+
+ table.cell(dash, 0, 2, "DECISIÓN", text_color=color.silver, bgcolor=color.new(color.black,0), text_size=size.tiny)
+ table.cell(dash, 1, 2, decision, text_color=color.white, bgcolor=dec_color, text_size=size.normal)
+
+ table.cell(dash, 0, 3, "CONFIANZA", text_color=color.silver, bgcolor=color.new(color.black,0), text_size=size.tiny)
+ table.cell(dash, 1, 3, str.tostring(confianza) + "%", text_color=color.white, bgcolor=color.new(color.black,0), text_size=size.small)
+
+ cr_col = cruce_alc ? color.new(color.green,20) : cruce_baj ? color.new(color.red,20) : color.new(color.gray,40)
+ cr_txt = cruce_alc ? "✅ CRUCE ALCISTA" : cruce_baj ? "❌ CRUCE BAJISTA" : "— Cruce MA"
+ table.cell(dash, 0, 4, "CRUCES MA", text_color=color.silver, bgcolor=color.new(color.black,0), text_size=size.tiny)
+ table.cell(dash, 1, 4, cr_txt, text_color=color.white, bgcolor=cr_col, text_size=size.tiny)
+
+ bb_col = rebote_dn ? color.new(color.green,20) : rebote_up ? color.new(color.red,20) : color.new(color.gray,40)
+ bb_txt = rebote_dn ? "✅ REBOTE INF" : rebote_up ? "❌ REBOTE SUP" : "— Bollinger"
+ table.cell(dash, 0, 5, "BOLLINGER", text_color=color.silver, bgcolor=color.new(color.black,0), text_size=size.tiny)
+ table.cell(dash, 1, 5, bb_txt, text_color=color.white, bgcolor=bb_col, text_size=size.tiny)
+
+ gp_col = gap_bajist ? color.new(color.green,20) : gap_alcist ? color.new(color.red,20) : color.new(color.gray,40)
+ gp_txt = gap_bajist ? "✅ GAP BAJISTA " + str.tostring(math.round(gap_pct,2)) + "%" :
+  gap_alcist ? "❌ GAP ALCISTA +" + str.tostring(math.round(gap_pct,2)) + "%" : "— Sin Gap"
+ table.cell(dash, 0, 6, "GAP", text_color=color.silver, bgcolor=color.new(color.black,0), text_size=size.tiny)
+ table.cell(dash, 1, 6, gp_txt, text_color=color.white, bgcolor=gp_col, text_size=size.tiny)
+
+ table.cell(dash, 0, 7, "MA6 / MA70", text_color=color.silver, bgcolor=color.new(color.black,0), text_size=size.tiny)
+ ma_rel = ma6 > ma70 ? "MA6 > MA70 ✅" : "MA6 < MA70 ❌"
+ ma_col = ma6 > ma70 ? color.new(color.green,40) : color.new(color.red,40)
+ table.cell(dash, 1, 7, ma_rel, text_color=color.white, bgcolor=ma_col, text_size=size.tiny)
+
+ table.cell(dash, 0, 8, "TENDENCIA", text_color=color.silver, bgcolor=color.new(color.black,0), text_size=size.tiny)
+ tend_txt = sobre_ma200 ? "ALCISTA (> MA200)" : "BAJISTA (< MA200)"
+ tend_col = sobre_ma200 ? color.new(color.green,40) : color.new(color.red,40)
+ table.cell(dash, 1, 8, tend_txt, text_color=color.white, bgcolor=tend_col, text_size=size.tiny)
+
+// ═══════════════════════════════════════════
+// SEÑALES VISUALES EN GRÁFICO
+// ═══════════════════════════════════════════
+plotshape(cruce_alc, "Golden Cross MA6×MA70", shape.triangleup,
+ location.belowbar, color.green, size=size.small)
+plotshape(cruce_baj, "Death Cross MA6×MA70", shape.triangledown,
+ location.abovebar, color.red, size=size.small)
+plotshape(rebote_dn, "Rebote Bollinger Inf", shape.circle,
+ location.belowbar, color.aqua, size=size.tiny)
+plotshape(gap_bajist and barstate.isconfirmed[0], "GAP Bajista", shape.labelup,
+ location.belowbar, color.lime, size=size.small, text="GAP↑")

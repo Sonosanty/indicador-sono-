@@ -1,0 +1,64 @@
+{
+  "last_update": "2026-05-26 01:20:14",
+  "bot_active": true,
+  "next_run_scheduled": "2026-05-26 01:35:14",
+  "limit_time": "2026-12-31 23:59:59",
+  "balances": {
+    "BTC": {
+      "free": 0.00014384867242806356,
+      "frozen": 0.0,
+      "total": 0.00014384867242806356
+    },
+    "ETH": {
+      "free": 0.00693808922,
+      "frozen": 0.0,
+      "total": 0.00693808922
+    },
+    "SOL": {
+      "free": 0.13392030635,
+      "frozen": 0.0,
+      "total": 0.13392030635
+    },
+    "USDC": {
+      "free": 0.006407,
+      "frozen": 0.0,
+      "total": 0.006407
+    },
+    "USDT": {
+      "free": 36.662612742278405,
+      "frozen": 0.0,
+      "total": 36.662612742278405
+    },
+    "XRP": {
+      "free": 8.584889398005,
+      "frozen": 0.0,
+      "total": 8.584889398005
+    }
+  },
+  "active_positions": {
+    "BTC": {
+      "qty": 0.00014384867242806356,
+      "usd_val": 11.11,
+      "entry_price": 76443.52,
+      "stop_loss": 73768.0
+    },
+    "ETH": {
+      "qty": 0.00693808922,
+      "usd_val": 14.63,
+      "entry_price": 2095.48,
+      "stop_loss": 2011.0
+    },
+    "SOL": {
+      "qty": 0.13392030635,
+      "usd_val": 11.39,
+      "entry_price": 85.32,
+      "stop_loss": 81.0
+    },
+    "XRP": {
+      "qty": 8.584889398005,
+      "usd_val": 11.59,
+      "entry_price": 1.35,
+      "stop_loss": 1.3
+    }
+  }
+}

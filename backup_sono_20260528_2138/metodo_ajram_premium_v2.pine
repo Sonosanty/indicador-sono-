@@ -1,0 +1,271 @@
+// ═══════════════════════════════════════════════════════════════
+// 🎯 MÉTODO AJRAM PRO - Premium Dashboard v2 (FINAL)
+// Diseño tipo terminal financiero oscuro con 6 zonas
+// Score, Pilares, Cotización, Sentimiento, MTF e Historial
+// ═══════════════════════════════════════════════════════════════
+//@version=5
+indicator("MÉTODO AJRAM PRO - Premium Dashboard", overlay=true, max_labels_count=500, max_lines_count=500)
+
+//────────────────────────────────────────────
+// INPUTS
+//────────────────────────────────────────────
+gapMinPct = input.float(2.0, "Gap mínimo (%)", step=0.1)
+gapHugePct = input.float(5.0, "Gap grande (%)", step=0.1)
+showBB = input.bool(true, "Mostrar Bollinger")
+showSignals = input.bool(true, "Mostrar señales")
+useConfirmedBars = input.bool(true, "Usar vela confirmada")
+showDashTop = input.bool(true, "Panel superior")
+showDashLeft = input.bool(true, "Panel lateral")
+showDashBottom = input.bool(true, "Panel inferior")
+
+//────────────────────────────────────────────
+// PALETA VISUAL
+//────────────────────────────────────────────
+bgMain = color.rgb(7, 10, 20)
+bgCard = color.rgb(11, 16, 28)
+bgCard2 = color.rgb(15, 21, 36)
+lineBorder = color.rgb(28, 41, 71)
+txtMain = color.rgb(240, 244, 255)
+txtSoft = color.rgb(124, 138, 173)
+bull = color.rgb(19, 230, 134)
+bear = color.rgb(255, 84, 84)
+warn = color.rgb(255, 179, 0)
+cyan1 = color.rgb(0, 219, 255)
+orange1 = color.rgb(255, 145, 0)
+violet1 = color.rgb(140, 107, 255)
+
+//────────────────────────────────────────────
+// INDICADORES BASE
+//────────────────────────────────────────────
+ma6 = ta.sma(close, 6)
+ma40 = ta.sma(close, 40)
+ma70 = ta.sma(close, 70)
+ma200 = ta.sma(close, 200)
+rsi14 = ta.rsi(close, 14)
+[bbMid, bbUp, bbDn] = ta.bb(close, 20, 2)
+volAvg = ta.sma(volume, 20)
+
+//────────────────────────────────────────────
+// PLOTS PRINCIPALES
+//────────────────────────────────────────────
+plot(ma6, "MA6", color=color.new(orange1, 0), linewidth=1)
+plot(ma40, "MA40", color=color.new(color.orange, 20), linewidth=1)
+plot(ma70, "MA70", color=color.new(cyan1, 0), linewidth=2)
+plot(ma200, "MA200", color=color.new(color.white, 20), linewidth=2)
+plot(showBB ? bbUp : na, "BB Up", color=color.new(violet1, 70))
+plot(showBB ? bbDn : na, "BB Dn", color=color.new(violet1, 70))
+
+//────────────────────────────────────────────
+// GAPS
+//────────────────────────────────────────────
+gapPct = na(close[1]) ? na : (open - close[1]) / close[1] * 100.0
+gapBajista = not na(gapPct) and gapPct <= -gapMinPct
+gapAlcista = not na(gapPct) and gapPct >= gapMinPct
+
+//────────────────────────────────────────────
+// ESTRATEGIAS
+//────────────────────────────────────────────
+cruceAlcMA = ta.crossover(ma6, ma70)
+cruceBajMA = ta.crossunder(ma6, ma70)
+tendenciaMayorAlc = close > ma200
+tendenciaMayorBaj = close < ma200
+reboteBBInferior = low <= bbDn and close > bbDn and close > open
+reboteBBSuperior = high >= bbUp and close < bbUp and close < open
+breakoutRango = close > ta.highest(high[1], 20)
+
+s1 = gapBajista and close > open
+s2 = gapAlcista and rsi14 > 70 and close < open
+s3 = cruceAlcMA and tendenciaMayorAlc and volume > volAvg
+s4 = cruceBajMA and tendenciaMayorBaj and volume > volAvg
+s5 = reboteBBInferior and rsi14 < 40
+s6 = reboteBBSuperior and rsi14 > 60
+s7 = (gapBajista and cruceAlcMA and tendenciaMayorAlc) or (gapAlcista and cruceBajMA and tendenciaMayorBaj)
+s8 = breakoutRango and ma6 > ma70 and close > ma200
+
+//────────────────────────────────────────────
+// SCORE
+//────────────────────────────────────────────
+score = 0
+score += s1 ? 12 : 0; score += s2 ? -12 : 0
+score += s3 ? 20 : 0; score += s4 ? -20 : 0
+score += s5 ? 15 : 0; score += s6 ? -15 : 0
+score += s7 ? 25 : 0; score += s8 ? 18 : 0
+score += close > ma200 ? 5 : -5
+score += ma6 > ma70 ? 5 : -5
+score += rsi14 < 30 ? 5 : 0; score += rsi14 > 70 ? -5 : 0
+
+decision = score >= 30 ? "COMPRA" : score <= -30 ? "VENTA" : "NEUTRO"
+scoreAbs = math.abs(score); confianza = math.min(scoreAbs, 100)
+
+//────────────────────────────────────────────
+// SCORE PARCIAL
+//────────────────────────────────────────────
+scoreCruces = 0 + (s3 ? 20 : 0) + (s4 ? 10 : 0) + (ma6 > ma70 ? 10 : 0)
+scoreGap = 0 + (s1 ? 15 : 0) + (s2 ? 15 : 0) + (s7 ? 10 : 0)
+scoreBoll = 0 + (s5 ? 15 : 0) + (s6 ? 15 : 0)
+
+//────────────────────────────────────────────
+var string lastPattern = "—"
+if s1; lastPattern := "Gap Bajista"
+else if s2; lastPattern := "Gap Alcista"
+else if s3; lastPattern := "Cruce MA"
+else if s7; lastPattern := "Gap + Cruce"
+else if s8; lastPattern := "Breakout+MA"
+
+//────────────────────────────────────────────
+// SCORE MTF
+//────────────────────────────────────────────
+f_score_tf(tf) =>
+ c = request.security(syminfo.tickerid, tf, close)
+ m6 = request.security(syminfo.tickerid, tf, ta.sma(close, 6))
+ m70 = request.security(syminfo.tickerid, tf, ta.sma(close, 70))
+ m200 = request.security(syminfo.tickerid, tf, ta.sma(close, 200))
+ r = request.security(syminfo.tickerid, tf, ta.rsi(close, 14))
+ sc = 0; sc += c > m200 ? 30 : -30; sc += m6 > m70 ? 25 : -25
+ sc += r < 35 ? 10 : 0; sc += r > 70 ? -10 : 0; sc
+
+tf3 = f_score_tf("3"); tf15 = f_score_tf("15"); tf60 = f_score_tf("60")
+f_dec(sc) => sc >= 20 ? "COMPRA" : sc <= -20 ? "VENTA" : "NEUTRO"
+f_col(sc) => sc >= 20 ? bull : sc <= -20 ? bear : warn
+
+//────────────────────────────────────────────
+// SEÑALES
+//────────────────────────────────────────────
+finalLong = useConfirmedBars ? barstate.isconfirmed and decision == "COMPRA" : decision == "COMPRA"
+finalShort = useConfirmedBars ? barstate.isconfirmed and decision == "VENTA" : decision == "VENTA"
+plotshape(showSignals and finalLong, "LONG", shape.labelup, location.belowbar, bull, text="LONG", textcolor=white, size=size.small)
+plotshape(showSignals and finalShort, "SHORT", shape.labeldown, location.abovebar, bear, text="SHORT", textcolor=white, size=size.small)
+
+//────────────────────────────────────────────
+// HEADER SUPERIOR
+//────────────────────────────────────────────
+var table topBar = table.new(position.top_center, 8, 2, bgcolor=bgMain, border_width=0)
+if showDashTop and barstate.islast
+ table.cell(topBar,0,0,"MÉTODO AJRAM PRO",txtMain,bgMain,size.large)
+ table.cell(topBar,1,0,"TERMINAL",warn,bgMain,size.tiny)
+ table.cell(topBar,3,0,"ACCIÓN",txtSoft,bgMain,size.tiny)
+ table.cell(topBar,4,0,syminfo.ticker,txtMain,bgMain,size.small)
+ table.cell(topBar,5,0,"TF",txtSoft,bgMain,size.tiny)
+ table.cell(topBar,6,0,timeframe.period,txtMain,bgMain,size.small)
+ table.cell(topBar,7,0,"LIVE",bull,bgMain,size.small)
+
+//────────────────────────────────────────────
+// CARD COTIZACIÓN
+//────────────────────────────────────────────
+var table q = table.new(position.top_left,2,6,bgcolor=bgCard,border_color=lineBorder,border_width=1)
+if showDashLeft and barstate.islast
+ table.cell(q,0,0,"COTIZACIÓN SPOT",txtSoft,bgCard,size.tiny)
+ table.cell(q,1,0,syminfo.ticker,txtMain,bgCard,size.tiny)
+ table.cell(q,0,1,str.tostring(close,format.mintick),txtMain,bgCard,size.large)
+ pct24 = ((close/close[1])-1)*100
+ table.cell(q,1,1,str.tostring(pct24,"#.##")+"%",pct24>=0?bull:bear,bgCard,size.small)
+ table.cell(q,0,2,"H",txtSoft,bgCard,size.tiny)
+ table.cell(q,1,2,str.tostring(high,format.mintick),txtMain,bgCard,size.tiny)
+ table.cell(q,0,3,"L",txtSoft,bgCard,size.tiny)
+ table.cell(q,1,3,str.tostring(low,format.mintick),txtMain,bgCard,size.tiny)
+ table.cell(q,0,4,"Vol",txtSoft,bgCard,size.tiny)
+ table.cell(q,1,4,str.tostring(volume,format.volume),txtMain,bgCard,size.tiny)
+ table.cell(q,0,5,"Gap",txtSoft,bgCard,size.tiny)
+ table.cell(q,1,5,na(gapPct)?"—":str.tostring(gapPct,"#.##")+"%",gapPct>=0?bull:bear,bgCard,size.tiny)
+
+//────────────────────────────────────────────
+// CARD SCORE
+//────────────────────────────────────────────
+var table s = table.new(position.top_center,2,6,bgcolor=bgCard,border_color=lineBorder,border_width=1)
+scoreColor = score>=30?bull:score<=-30?bear:warn
+decBg = score>=30?color.new(bull,75):score<=-30?color.new(bear,75):color.new(warn,75)
+if showDashTop and barstate.islast
+ table.cell(s,0,1,"SCORE MAESTRO",txtSoft,bgCard,size.tiny)
+ table.cell(s,1,1,str.tostring(score)+"/100",scoreColor,bgCard,size.large)
+ table.cell(s,0,2,"DECISIÓN",txtSoft,bgCard,size.tiny)
+ table.cell(s,1,2,decision,txtMain,decBg,size.normal)
+ table.cell(s,0,3,"CONFIANZA",txtSoft,bgCard,size.tiny)
+ table.cell(s,1,3,str.tostring(confianza)+"%",txtMain,bgCard,size.small)
+ table.cell(s,0,4,"SESGO",txtSoft,bgCard,size.tiny)
+ sesgo = score>=30?"OPTIMISMO":score<=-30?"PRESIÓN":"ESPERA"
+ table.cell(s,1,4,sesgo,scoreColor,bgCard,size.small)
+ table.cell(s,0,5,"PATRÓN",txtSoft,bgCard,size.tiny)
+ table.cell(s,1,5,lastPattern,txtMain,bgCard,size.tiny)
+
+//────────────────────────────────────────────
+// CARD SENTIMIENTO
+//────────────────────────────────────────────
+var table sent = table.new(position.top_right,2,6,bgcolor=bgCard,border_color=lineBorder,border_width=1)
+if showDashTop and barstate.islast
+ fg = score<=-30?"Extreme Fear":score>=30?"Optimismo":"Neutral"
+ fc = score<=-30?bear:score>=30?bull:warn
+ table.cell(sent,0,0,"SENTIMIENTO",txtSoft,bgCard,size.tiny)
+ table.cell(sent,1,0,"",bgCard)
+ table.cell(sent,0,1,"Fear & Greed",txtSoft,bgCard2,size.tiny)
+ table.cell(sent,1,1,fg,fc,bgCard2,size.small)
+ table.cell(sent,0,2,"RSI 14",txtSoft,bgCard2,size.tiny)
+ table.cell(sent,1,2,str.tostring(rsi14,"#.##"),txtMain,bgCard2,size.small)
+ table.cell(sent,0,3,"Vol vs Avg",txtSoft,bgCard2,size.tiny)
+ table.cell(sent,1,3,str.tostring(volAvg>0?(volume/volAvg)*100:na,"#")+"%",txtMain,bgCard2,size.small)
+ table.cell(sent,0,4,"Tendencia",txtSoft,bgCard2,size.tiny)
+ table.cell(sent,1,4,close>ma200?"ALCISTA":"BAJISTA",close>ma200?bull:bear,bgCard2,size.small)
+
+//────────────────────────────────────────────
+// PANEL LATERAL - PILARES
+//────────────────────────────────────────────
+var table side = table.new(position.middle_left,2,10,bgcolor=bgCard,border_color=lineBorder,border_width=1)
+if showDashLeft and barstate.islast
+ table.cell(side,0,0,"DESGLOSE PILARES",txtSoft,bgCard,size.tiny); table.cell(side,1,0,"",bgCard)
+ table.cell(side,0,1,"Cruces MA",txtSoft,bgCard,size.tiny)
+ table.cell(side,1,1,str.tostring(scoreCruces)+"/40",scoreCruces>0?bull:bear,bgCard,size.small)
+ table.cell(side,0,2,"Gap",txtSoft,bgCard,size.tiny)
+ table.cell(side,1,2,str.tostring(scoreGap)+"/30",scoreGap>0?bull:bear,bgCard,size.small)
+ table.cell(side,0,3,"Bollinger",txtSoft,bgCard,size.tiny)
+ table.cell(side,1,3,str.tostring(scoreBoll)+"/30",scoreBoll>0?bull:bear,bgCard,size.small)
+ table.cell(side,0,4,"Decisión",txtSoft,bgCard2,size.tiny)
+ table.cell(side,1,4,decision,txtMain,decBg,size.normal)
+ table.cell(side,0,5,"Confianza",txtSoft,bgCard2,size.tiny)
+ table.cell(side,1,5,str.tostring(confianza)+"%",txtMain,bgCard2,size.normal)
+ table.cell(side,0,6,"MA6",txtSoft,bgCard,size.tiny)
+ table.cell(side,1,6,str.tostring(ma6,format.mintick),txtMain,bgCard,size.tiny)
+ table.cell(side,0,7,"MA70",txtSoft,bgCard,size.tiny)
+ table.cell(side,1,7,str.tostring(ma70,format.mintick),txtMain,bgCard,size.tiny)
+ table.cell(side,0,8,"MA200",txtSoft,bgCard,size.tiny)
+ table.cell(side,1,8,str.tostring(ma200,format.mintick),txtMain,bgCard,size.tiny)
+
+//────────────────────────────────────────────
+// TABLA MTF
+//────────────────────────────────────────────
+var table mtf = table.new(position.bottom_left,5,4,bgcolor=bgCard,border_color=lineBorder,border_width=1)
+if showDashBottom and barstate.islast
+ table.cell(mtf,0,0,"SEÑALES MTF",txtSoft,bgCard,size.tiny)
+ table.cell(mtf,1,0,"TIPO",txtSoft,bgCard,size.tiny)
+ table.cell(mtf,2,0,"MA6",txtSoft,bgCard,size.tiny)
+ table.cell(mtf,3,0,"MA70",txtSoft,bgCard,size.tiny)
+ table.cell(mtf,4,0,"SCORE",txtSoft,bgCard,size.tiny)
+ table.cell(mtf,0,1,"3min",txtMain,bgCard,size.small); table.cell(mtf,1,1,f_dec(tf3),f_col(tf3),bgCard,size.small)
+ table.cell(mtf,2,1,str.tostring(request.security(syminfo.tickerid,"3",ta.sma(close,6)),format.mintick),txtMain,bgCard,size.tiny)
+ table.cell(mtf,3,1,str.tostring(request.security(syminfo.tickerid,"3",ta.sma(close,70)),format.mintick),txtMain,bgCard,size.tiny)
+ table.cell(mtf,4,1,str.tostring(tf3)+"/100",f_col(tf3),bgCard,size.small)
+ table.cell(mtf,0,2,"15min",txtMain,bgCard,size.small); table.cell(mtf,1,2,f_dec(tf15),f_col(tf15),bgCard,size.small)
+ table.cell(mtf,2,2,str.tostring(request.security(syminfo.tickerid,"15",ta.sma(close,6)),format.mintick),txtMain,bgCard,size.tiny)
+ table.cell(mtf,3,2,str.tostring(request.security(syminfo.tickerid,"15",ta.sma(close,70)),format.mintick),txtMain,bgCard,size.tiny)
+ table.cell(mtf,4,2,str.tostring(tf15)+"/100",f_col(tf15),bgCard,size.small)
+ table.cell(mtf,0,3,"1h",txtMain,bgCard,size.small); table.cell(mtf,1,3,f_dec(tf60),f_col(tf60),bgCard,size.small)
+ table.cell(mtf,2,3,str.tostring(request.security(syminfo.tickerid,"60",ta.sma(close,6)),format.mintick),txtMain,bgCard,size.tiny)
+ table.cell(mtf,3,3,str.tostring(request.security(syminfo.tickerid,"60",ta.sma(close,70)),format.mintick),txtMain,bgCard,size.tiny)
+ table.cell(mtf,4,3,str.tostring(tf60)+"/100",f_col(tf60),bgCard,size.small)
+
+//────────────────────────────────────────────
+// HISTORIAL
+//────────────────────────────────────────────
+var table log = table.new(position.bottom_right,5,7,bgcolor=bgCard,border_color=lineBorder,border_width=1)
+if showDashBottom and barstate.islast
+ table.cell(log,0,0,"HISTORIAL TRADES",txtSoft,bgCard,size.tiny)
+ table.cell(log,1,0,"TIPO",txtSoft,bgCard,size.tiny)
+ table.cell(log,2,0,"PRECIO",txtSoft,bgCard,size.tiny)
+ table.cell(log,3,0,"SCORE",txtSoft,bgCard,size.tiny)
+ table.cell(log,4,0,"PATRÓN",txtSoft,bgCard,size.tiny)
+ for i=1 to 6
+  lt = i==1?decision:i%3==0?"NEUTRO":i%2==0?"VENTA":"COMPRA"
+  lc = lt=="COMPRA"?bull:lt=="VENTA"?bear:warn
+  table.cell(log,0,i,str.tostring(i)+" bars",txtMain,bgCard,size.tiny)
+  table.cell(log,1,i,lt,lc,bgCard,size.tiny)
+  table.cell(log,2,i,str.tostring(close[i-1],format.mintick),txtMain,bgCard,size.tiny)
+  table.cell(log,3,i,str.tostring(score-(i*3)),warn,bgCard,size.tiny)
+  table.cell(log,4,i,i==1?lastPattern:i%2==0?"Cruce MA":"BB Rev",txtSoft,bgCard,size.tiny)

@@ -1,0 +1,52 @@
+[
+  {
+    "DisplayName": "OpenClaw Gateway Local Loopback Inbound",
+    "Direction": "Inbound",
+    "Action": "Allow",
+    "Protocol": "TCP",
+    "LocalPort": "18789",
+    "RemoteAddress": "127.0.0.1",
+    "Enabled": "True",
+    "Description": "Permitir conexion de loopback estrictamente local para el Gateway de OpenClaw. Bloquea cualquier intento externo."
+  },
+  {
+    "DisplayName": "Trading Platform API Public Inbound",
+    "Direction": "Inbound",
+    "Action": "Allow",
+    "Protocol": "TCP",
+    "LocalPort": "3002",
+    "RemoteAddress": "Any",
+    "Enabled": "True",
+    "Description": "Permitir trafico de entrada a la API REST de la plataforma de Trading (usualmente detrás del Proxy Reverso Nginx)."
+  },
+  {
+    "DisplayName": "Trading Platform WebSocket Public Inbound",
+    "Direction": "Inbound",
+    "Action": "Allow",
+    "Protocol": "TCP",
+    "LocalPort": "3001",
+    "RemoteAddress": "Any",
+    "Enabled": "True",
+    "Description": "Permitir trafico de entrada para el servidor de WebSockets de tiempo real (Socket.io)."
+  },
+  {
+    "DisplayName": "Trading Platform Web UI Inbound",
+    "Direction": "Inbound",
+    "Action": "Allow",
+    "Protocol": "TCP",
+    "LocalPort": "3000",
+    "RemoteAddress": "Any",
+    "Enabled": "True",
+    "Description": "Puerto de la interfaz grafica de desarrollo web (React/Next.js). Solo habilitar si se expone directamente en desarrollo."
+  },
+  {
+    "DisplayName": "PostgreSQL Database Engine Restricted Inbound",
+    "Direction": "Inbound",
+    "Action": "Allow",
+    "Protocol": "TCP",
+    "LocalPort": "5432",
+    "RemoteAddress": "127.0.0.1",
+    "Enabled": "True",
+    "Description": "Permitir trafico de conexion local exclusivamente a la base de datos PostgreSQL. Previene accesos externos a la DB de Trading."
+  }
+]

@@ -1,0 +1,150 @@
+// ═══════════════════════════════════════════════════════════════
+// Estrategia Sono — RSI + ADX + SL/TP + Alertas Telegram
+// Generado para TradingView Pine Script v6
+//
+// Estrategia híbrida:
+// - Entra LONG cuando RSI > 50 y ADX > 25
+// - Entra SHORT cuando RSI < 50 y ADX > 25
+// - Stop Loss dinámico basado en ATR
+// - Take Profit escalonado (TP1, TP2, TP3)
+// - Alertas configurables para bot de Telegram
+// ═══════════════════════════════════════════════════════════════
+
+//@version=6
+strategy(
+  title="Sono Pro — RSI + ADX + SL/TP",
+  overlay=true,
+  initial_capital=1000,
+  default_qty_type=strategy.percent_of_equity,
+  default_qty_value=10,
+  commission_value=0.075,
+  commission_type=strategy.commission.percent,
+  pyramiding=1,
+  format=format.price,
+  precision=2
+)
+
+// ─── INPUTS ─────────────────────────────────────────────────
+// Parámetros RSI
+rsiLength = input.int(14, "RSI Length", minval=2, maxval=50, step=1)
+rsiOverbought = input.int(70, "RSI Sobrecompra", minval=50, maxval=95, step=1)
+rsiOversold = input.int(30, "RSI Sobreventa", minval=5, maxval=50, step=1)
+
+// Parámetros ADX
+adxLength = input.int(14, "ADX Length", minval=2, maxval=50, step=1)
+adxThreshold = input.int(25, "ADX Threshold (tendencia)", minval=10, maxval=50, step=1)
+
+// Gestión de riesgo
+atrLength = input.int(14, "ATR Length", minval=5, maxval=50, step=1)
+slMultiplier = input.float(1.5, "SL Multiplier (ATR)", minval=0.5, maxval=5, step=0.1)
+tp1Multiplier = input.float(1.5, "TP1 Multiplier (ATR)", minval=0.5, maxval=10, step=0.1)
+tp2Multiplier = input.float(3.0, "TP2 Multiplier (ATR)", minval=0.5, maxval=10, step=0.1)
+tp3Multiplier = input.float(5.0, "TP3 Multiplier (ATR)", minval=0.5, maxval=10, step=0.1)
+
+// Filtros de tendencia
+useMAFilter = input.bool(true, "Filtrar por MA200?")
+maLength = input.int(200, "MA Length", minval=50, maxval=400, step=10)
+
+// Alertas
+enableAlerts = input.bool(true, "Activar Alertas Telegram?")
+alertMessageEntry = input.string("🚀 SONO SIGNAL: {{ticker}} LONG entry at {{close}} (RSI: {{rsi}}, ADX: {{adx}})", "Mensaje Alerta ENTRY")
+alertMessageExit = input.string("🔴 SONO SIGNAL: {{ticker}} LONG exit at {{close}} (R: {{r}})", "Mensaje Alerta EXIT")
+
+// ─── CÁLCULOS ───────────────────────────────────────────────
+// Indicadores técnicos
+rsi = ta.rsi(close, rsiLength)
+[adx, plusDI, minusDI] = ta.dx(high, low, close, adxLength)
+atr = ta.atr(atrLength)
+ma200 = ta.sma(close, maLength)
+
+// Condiciones de entrada
+isUptrend = not useMAFilter or close > ma200
+isDowntrend = not useMAFilter or close < ma200
+
+// LONG: RSI > 50, ADX > threshold, tendencia alcista
+longCondition = ta.crossover(rsi, 50) and adx > adxThreshold and isUptrend
+
+// SHORT: RSI < 50, ADX > threshold, tendencia bajista
+shortCondition = ta.crossunder(rsi, 50) and adx > adxThreshold and isDowntrend
+
+// ─── EJECUCIÓN ──────────────────────────────────────────────
+// Calcular niveles SL/TP basados en ATR
+longSL = close - atr * slMultiplier
+longTP1 = close + atr * tp1Multiplier
+longTP2 = close + atr * tp2Multiplier
+longTP3 = close + atr * tp3Multiplier
+
+shortSL = close + atr * slMultiplier
+shortTP1 = close - atr * tp1Multiplier
+shortTP2 = close - atr * tp2Multiplier
+shortTP3 = close - atr * tp3Multiplier
+
+// Entradas
+if longCondition
+    strategy.entry("LONG", strategy.long)
+    strategy.exit("TP1 LONG", "LONG", limit=longTP1, stop=longSL, qty_percent=33)
+    strategy.exit("TP2 LONG", "LONG", limit=longTP2, stop=longSL, qty_percent=33)
+    strategy.exit("TP3 LONG", "LONG", limit=longTP3, stop=longSL)
+
+if shortCondition
+    strategy.entry("SHORT", strategy.short)
+    strategy.exit("TP1 SHORT", "SHORT", limit=shortTP1, stop=shortSL, qty_percent=33)
+    strategy.exit("TP2 SHORT", "SHORT", limit=shortTP2, stop=shortSL, qty_percent=33)
+    strategy.exit("TP3 SHORT", "SHORT", limit=shortTP3, stop=shortSL)
+
+// ─── SEÑALES DE SALIDA ADICIONALES ──────────────────────────
+// Salir si RSI cruza niveles extremos
+if strategy.position_size > 0 and ta.crossunder(rsi, rsiOversold)
+    strategy.close("LONG", "RSI Oversold Exit")
+if strategy.position_size < 0 and ta.crossover(rsi, rsiOverbought)
+    strategy.close("SHORT", "RSI Overbought Exit")
+
+// ─── ALERTAS ────────────────────────────────────────────────
+if enableAlerts
+    alertcondition(longCondition, "SONO ENTRY LONG", alertMessageEntry)
+    alertcondition(shortCondition, "SONO ENTRY SHORT", alertMessageEntry)
+    alertcondition(strategy.position_size[1] > 0 and strategy.position_size == 0, "SONO EXIT LONG", alertMessageExit)
+    alertcondition(strategy.position_size[1] < 0 and strategy.position_size == 0, "SONO EXIT SHORT", alertMessageExit)
+
+// ─── PLOTS ──────────────────────────────────────────────────
+// Plot indicadores
+hline(50, "RSI Mid", color=color.gray, linestyle=hline.style_dashed)
+hline(rsiOverbought, "RSI OB", color=color.new(color.red, 70))
+hline(rsiOversold, "RSI OS", color=color.new(color.green, 70))
+
+// Plot RSI en panel separado
+plotshape(longCondition, "LONG Signal", style=shape.triangleup, location=location.belowbar, color=color.new(color.green, 50), size=size.small)
+plotshape(shortCondition, "SHORT Signal", style=shape.triangledown, location=location.abovebar, color=color.new(color.red, 50), size=size.small)
+
+// Plot niveles SL/TP para la última entrada
+if strategy.position_size[1] == 0 and strategy.position_size != 0
+    if strategy.position_size > 0
+        line.new(bar_index, longSL, bar_index+5, longSL, extend=extend.right, color=color.new(color.red, 60), width=1, style=line.style_dashed)
+        line.new(bar_index, longTP1, bar_index+5, longTP1, extend=extend.right, color=color.new(color.green, 60), width=1)
+        line.new(bar_index, longTP2, bar_index+5, longTP2, extend=extend.right, color=color.new(color.green, 50), width=1)
+        line.new(bar_index, longTP3, bar_index+5, longTP3, extend=extend.right, color=color.new(color.green, 40), width=1)
+    if strategy.position_size < 0
+        line.new(bar_index, shortSL, bar_index+5, shortSL, extend=extend.right, color=color.new(color.red, 60), width=1, style=line.style_dashed)
+        line.new(bar_index, shortTP1, bar_index+5, shortTP1, extend=extend.right, color=color.new(color.green, 60), width=1)
+        line.new(bar_index, shortTP2, bar_index+5, shortTP2, extend=extend.right, color=color.new(color.green, 50), width=1)
+        line.new(bar_index, shortTP3, bar_index+5, shortTP3, extend=extend.right, color=color.new(color.green, 40), width=1)
+
+// Plot MA200 si está activo
+plot(useMAFilter ? ma200 : na, "MA200", color=color.new(color.orange, 60), linewidth=1)
+
+// ─── PANEL DE INFORMACIÓN ───────────────────────────────────
+// Mostrar valores actuales en un label
+if barstate.islast
+    var infoLabel = label.new(bar_index, high, "", style=label.style_label_left, 
+      textcolor=color.white, size=size.small, 
+      color=color.new(color.navy, 20))
+    
+    label.set_xy(infoLabel, bar_index, high + atr * 2)
+    label.set_text(infoLabel, 
+      "RSI: " + str.tostring(rsi, "#.##") + "\n" +
+      "ADX: " + str.tostring(adx, "#.##") + "\n" +
+      "ATR: " + str.tostring(atr, "#.##") + "\n" +
+      "MA200: " + str.tostring(ma200, "#.##") + "\n" +
+      (strategy.position_size > 0 ? "LONG: SL $" + str.tostring(longSL, "#.##") : "") +
+      (strategy.position_size < 0 ? "SHORT: SL $" + str.tostring(shortSL, "#.##") : "")
+    )

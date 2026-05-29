@@ -15,6 +15,7 @@ el bloat y peso de almacenamiento (JSON ultra-optimizado).
 
 import os
 import json
+import time
 import pandas as pd
 import sqlite3
 import urllib.request
@@ -86,7 +87,22 @@ def fetch_live_fear_greed():
     return None
 
 def fetch_live_google_trends():
-    """Obtiene el volumen de búsquedas de Bitcoin de Google Trends vía pytrends"""
+    """Obtiene el volumen de búsquedas de Bitcoin de Google Trends vía pytrends con caché de 3 horas para evitar límites de API (HTTP 429)"""
+    cache_path = "indicador_btc/data/google_trends_cache.json"
+    cache_duration = 10800  # 3 horas en segundos
+    
+    # Intentar leer caché existente
+    if os.path.exists(cache_path):
+        try:
+            with open(cache_path, 'r', encoding='utf-8') as f:
+                cache_data = json.load(f)
+            timestamp = cache_data.get("timestamp", 0)
+            if time.time() - timestamp < cache_duration:
+                print(f"  -> [CACHÉ] Usando Google Trends desde caché local: {cache_data.get('value')} (guardado hace {int(time.time() - timestamp)}s)")
+                return cache_data.get("value")
+        except Exception as e:
+            print(f"  -> [WARNING] Error leyendo caché de Google Trends: {e}")
+
     try:
         print("[APIS] Obteniendo tendencia de Google Trends para 'bitcoin'...")
         pytrends = TrendReq(hl='en-US', tz=360, timeout=10)
@@ -95,9 +111,29 @@ def fetch_live_google_trends():
         if not data.empty and 'bitcoin' in data:
             vol = int(data['bitcoin'].iloc[-1])
             print(f"  -> Google Trends BTC obtenido: {vol}")
+            
+            # Guardar en caché
+            try:
+                os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+                with open(cache_path, 'w', encoding='utf-8') as f:
+                    json.dump({"timestamp": time.time(), "value": vol}, f, indent=2)
+            except Exception as e:
+                print(f"  -> [WARNING] Error guardando caché de Google Trends: {e}")
+                
             return vol
     except Exception as e:
         print(f"  -> [WARNING] Google Trends limitado o falló: {e}")
+        
+    # Si falla, intentar usar el valor del caché expirado antes de recurrir a 50 por defecto
+    if os.path.exists(cache_path):
+        try:
+            with open(cache_path, 'r', encoding='utf-8') as f:
+                cache_data = json.load(f)
+            print(f"  -> [FALLBACK] Usando caché expirado para Google Trends: {cache_data.get('value')}")
+            return cache_data.get("value")
+        except Exception:
+            pass
+            
     return 50  # Valor neutral por defecto
 
 def scrape_scalping_trades():

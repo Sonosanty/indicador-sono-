@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Sono Pro — Terminal de Trading Cuantitativo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#060a12;color:#e2e8f0;font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
+#loadOverlay{position:fixed;inset:0;background:#060a12;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:16px}
+#loadOverlay.hidden{display:none}
+#app{opacity:0;transition:opacity .5s}
+.spinner{width:36px;height:36px;border:3px solid #1a2a40;border-top-color:#16a34a;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.nav{display:flex;gap:6px;padding:14px 18px;background:#0a1628;border-bottom:1px solid #1a2a40;align-items:center}
+.nav .brand{color:#e2e8f0;font-weight:700;font-size:14px;margin-right:20px}
+.nav a{color:#64748b;text-decoration:none;padding:5px 16px;border-radius:999px;font-size:12px;font-weight:500;transition:all .2s}
+.nav a.active,.nav a:hover{background:#16a34a18;color:#16a34a}
+.row{display:flex;gap:12px;padding:12px 18px;flex-wrap:wrap}
+.card{background:#0a1628;border:1px solid #1a2a40;border-radius:14px;padding:16px;flex:1;min-width:160px}
+.card h3{color:#64748b;font-size:10px;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;font-weight:500}
+.card .val{font-size:22px;font-weight:600;font-family:'JetBrains Mono',Consolas,monospace}
+.card .sub{color:#64748b;font-size:11px;margin-top:4px}
+.card .badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:10px;font-weight:600;margin-top:6px}
+.green{color:#16a34a}.red{color:#dc2626}.gold{color:#c9a84c}
+.neutral{color:#64748b}.teal{color:#14b8a6}
+</style>
+</head>
+<body>
+<div id="loadOverlay"><div class="spinner"></div><div style="color:#64748b;font-size:13px">Cargando datos de Binance...</div></div>
+<div id="app">
+<div class="nav"><span class="brand">SONO PRO</span><a href="/" class="">Macro</a><a href="/dashboard_sono/" class="active">Dashboard</a><a href="/trades/">Trades</a></div>
+<div class="row" id="tickerRow"></div>
+<div class="row"><div class="card" id="scoreCard"><h3>SCORE MAESTRO</h3><div class="val" id="scoreVal">--</div><div class="sub" id="signalVal">Cargando...</div></div></div>
+</div>
+
+<script>
+const ASSETS_CFG={BTC:{sym:'BTCUSDT',dec:2,col:'#F7931A'},ETH:{sym:'ETHUSDT',dec:2,col:'#627EEA'},SOL:{sym:'SOLUSDT',dec:3,col:'#9945FF'},XRP:{sym:'XRPUSDT',dec:4,col:'#00AAE4'}};
+const API='https://api.binance.com/api/v3';
+let tickers={},activeAsset='BTC';
+const el=(id,txt)=>{const e=document.getElementById(id);if(e)e.textContent=txt};
+const fmt=(n,d)=>{if(n==null)return'--';return Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d})};
+const elC=(id,cls)=>{const e=document.getElementById(id);if(e)e.className=cls};
+
+async function loadTicker(k){
+  try{
+    const r=await fetch(API+'/ticker/24hr?symbol='+ASSETS_CFG[k].sym,{signal:AbortSignal.timeout(8000)});
+    const d=await r.json();
+    tickers[k]={price:+d.lastPrice,change:+d.priceChangePercent};
+  }catch(e){tickers[k]={price:null,change:null};console.warn(k+' error:',e.message)}
+}
+
+function renderTickers(){
+  const row=document.getElementById('tickerRow');
+  if(!row)return;
+  const html=Object.keys(ASSETS_CFG).map(k=>{
+    const t=tickers[k];
+    if(!t||t.price==null)return'<div class="card" style="min-width:110px"><h3>'+k+'</h3><div class="val neutral">--</div><div class="sub neutral">--</div></div>';
+    const c=t.change>=0?'green':'red';
+    return'<div class="card" style="min-width:110px;border-left:3px solid '+ASSETS_CFG[k].col+'"><h3>'+k+'</h3><div class="val '+c+'">$'+fmt(t.price,ASSETS_CFG[k].dec)+'</div><div class="sub '+c+'">'+(t.change>=0?'+':'')+t.change.toFixed(2)+'% 24h</div></div>';
+  }).join('');
+  row.innerHTML=html;
+  elC('scoreCard','card');
+  const loaded=Object.values(tickers).filter(t=>t&&t.price!=null).length;
+  el('scoreVal',loaded+'/'+Object.keys(ASSETS_CFG).length);
+  el('signalVal',loaded===Object.keys(ASSETS_CFG).length?'✅ TODOS LOS ACTIVOS CARGADOS':'Cargando... ('+loaded+'/'+Object.keys(ASSETS_CFG).length+')');
+}
+
+async function init(){
+  await Promise.all(Object.keys(ASSETS_CFG).map(k=>loadTicker(k).catch(()=>{})));
+  renderTickers();
+  setTimeout(()=>{
+    document.getElementById('loadOverlay').classList.add('hidden');
+    document.getElementById('app').style.opacity='1';
+  },300);
+}
+init();
+</script>
+</body>
+</html>
