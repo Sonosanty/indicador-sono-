@@ -12,7 +12,7 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
 
 # ─── CSP estricto para la SPA (HashRouter) ───
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://api.binance.com wss://stream.binance.com wss://stream.binance.com:9443 https://api.coingecko.com https://api.alternative.me https://vix-proxy.sonosanty.workers.dev; img-src 'self' data: https:; frame-ancestors 'none'; form-action 'self'; base-uri 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://api.binance.com wss://stream.binance.com wss://stream.binance.com:9443 https://api.coingecko.com https://api.alternative.me https://vix-proxy.sonosanty.workers.dev; img-src 'self' data: https:; frame-ancestors 'none'; form-action 'self'; base-uri 'self'
 
 # ─── Assets cacheados (inmutables) ───
 /assets/*
@@ -22,8 +22,6 @@
 /robots.txt
   Cache-Control: public, max-age=86400
 
-# ─── Páginas de trading (no caché) ───
-#/trades*
-#/rangos*
-#/agentes*
+/metodo/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://api.binance.com wss://stream.binance.com wss://stream.binance.com:9443 https://api.coingecko.com https://api.alternative.me https://vix-proxy.sonosanty.workers.dev; img-src 'self' data: https:; frame-ancestors 'none'; form-action 'self'; base-uri 'self'
   Cache-Control: no-store, must-revalidate
