@@ -1,0 +1,341 @@
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indicador BTC Macro — Contexto · Trades · Rangos</title>
+    <meta name="description" content="Dashboard macro BTC en tiempo real: Fear & Greed, VIX, Market Cap, Dominancias, RSI 3D y Score Maestro Sono Pro.">
+    <meta name="theme-color" content="#020617">
+
+    <!-- Open Graph / Redes sociales -->
+    <meta property="og:title" content="Indicador BTC Macro">
+    <meta property="og:description" content="Dashboard macro en tiempo real con señales Sono Pro: Fear & Greed, VIX, Market Cap, Dominancias y RSI 3D.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mifuturapp.com/indicador_btc/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Indicador BTC Macro">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://mifuturapp.com/indicador_btc/">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="assets/css/style.css?v13">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+
+    <script src="assets/js/config.js?v12" defer></script>
+    <script src="assets/js/api.js?v12" defer></script>
+    <script src="assets/js/scores.js?v12" defer></script>
+    <script src="assets/js/cards.js?v12" defer></script>
+    <script src="assets/js/table_timeframes.js?v12" defer></script>
+    <script src="assets/js/charts.js?v12" defer></script>
+    <script src="assets/js/websocket_btc.js?v12" defer></script>
+    <script src="assets/js/app.js?v12" defer></script>
+</head>
+<body class="btc-dashboard">
+
+    <header class="topbar">
+        <div>
+            <h1>Indicador BTC Macro</h1>
+            <p>Contexto macro · BTC live · señales · lectura multi-timeframe</p>
+        </div>
+
+        <nav class="topbar-actions" aria-label="Secciones principales">
+            <a href="./" aria-current="page">Dashboard</a>
+            <a href="./trades_explorer.php">Trades</a>
+            <a href="./range_explorer.php">Rangos</a>
+        </nav>
+    </header>
+
+    <main class="dashboard-shell">
+
+        <section class="macro-top-grid">
+
+            <section class="price-card is-updating" id="cardBTC" aria-label="Precio BTC en tiempo real">
+                <div class="price-row">
+                    <div>
+                        <div class="label">BTC Spot</div>
+
+                        <div class="price-main" id="btcUsdLive">$73.024</div>
+
+                        <div class="price-secondary" id="btcEurLive">€62.606</div>
+
+                        <div class="data-source">
+                            <strong>Fuente:</strong>
+                            <a href="https://www.binance.com/es/trade/BTC_USDT" target="_blank" rel="noopener">Binance BTCUSDT</a>
+                            ·
+                            <a href="https://www.binance.com/es/trade/EUR_USDT" target="_blank" rel="noopener">EURUSDT</a>
+                            ·
+                            <a href="api/historico_macro.php?limit=1" target="_blank">snapshot interno</a>
+                        </div>
+
+                        <div class="last-update" id="lastUpdateBTC">
+                            Última actualización: 2026-05-29 16:13:03
+                        </div>
+                    </div>
+
+                    
+                    <div class="badge positivo" id="btcChange24hLive" aria-label="Cambio 24 horas">+0.00% 24h</div>
+                </div>
+
+                <div class="mini-history" id="historyBTC">Histórico cargado · min 72.922,01$ · max 73.369,09$ · Δ -291,33$</div>
+            </section>
+
+            <section class="estado macro-neutral" id="cardMacroState" aria-label="Estado macro actual">
+                <div class="card-header">
+                    <div>
+                        <div class="label">Estado macro</div>
+
+                        <h2 id="macroState">
+                            NEUTRAL
+                        </h2>
+
+                        <p id="macroText">
+                            Score 2 · contexto de acumulación, riesgo y liquidez.
+                        </p>
+                    </div>
+
+                    <div class="macro-score" id="macroScore">
+                        2/6
+                    </div>
+                </div>
+
+                <div class="data-source">
+                    <strong>Fuente:</strong>
+                    <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank" rel="noopener">Fear &amp; Greed</a>
+                    ·
+                    <a href="https://www.coingecko.com/" target="_blank" rel="noopener">CoinGecko Global</a>
+                    ·
+                    <a href="https://finance.yahoo.com/quote/%5EVIX/" target="_blank" rel="noopener">VIX</a>
+                    ·
+                    <a href="api/historico_macro.php?limit=1" target="_blank">snapshot interno</a>
+                </div>
+
+                <div class="last-update" id="lastUpdateMacro">
+                    Última actualización: 2026-05-29 16:13:03
+                </div>
+            </section>
+
+        </section>
+
+        <section class="grid">
+
+            <article class="card regime-card is-updating" id="cardCryptoRegime" aria-label="Régimen cripto">
+                <div class="label">Régimen crypto</div>
+
+                <div class="regime-label" id="cryptoRegimeLabel">
+                    ACUMULACIÓN
+                </div>
+
+                <div class="regime-detail" id="cryptoRegimeDetail">
+                    Contexto típico de acumulación macro progresiva.
+                </div>
+
+                <div class="regime-meta">
+                    <span class="regime-pill" id="cryptoRegimeBias">
+                        Sesgo: LONG SWING
+                    </span>
+
+                    <span class="regime-pill" id="cryptoRegimeRisk">
+                        Riesgo: MEDIO
+                    </span>
+                </div>
+
+                <div class="data-source">
+                    <strong>Fuente:</strong>
+                    <a href="https://www.coingecko.com/" target="_blank" rel="noopener">CoinGecko Global</a>
+                    ·
+                    <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank" rel="noopener">Alternative.me</a>
+                    ·
+                    <a href="api/historico_macro.php?limit=1" target="_blank">snapshot interno</a>
+                </div>
+
+                <div class="mini-history" id="historyRegime">Régimen actual: ACUMULACIÓN · LONG SWING</div>
+            </article>
+
+            <article class="card is-updating" id="cardFear" aria-label="Fear and Greed Index">
+                <div class="label">Fear &amp; Greed</div>
+
+                <div class="value" id="fearValue">
+                    23
+                </div>
+
+                <div class="sub" id="fearLabel">
+                    Extreme Fear
+                </div>
+
+                <div class="mini-bar">
+                    <div class="mini-bar-fill" style="width:23%"></div>
+                </div>
+
+                <div class="data-source">
+                    <strong>Fuente:</strong>
+                    <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank" rel="noopener">Alternative.me</a>
+                    ·
+                    <a href="https://api.alternative.me/fng/" target="_blank" rel="noopener">API</a>
+                </div>
+
+                <div class="mini-history" id="historyFear">Histórico cargado · min 23 · max 23 · Δ 0</div>
+            </article>
+
+            <article class="card is-updating" id="cardVix" aria-label="Índice de volatilidad VIX">
+                <div class="label">VIX</div>
+
+                <div class="value" id="vixValue">
+                    15,60
+                </div>
+
+                <div class="sub" id="vixLabel">
+                    Volatilidad mercado tradicional
+                </div>
+
+                <div class="mini-bar">
+                    <div class="mini-bar-fill" style="width:39%;background:linear-gradient(90deg,#22c55e,#f59e0b)"></div>
+                </div>
+
+                <div class="data-source">
+                    <strong>Fuente:</strong>
+                    <a href="https://finance.yahoo.com/quote/%5EVIX/" target="_blank" rel="noopener">Yahoo Finance · ^VIX</a>
+                    ·
+                    <a href="https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX" target="_blank" rel="noopener">API</a>
+                </div>
+
+                <div class="mini-history" id="historyVix">Histórico cargado · min 15,57 · max 15,81 · Δ -0,20</div>
+            </article>
+
+            <article class="card is-updating" id="cardRsiMacro" aria-label="RSI macro 3 días">
+                <div class="label">RSI Macro 3D</div>
+
+                <div class="value" id="rsiMacroValue">
+                    44,16
+                </div>
+
+                <div class="sub" id="rsiMacroLabel">
+                    Neutral
+                </div>
+
+                <div class="mini-bar">
+                    <div class="mini-bar-fill" style="width:44%;background:linear-gradient(90deg,#3b82f6,#60a5fa)"></div>
+                </div>
+
+                <div class="data-source">
+                    <strong>Fuente:</strong>
+                    <a href="https://www.binance.com/es/trade/BTC_USDT" target="_blank" rel="noopener">Binance BTCUSDT</a>
+                    ·
+                    <a href="api/historico_macro.php?limit=1" target="_blank">RSI 3D snapshot</a>
+                </div>
+
+                <div class="mini-history" id="historyRsiMacro">Histórico cargado · min 43,96 · max 44,74 · Δ -0,46</div>
+            </article>
+
+            <article class="card is-updating" id="cardDominance" aria-label="Dominancia de Bitcoin">
+                <div class="label">Dominancia BTC</div>
+
+                <div class="value" id="btcDominanceValue">
+                    57,61%
+                </div>
+
+                <div class="sub" id="dominanceLabel">
+                    BTC liderando el mercado
+                </div>
+
+                <div class="mini-bar">
+                    <div class="mini-bar-fill" style="width:58%"></div>
+                </div>
+
+                <div class="data-source">
+                    <strong>Fuente:</strong>
+                    <a href="https://www.coingecko.com/" target="_blank" rel="noopener">CoinGecko Global</a>
+                    ·
+                    <a href="https://api.coingecko.com/api/v3/global" target="_blank" rel="noopener">API</a>
+                </div>
+
+                <div class="mini-history" id="historyBtcDominance">Histórico cargado · min 57,61% · max 57,69% · Δ -0,06%</div>
+            </article>
+
+            <article class="card is-updating" id="cardEthDominance" aria-label="Dominancia de Ethereum">
+                <div class="label">Dominancia ETH</div>
+
+                <div class="value" id="ethDominanceValue">
+                    9,49%
+                </div>
+
+                <div class="sub">
+                    Termómetro de apetito altcoin
+                </div>
+
+                <div class="mini-bar">
+                    <div class="mini-bar-fill" style="width:10%"></div>
+                </div>
+
+                <div class="data-source">
+                    <strong>Fuente:</strong>
+                    <a href="https://www.coingecko.com/" target="_blank" rel="noopener">CoinGecko Global</a>
+                    ·
+                    <a href="https://api.coingecko.com/api/v3/global" target="_blank" rel="noopener">API</a>
+                </div>
+
+                <div class="mini-history" id="historyEthDominance">Histórico cargado · min 9,48% · max 9,49% · Δ +0,01%</div>
+            </article>
+
+            <article class="card is-updating" id="cardAltsDominance" aria-label="Dominancia de Altcoins">
+                <div class="label">Dominancia Alts</div>
+
+                <div class="value" id="altsDominanceValue">
+                    32,90%
+                </div>
+
+                <div class="sub">
+                    Mercado ex-BTC-ex-ETH
+                </div>
+
+                <div class="mini-bar">
+                    <div class="mini-bar-fill" style="width:33%"></div>
+                </div>
+
+                <div class="data-source">
+                    <strong>Fuente:</strong>
+                    <a href="https://www.coingecko.com/" target="_blank" rel="noopener">CoinGecko Global</a>
+                    ·
+                    <a href="https://api.coingecko.com/api/v3/global" target="_blank" rel="noopener">API</a>
+                </div>
+
+                <div class="mini-history" id="historyAltsDominance">Histórico cargado · min 32,83% · max 32,90% · Δ +0,05%</div>
+            </article>
+
+            <article class="card is-updating" id="cardMarketCap" aria-label="Capitalización total del mercado crypto">
+                <div class="label">Market Cap Crypto</div>
+
+                <div class="value" id="marketCapValue">
+                    2,53T
+                </div>
+
+                <div class="sub" id="volumeValue">
+                    Volumen 24h: 80,31B
+                </div>
+
+                <div class="mini-bar">
+                    <div class="mini-bar-fill" style="width:65%"></div>
+                </div>
+
+                <div class="data-source">
+                    <strong>Fuente:</strong>
+                    <a href="https://www.coingecko.com/" target="_blank" rel="noopener">CoinGecko Global</a>
+                    ·
+                    <a href="https://api.coingecko.com/api/v3/global" target="_blank" rel="noopener">API</a>
+                </div>
+
+                <div class="mini-history" id="historyMarketCap">Histórico cargado · min 2,53T · max 2,54T · Δ -0,01T</div>
+            </article>
+
+        </section>
+
+        <section class="footer">
+            Último snapshot macro:
+            <span id="lastSnapshotFooter">2026-05-29 16:13:03</span>
+             · Datos actualizados en tiempo real.
+        </section>
+
+    </main>
+
+</body>
+</html>

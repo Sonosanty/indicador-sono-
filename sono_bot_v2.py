@@ -30,12 +30,23 @@ API_KEY = _creds['api_key']
 API_SECRET = _creds['api_secret']
 BASE_URL = 'https://api.pionex.com'
 
-# ─── CONFIG MÉTODO AJRAM ────────────────
+# ─── CONFIG MÉTODO AJRAM — OPTIMIZADA ────────
+# Objetivo: R:R mínimo 1.5:1 con SL ajustado y TP amplio
+# SL dinámico por ATR no implementado aún (dependencia externa)
 RISK_PCT = 0.02       # 2% riesgo por trade
-TARGET_PCT = 0.04     # 4% objetivo (ratio 1:2)
-STOP_PCT = 0.02       # 2% stop loss
+TARGET_PCT = 0.015    # 1.5% objetivo (SL más pequeño = TP más alcanzable)
+STOP_PCT = 0.010      # 1.0% stop loss (apretado para evitar pérdidas grandes)
 MIN_ORDER_USDT = 10.0 # Mínimo Pionex
-MAX_TRADES = 3        # Máximo simultáneos
+MAX_TRADES = 2        # Máximo simultáneos
+
+# Cooldown: iteraciones sin trade tras abrir/cerrar una posición
+# Con loop de 3min: 6 iteraciones = ~18 minutos de espera
+COOLDOWN_TRADES = 6
+
+# Score mínimo — ENDURECIDO: no entrar en señales débiles
+# Score 32 era zona de distribución, no de acumulación
+MIN_SCORE_LONG = 45    # Mínimo score para señal LONG (antes 30)
+MIN_SCORE_STRONG = 35  # Mínimo score para señal STRONG_LONG (antes 25)
 
 PAPER_MODE = True     # True = simulado, False = real
 PAPER_CAPITAL = 100.0 # Capital ficticio
@@ -409,6 +420,7 @@ def main():
 
     active_symbols = ['SOL_USDT', 'XRP_USDT', 'ETH_USDT', 'BTC_USDT']
     iter_no = 0
+    cooldown = 0
 
     while True:
         iter_no += 1
@@ -421,6 +433,11 @@ def main():
             signal, confidence, reason = check_signal(score, fg)
             log.info(f'F&G:{fg} Score:{score} Señal:{signal} ({reason})')
 
+            # Decrementar cooldown
+            if cooldown > 0:
+                cooldown -= 1
+                log.info(f'⏳ Cooldown {cooldown} iteraciones restantes')
+
             # Verificar stops
             for sym in list(mgr.positions.keys()):
                 try:
@@ -428,32 +445,50 @@ def main():
                 except Exception as e:
                     log.error(f'Stop check {sym}: {e}')
 
-            # Entrar si hay señal
-            if signal in ('LONG', 'STRONG_LONG'):
+            # — FILTROS DE SEGURIDAD —
+            # 1. No entrar si F&G < 20 (pánico extremo → spreads caros, slippage alto)
+            if fg < 20 and signal in ('LONG', 'STRONG_LONG'):
+                log.info(f'⛔ F&G extremo ({fg}) — saltando señal {signal}')
+                signal = 'WAIT'
+
+            # 2. Score mínimo endurecido
+            min_required = MIN_SCORE_STRONG if signal == 'STRONG_LONG' else MIN_SCORE_LONG
+            if signal in ('LONG', 'STRONG_LONG') and score < min_required:
+                log.info(f'⛔ Señal {signal} ignorada: score {score} < mínimo {min_required} (era {min_required})')
+                signal = 'WAIT'
+
+            # 3. VIX alto (>30) → reducir tamaño de entrada un 50%
+            # (pendiente de implementar lectura VIX si está disponible)
+
+            # Entrar si hay señal y no estamos en cooldown
+            if signal in ('LONG', 'STRONG_LONG') and cooldown == 0:
                 if len(mgr.positions) >= MAX_TRADES:
                     log.info(f'Max trades ({MAX_TRADES}) alcanzado')
                 else:
-                    # Escoger activo: priorizar SOL/XRP
-                    target = 'SOL_USDT'  # o rotar según momentum
+                    target = 'SOL_USDT'
                     invest = min(capital * RISK_PCT / STOP_PCT, capital * 0.25)
                     invest = max(MIN_ORDER_USDT, invest)
-                    mgr.open_position(target, invest)
+                    if mgr.open_position(target, invest):
+                        cooldown = COOLDOWN_TRADES
+            elif signal in ('LONG', 'STRONG_LONG') and cooldown > 0:
+                log.info(f'⏳ Señal {signal} detectada pero en cooldown ({cooldown})')
 
             # Regla Ajram: cerrar a las 16:55
             now = datetime.now()
             if now.hour == 16 and now.minute >= 55:
                 log.info('⏰ 16:55 — Cerrando todo (regla Ajram)')
                 for sym in list(mgr.positions.keys()):
-                    mgr.close_position(sym, 'CIERRE_FIN_DIA')
+                    if mgr.close_position(sym, 'CIERRE_FIN_DIA'):
+                        cooldown = COOLDOWN_TRADES
 
-            # Stats cada 10
-            if iter_no % 10 == 0:
+            # Stats cada 5 (ahora ~15min entre stats)
+            if iter_no % 5 == 0:
                 mgr.stats()
 
         except Exception as e:
             log.error(f'Error: {e}', exc_info=True)
 
-        time.sleep(30)
+        time.sleep(180)  # 3 minutos entre iteraciones
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'cleanup':

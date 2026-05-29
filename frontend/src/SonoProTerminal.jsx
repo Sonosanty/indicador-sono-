@@ -381,6 +381,7 @@ export default function SonoProTerminal() {
   const pingRef      = useRef(null);
   const reconnRef    = useRef(null);
   const staleRef     = useRef(null);
+  const throttleRef  = useRef(null);
   const prevSigRef   = useRef(null);
   const mountedRef   = useRef(true);
 
@@ -450,25 +451,37 @@ export default function SonoProTerminal() {
       }, 20000);
     };
 
+    // Throttle: max 1 actualización cada 500ms para evitar re-renders
+    let pendingCandle = null;
     ws.onmessage = ({ data }) => {
       if (!mountedRef.current) return;
       const msg = JSON.parse(data);
       if (!msg.k) return;
       const k = msg.k;
-      const candle = { time: k.t, open: +k.o, high: +k.h, low: +k.l, close: +k.c, volume: +k.v };
+      pendingCandle = { time: k.t, open: +k.o, high: +k.h, low: +k.l, close: +k.c, volume: +k.v };
+
       setLastUpdate(Date.now());
       clearTimeout(staleRef.current);
       staleRef.current = setTimeout(() => setWsStatus("stalled"), 60000);
 
-      setCandles((prev) => {
-        const cur  = [...(prev[ak] || [])];
-        const last = cur.at(-1);
-        if (last && last.time === candle.time) cur[cur.length - 1] = candle;
-        else if (candle.time > (last?.time ?? 0)) { cur.push(candle); if (cur.length > CANDLE_LIMIT) cur.shift(); }
-        return { ...prev, [ak]: cur };
-      });
+      if (!throttleRef.current) {
+        throttleRef.current = setTimeout(() => {
+          throttleRef.current = null;
+          if (!mountedRef.current || !pendingCandle) return;
+          const candle = pendingCandle;
+          pendingCandle = null;
 
-      setTicker((prev) => ({ ...prev, [ak]: { ...prev[ak], close: +k.c } }));
+          setCandles((prev) => {
+            const cur  = [...(prev[ak] || [])];
+            const last = cur.at(-1);
+            if (last && last.time === candle.time) cur[cur.length - 1] = candle;
+            else if (candle.time > (last?.time ?? 0)) { cur.push(candle); if (cur.length > CANDLE_LIMIT) cur.shift(); }
+            return { ...prev, [ak]: cur };
+          });
+
+          setTicker((prev) => ({ ...prev, [ak]: { ...prev[ak], close: +k.c } }));
+        }, 500);
+      }
     };
 
     ws.onerror = () => { if (mountedRef.current) setWsStatus("error"); };

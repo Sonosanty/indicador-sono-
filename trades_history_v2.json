@@ -1,0 +1,34 @@
+[
+  {
+    "symbol": "SOL_USDT",
+    "entry": 82.25,
+    "size": 0.303951367781155,
+    "invested": 25.0,
+    "stop": 80.605,
+    "target": 85.54,
+    "time": "2026-05-29T08:48:12.572659",
+    "paper": true,
+    "exit": 80.45,
+    "exit_time": "2026-05-29T16:26:19.059975",
+    "pnl_pct": -2.1884498480243124,
+    "pnl_usd": -0.5471124620060781,
+    "result": "LOSS",
+    "reason": "STOP_LOSS"
+  },
+  {
+    "symbol": "SOL_USDT",
+    "entry": 80.82,
+    "size": 0.3093293739173472,
+    "invested": 25.0,
+    "stop": 79.2036,
+    "target": 84.05279999999999,
+    "time": "2026-05-29T16:39:02.419193",
+    "paper": true,
+    "exit": 81.42,
+    "exit_time": "2026-05-29T16:57:31.981457",
+    "pnl_pct": 0.7423904974016439,
+    "pnl_usd": 0.18559762435041097,
+    "result": "WIN",
+    "reason": "CIERRE_FIN_DIA"
+  }
+]
