@@ -1,45 +1,46 @@
-name: Actualizador Automatizado Método Sono 👒
+name: Build + Deploy Sono Pro to Cloudflare Pages
 
 on:
-  schedule:
-    # Se ejecuta cada 30 minutos (Formato Cron)
-    - cron: '*/30 * * * *'
-  workflow_dispatch: # Permite ejecución manual desde el panel de GitHub
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - 'indicador-sono-repo/sono-score-config.json'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+# Concurrency: si hay push mientras se deploya, cancela el anterior
+concurrency:
+  group: 'pages-deploy'
+  cancel-in-progress: true
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
 
     steps:
-    - name: 📥 Clonar repositorio
-      uses: actions/checkout@v4
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
 
-    - name: 🐍 Configurar Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-        cache: 'pip'
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
-    - name: 📦 Instalar dependencias
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: 📥 Install dependencies
+        run: npm ci
 
-    - name: 🔑 Inyectar credenciales de Pionex
-      run: |
-        echo '{
-          "api_key": "${{ secrets.PIONEX_API_KEY }}",
-          "api_secret": "${{ secrets.PIONEX_API_SECRET }}"
-        }' > indicador_btc/pionex_credentials.json
+      - name: 🏗️ Build
+        run: npm run build
 
-    - name: 📊 Ejecutar procesador de datos (Método Sono)
-      working-directory: indicador_btc
-      run: |
-        python process_indicador_data.py
-
-    - name: 🚀 Desplegar a Cloudflare Pages
-      uses: cloudflare/wrangler-action@v3
-      with:
-        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        command: pages deploy indicador_cloudflare --project-name="indicador-sono"
+      - name: 🚀 Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy ../indicador_cloudflare --project-name="indicador-sono"
