@@ -1,0 +1,124 @@
+/* ═══════════════════════════════════════════════════════════════
+   SONO PRO v3 — Sistema de diseño inspirado en mifuturapp
+   Paleta navy + cards translúcidas + Inter + JetBrains Mono
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Backgrounds ─────────────────────────────────────────── */
+  --bg:           #0a1428;
+  --bg-elevated: #0f1c36;
+  --surface:     rgba(20, 35, 65, 0.55);
+  --surface-hi:  rgba(28, 48, 88, 0.65);
+
+  /* ── Borders (casi invisibles) ───────────────────────────── */
+  --border:      rgba(120, 160, 220, 0.08);
+  --border-hi:   rgba(120, 160, 220, 0.16);
+
+  /* ── Texto ────────────────────────────────────────────────── */
+  --text:        #e2e8f0;
+  --text-dim:    #94a3b8;
+  --text-mute:   #64748b;
+  --text-faint:  #475569;
+
+  /* ── Acentos semánticos (desaturados, profesionales) ──────── */
+  --primary:     #60a5fa;
+  --primary-bg:  rgba(96, 165, 250, 0.10);
+  --success:     #22c55e;
+  --success-bg:  rgba(34, 197, 94, 0.12);
+  --danger:      #ef4444;
+  --danger-bg:   rgba(239, 68, 68, 0.14);
+  --warning:     #f59e0b;
+  --warning-bg:  rgba(245, 158, 11, 0.12);
+
+  /* ── Colores de activos ──────────────────────────────────── */
+  --btc: #f7931a;
+  --eth: #627eea;
+  --sol: #9945ff;
+  --xrp: #00aae4;
+
+  /* ── Radios + spacing ────────────────────────────────────── */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 14px;
+  --r-xl: 18px;
+
+  --gap-xs: 8px;
+  --gap-sm: 12px;
+  --gap-md: 16px;
+  --gap-lg: 22px;
+  --gap-xl: 32px;
+
+  /* ── Sombras ──────────────────────────────────────────── */
+  --shadow-card: 0 18px 45px rgba(0,0,0,0.22);
+  --shadow-card-hover: 0 24px 55px rgba(0,0,0,0.32);
+
+  /* ── Tipografía ──────────────────────────────────────────── */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+/* Números siempre tabulares y monospace */
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* Scrollbar minimalista */
+::-webkit-scrollbar       { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(120,160,220,0.3); }
+
+/* Focus visible para accesibilidad */
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+input {
+  font-family: inherit;
+  color: inherit;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* ── Animaciones inspiradas en mifuturapp ──────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.85); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes macroPulse {
+  0%   { box-shadow: var(--shadow-card); }
+  40%  { box-shadow: 0 0 25px rgba(34, 197, 94, 0.25), var(--shadow-card); }
+  74%  { box-shadow: var(--shadow-card); }
+  100% { box-shadow: 0 0 35px rgba(34, 197, 94, 0.15), var(--shadow-card); }
+}
+
+.fade-in { animation: fade-in 0.3s ease-out; }

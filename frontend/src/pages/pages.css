@@ -1,0 +1,536 @@
+/* ═══════════════════════════════════════════════════════════════
+   pages.css — estilos compartidos entre Macro / Trades / Rangos
+   ═══════════════════════════════════════════════════════════════ */
+
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 32px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: pageFadeIn 0.5s ease-out;
+}
+
+/* ── Fade-in escalonado para grids ── */
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page__grid > *,
+.range-grid > *,
+.asset-selector > * {
+  animation: cardFadeIn 0.4s ease backwards;
+}
+
+.page__grid > *:nth-child(1)  { animation-delay: 0.04s; }
+.page__grid > *:nth-child(2)  { animation-delay: 0.08s; }
+.page__grid > *:nth-child(3)  { animation-delay: 0.12s; }
+.page__grid > *:nth-child(4)  { animation-delay: 0.16s; }
+.page__grid > *:nth-child(5)  { animation-delay: 0.20s; }
+.page__grid > *:nth-child(6)  { animation-delay: 0.24s; }
+.page__grid > *:nth-child(7)  { animation-delay: 0.28s; }
+.page__grid > *:nth-child(8)  { animation-delay: 0.32s; }
+
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Glow pulse en is-updating ── */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 18px 45px rgba(0,0,0,0.22); }
+  50% { box-shadow: 0 0 30px rgba(88,166,255,0.12), 0 24px 55px rgba(0,0,0,0.32); }
+}
+
+.is-updating {
+  animation: glowPulse 2s ease infinite !important;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(148,163,184,0.15);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148,163,184,0.3);
+}
+
+@media (max-width: 768px) {
+  .page { padding: 0 16px 32px; gap: 12px; }
+}
+
+/* ── Grids ──────────────────────────────────────────────────── */
+.page__grid {
+  display: grid;
+  gap: 16px;
+}
+
+.page__grid--top   { grid-template-columns: repeat(4, 1fr); }
+.page__grid--four  { grid-template-columns: repeat(4, 1fr); }
+.page__grid--three { grid-template-columns: repeat(3, 1fr); }
+.page__grid--two   { grid-template-columns: 1fr 1fr; }
+
+@media (max-width: 1024px) {
+  .page__grid--top,
+  .page__grid--four { grid-template-columns: repeat(2, 1fr); }
+  .page__grid--three { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .page__grid--top,
+  .page__grid--four,
+  .page__grid--two { grid-template-columns: 1fr; }
+}
+
+/* ── Trades page: sidebar de KPIs + equity curve ────────────── */
+.page__split {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 16px;
+}
+
+.page__sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.page__sidebar .mc {
+  min-height: auto;
+  padding: 14px 16px;
+}
+.page__sidebar .mc__value { font-size: 22px; margin-top: 4px; }
+.page__sidebar .mc__label { font-size: 11px; }
+
+@media (max-width: 1024px) {
+  .page__split { grid-template-columns: 1fr; }
+  .page__sidebar { display: grid; grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 640px) {
+  .page__sidebar { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Mini KPIs sobre Equity Curve ──────────────────────────── */
+.page__minikpis {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.page__minikpi {
+  background: rgba(15, 28, 54, 0.5);
+  border: 0.5px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+}
+
+.page__minikpi-label {
+  font-size: 10px;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.page__minikpi-value {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+@media (max-width: 768px) {
+  .page__minikpis { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Tablas ─────────────────────────────────────────────────── */
+.page__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.page__table thead th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-mute);
+  padding: 10px 14px;
+  border-bottom: 0.5px solid var(--border);
+  background: rgba(15, 28, 54, 0.4);
+}
+
+.page__table thead th:first-child { padding-left: 6px; }
+
+.page__table tbody td {
+  padding: 11px 14px;
+  border-bottom: 0.5px solid var(--border);
+  color: var(--text);
+}
+
+.page__table tbody td:first-child { padding-left: 6px; color: var(--text-dim); }
+
+.page__table tbody tr:hover {
+  background: var(--surface);
+}
+
+.page__table tbody tr:last-child td { border-bottom: none; }
+
+.page__table .mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+}
+
+@media (max-width: 768px) {
+  .page__table { font-size: 11px; }
+  .page__table thead th, .page__table tbody td { padding: 8px 10px; }
+}
+
+/* ── Chips ──────────────────────────────────────────────────── */
+.chip {
+  display: inline-block;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 999px;
+  background: rgba(120, 160, 220, 0.08);
+  color: var(--text-dim);
+  border: 0.5px solid var(--border-hi);
+  letter-spacing: 0.2px;
+}
+
+.chip--primary { background: var(--primary-bg); color: var(--primary); border-color: rgba(96,165,250,0.3); }
+.chip--success { background: var(--success-bg); color: var(--success); border-color: rgba(34,197,94,0.3); }
+.chip--danger  { background: var(--danger-bg);  color: var(--danger);  border-color: rgba(239,68,68,0.3); }
+.chip--warning { background: var(--warning-bg); color: var(--warning); border-color: rgba(245,158,11,0.3); }
+.chip--mute    { background: rgba(120,160,220,0.08); color: var(--text-dim); }
+
+/* ── Mini Bar (F&G, VIX, RSI) ─────────────────────────────── */
+.mc__mini-bar {
+  margin-top: 8px;
+  height: 5px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.mc__mini-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1dd3b0, #58a6ff);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Labels debajo del mini-bar */
+.mc__mini-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: var(--text-faint);
+  margin-top: 3px;
+  letter-spacing: 0.3px;
+  font-weight: 500;
+  opacity: 0.6;
+}
+
+/* ── Page footer ────────────────────────────────────────────── */
+.page__footer {
+  font-size: 11px;
+  color: var(--text-faint);
+  padding: 16px 4px 0;
+  letter-spacing: 0.2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RANGES PAGE — Banner + grid 2x2 + timeframe cards + gauges
+   ═══════════════════════════════════════════════════════════════ */
+
+.range-banner {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(20, 35, 65, 0.5) 70%);
+  border: 0.5px solid rgba(34, 197, 94, 0.18);
+  border-radius: var(--r-lg);
+  padding: 22px 26px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.range-banner__label {
+  font-size: 11px;
+  color: var(--text-mute);
+  font-weight: 500;
+  letter-spacing: 0.6px;
+  margin-bottom: 8px;
+}
+
+.range-banner__price {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.range-banner__context {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 6px;
+  letter-spacing: 0.3px;
+  font-weight: 500;
+}
+
+.range-banner__desc {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-top: 14px;
+  max-width: 460px;
+}
+
+.range-banner__confidence {
+  text-align: right;
+  padding-left: 32px;
+}
+
+.range-banner__conf-label {
+  font-size: 11px;
+  color: var(--text-mute);
+  font-weight: 500;
+  letter-spacing: 0.6px;
+  margin-bottom: 6px;
+}
+
+.range-banner__conf-value {
+  font-size: 44px;
+  font-weight: 700;
+  color: var(--success);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.range-banner__conf-max {
+  font-size: 18px;
+  color: var(--text-mute);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+@media (max-width: 768px) {
+  .range-banner { flex-direction: column; gap: 16px; }
+  .range-banner__confidence { text-align: left; padding-left: 0; display: flex; align-items: baseline; gap: 12px; }
+  .range-banner__conf-value { font-size: 34px; }
+}
+
+.range-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .range-grid { grid-template-columns: 1fr; }
+}
+
+/* ── TimeframeCard ──────────────────────────────────────────── */
+.tf-card {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px 22px;
+  backdrop-filter: blur(8px);
+}
+
+.tf-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.tf-card__tf {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.tf-card__sub {
+  font-size: 11px;
+  color: var(--text-mute);
+  margin-top: 4px;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.tf-card__chart {
+  height: 200px;
+  margin: 4px 0 14px;
+  background: rgba(8, 17, 35, 0.4);
+  border-radius: var(--r-sm);
+  padding: 8px;
+}
+
+.tf-card__chips {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.tf-chip {
+  background: rgba(15, 28, 54, 0.5);
+  border: 0.5px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 8px 10px;
+}
+
+.tf-chip__label {
+  font-size: 9px;
+  color: var(--text-mute);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  margin-bottom: 3px;
+}
+
+.tf-chip__value {
+  font-size: 11px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.tf-card__note {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 8px;
+}
+
+@media (max-width: 480px) {
+  .tf-card__chips { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── PressureGauge ──────────────────────────────────────────── */
+.gauge {
+  min-width: 180px;
+  text-align: right;
+}
+
+.gauge__label {
+  font-size: 9px;
+  color: var(--text-mute);
+  font-weight: 500;
+  letter-spacing: 0.6px;
+  margin-bottom: 2px;
+}
+
+.gauge__pressure {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.gauge__intensity {
+  font-size: 10px;
+  margin-top: 2px;
+  letter-spacing: 0.4px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.gauge__bar {
+  margin-top: 8px;
+}
+
+.gauge__bar-track {
+  position: relative;
+  height: 4px;
+  background: rgba(120, 160, 220, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.gauge__bar-fill {
+  position: absolute;
+  top: 0; height: 100%;
+  opacity: 0.4;
+  transition: width 0.4s;
+}
+
+.gauge__bar-marker {
+  position: absolute;
+  top: -2px;
+  width: 3px;
+  height: 8px;
+  border-radius: 1.5px;
+  transition: left 0.4s;
+  box-shadow: 0 0 6px currentColor;
+}
+
+.gauge__bar-legend {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  color: var(--text-faint);
+  margin-top: 4px;
+  letter-spacing: 0.3px;
+  font-weight: 500;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ASSET SELECTOR — Pills para cambiar criptomoneda activa
+   ═══════════════════════════════════════════════════════════════ */
+
+.asset-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 4px 0;
+}
+
+.asset-selector__btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--r-sm, 10px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-dim);
+  font-family: var(--font, 'Inter', system-ui, sans-serif);
+  font-size: 13px;
+}
+
+.asset-selector__btn:hover {
+  background: rgba(30, 50, 80, 0.5);
+  border-color: rgba(120, 160, 220, 0.2);
+  color: var(--text);
+}
+
+.asset-selector__btn--active {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: var(--text);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.1);
+}
+
+.asset-selector__label {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.asset-selector__price {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 12px;
+  color: var(--text-mute);
+  font-variant-numeric: tabular-nums;
+}
+
+.asset-selector__btn--active .asset-selector__price {
+  color: var(--text-dim);
+}
