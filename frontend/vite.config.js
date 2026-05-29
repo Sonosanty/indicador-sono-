@@ -18,6 +18,14 @@ export default defineConfig({
         fs.copyFileSync(srcM, dstM)
         console.log('[post-build] metodo.html copiado')
 
+        // 1b. Copiar _routes.json para que Cloudflare sirva /metodo como estático
+        const routesSrc = path.resolve('_routes.json')
+        const routesDst = path.join(outDir, '_routes.json')
+        if (fs.existsSync(routesSrc)) {
+          fs.copyFileSync(routesSrc, routesDst)
+          console.log('[post-build] _routes.json copiado')
+        }
+
         // 2. Leer el index.html generado por Vite para extraer los hashes de assets
         const generatedHtml = fs.readFileSync(path.join(outDir, 'index.html'), 'utf-8')
         
