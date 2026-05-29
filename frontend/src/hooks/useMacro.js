@@ -1,23 +1,92 @@
-// useMacro.js — todas las llamadas en PARALELO con Promise.all
-// Antes: await F&G → await CoinGecko → await EUR = 1.4-2.5s en serie
-// Ahora: Promise.all([F&G, CoinGecko, EUR]) = 0.5-0.9s en paralelo
+// ═══════════════════════════════════════════════════════════════
+// useMacro.js — Caché SWR (Stale-While-Revalidate) + TTL
+//
+// Patrón: entrega dato cacheado al instante, si está viejo
+// pero aceptable, refresca en background sin bloquear la UI.
+//
+// TTL sugeridos:
+//   Binance spot/klines : 10-15s
+//   VIX proxy           : 120-180s (alineado con Worker)
+//   Fear & Greed        : 5 min (cambia 1x/día, pero seguro)
+//   CoinGecko macro     : 3-5 min
+// ═══════════════════════════════════════════════════════════════
+
 import { useState, useEffect, useRef } from 'react'
 
 const VIX_PROXY_URL = 'https://vix-proxy.sonosanty.workers.dev'
 
-// Caché con TTL para datos que cambian lentamente
-const CACHE = {
-  _store: {},
-  get(key, ttlMs) {
-    const entry = this._store[key]
-    if (entry && Date.now() - entry.ts < ttlMs) return entry.data
-    return null
-  },
-  set(key, data) {
-    this._store[key] = { data, ts: Date.now() }
+// ── SWR Cache ──────────────────────────────────────────
+const cache = new Map()
+
+function swrFetch(key, fetcher, freshMs, staleMs) {
+  const now = Date.now()
+  const hit = cache.get(key)
+
+  if (hit && now < hit.freshUntil) {
+    return Promise.resolve(hit.data)
   }
+
+  if (hit && now < hit.staleUntil) {
+    // refresh en background, devuelve dato stale
+    fetcher()
+      .then((data) => {
+        cache.set(key, {
+          data,
+          freshUntil: now + freshMs,
+          staleUntil: now + staleMs,
+        })
+      })
+      .catch(() => {}) // falla silenciosa, el dato stale es mejor que nada
+    return Promise.resolve(hit.data)
+  }
+
+  // Sin caché o expirado del todo: fetch blocking
+  return fetcher().then((data) => {
+    cache.set(key, {
+      data,
+      freshUntil: now + freshMs,
+      staleUntil: now + staleMs,
+    })
+    return data
+  })
 }
 
+// ── Fetchers individuales con TTL ──────────────────────
+const TTL = {
+  fearGreed:   { fresh:  5 * 60 * 1000, stale: 60 * 60 * 1000 }, // 5min fresh, 1h stale
+  coinGecko:   { fresh:  3 * 60 * 1000, stale:  5 * 60 * 1000 }, // 3min fresh, 5min stale
+  eurRate:     { fresh: 15 * 60 * 1000, stale: 30 * 60 * 1000 }, // 15min fresh, 30min stale
+  vix:         { fresh:  2 * 60 * 1000, stale:  3 * 60 * 1000 }, // 2min fresh, 3min stale (alineado Worker 120s)
+}
+
+async function fetchFG() {
+  const r = await fetch('https://api.alternative.me/fng/?limit=1')
+  const d = await r.json()
+  const item = d?.data?.[0]
+  return item ? { value: +item.value, label: item.value_classification } : null
+}
+
+async function fetchCG() {
+  const r = await fetch('https://api.coingecko.com/api/v3/global')
+  const d = await r.json()
+  return d?.data ?? null
+}
+
+async function fetchEUR() {
+  if (!VIX_PROXY_URL) return null
+  const r = await fetch(VIX_PROXY_URL + '/eur')
+  const d = await r.json()
+  return d?.eur ?? null
+}
+
+async function fetchVIX() {
+  if (!VIX_PROXY_URL) return null
+  const r = await fetch(VIX_PROXY_URL)
+  const d = await r.json()
+  return d?.vix ?? null
+}
+
+// ── Hook principal ─────────────────────────────────────
 export function useMacro() {
   const [data, setData] = useState({
     fearGreed: null, btcDom: null, ethDom: null, altsDom: null,
@@ -26,57 +95,17 @@ export function useMacro() {
   })
   const mountedRef = useRef(true)
 
-  // Funciones fetch con caché
-  const fetchFG = async () => {
-    const cached = CACHE.get('fear_greed', 60 * 60 * 1000) // 1h, cambia una vez al día
-    if (cached) return cached
-    const r = await fetch('https://api.alternative.me/fng/?limit=1')
-    const d = await r.json()
-    const item = d?.data?.[0]
-    const result = item ? { value: +item.value, label: item.value_classification } : null
-    if (result) CACHE.set('fear_greed', result)
-    return result
-  }
-
-  const fetchCG = async () => {
-    const cached = CACHE.get('coingecko_global', 5 * 60 * 1000) // 5min
-    if (cached) return cached
-    const r = await fetch('https://api.coingecko.com/api/v3/global')
-    const d = await r.json()
-    const result = d?.data ?? null
-    if (result) CACHE.set('coingecko_global', result)
-    return result
-  }
-
-  const fetchEUR = async () => {
-    if (!VIX_PROXY_URL) return null
-    const cached = CACHE.get('eur_rate', 15 * 60 * 1000) // 15min
-    if (cached) return cached
-    const r = await fetch(VIX_PROXY_URL + '/eur')
-    const d = await r.json()
-    const result = d?.eur ?? null
-    if (result) CACHE.set('eur_rate', result)
-    return result
-  }
-
-  const fetchVIX = async () => {
-    if (!VIX_PROXY_URL) return null
-    const cached = CACHE.get('vix', 15 * 60 * 1000) // 15min
-    if (cached) return cached
-    const r = await fetch(VIX_PROXY_URL)
-    const d = await r.json()
-    const result = d?.vix ?? null
-    if (result) CACHE.set('vix', result)
-    return result
-  }
-
   const load = async () => {
-    const [fg, cg, eur, vix] = await Promise.allSettled([
-      fetchFG(), fetchCG(), fetchEUR(), fetchVIX()
+    const results = await Promise.allSettled([
+      swrFetch('fear_greed',   fetchFG, TTL.fearGreed.fresh,  TTL.fearGreed.stale),
+      swrFetch('coingecko',    fetchCG, TTL.coinGecko.fresh,  TTL.coinGecko.stale),
+      swrFetch('eur_rate',     fetchEUR, TTL.eurRate.fresh,   TTL.eurRate.stale),
+      swrFetch('vix',          fetchVIX, TTL.vix.fresh,       TTL.vix.stale),
     ])
 
     if (!mountedRef.current) return
 
+    const [fg, cg, eur, vix] = results
     const updates = { sources: {} }
 
     if (fg.status === 'fulfilled' && fg.value) {
@@ -115,7 +144,7 @@ export function useMacro() {
   useEffect(() => {
     mountedRef.current = true
     load()
-    const int = setInterval(load, 5 * 60 * 1000)
+    const int = setInterval(load, 60 * 1000) // 1 min poll (SWR decide si realmente fetch)
     return () => clearInterval(int)
   }, [])
 

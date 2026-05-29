@@ -43,6 +43,14 @@
 - **Build**: `npm run build` justo antes de cada deploy
 - **GitHub sync**: commit + push inmediato después de deploy
 
+## ⚡ Optimizaciones arquitectura (29 mayo 2026)
+- **Score unificado**: `sono-score-config.json` es la única fuente de verdad. `scoreEngine.js` (SPA) y `sono_score.py` (bot) lo consumen. Cualquier cambio de umbrales/pesos/etiquetas se hace solo en el JSON.
+- **Lazy loading**: AppRouter.jsx con `lazy()` y `Suspense`. TradesPage, RangesPage, MetodoPage, AgentsPage son chunks separados. chart.js (202KB) ya no carga en la ruta principal.
+- **Payload inicial reducido**: de ~520KB a ~200KB (index 17KB + react-vendor 182KB).
+- **SWR/TTL en useMacro.js**: stale-while-revalidate. Fear&Greed 5min fresh/1h stale, CoinGecko 3min/5min, EUR 15min/30min, VIX 2min/3min. Poll cada 60s pero SWR decide si realmente fetch.
+- **manualChunks en vite.config.js**: chunks con nombres legibles (trades, rangos, metodo, agentes, chart-vendor, recharts-vendor).
+- **sono_bot.py**: ahora importa `sono_score.compute_score` en lugar de tener su propio `computeScore` duplicado.
+
 ### 📋 Protocolo de verificación post-deploy (obligatorio)
 Cada vez que se despliegue a producción, jarvisClaw debe:
 1. Abrir navegador → `https://indicador-sono.pages.dev/#/`

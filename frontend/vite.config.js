@@ -76,6 +76,12 @@ export default defineConfig({
           if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) {
             return 'react-vendor'
           }
+          if (id.includes('/pages/TradesPage')) return 'trades'
+          if (id.includes('/pages/RangesPage'))  return 'rangos'
+          if (id.includes('/pages/MetodoPage'))  return 'metodo'
+          if (id.includes('/pages/AgentsPage'))  return 'agentes'
+          if (id.includes('node_modules/chart.js')) return 'chart-vendor'
+          if (id.includes('node_modules/recharts')) return 'recharts-vendor'
         }
       }
     },

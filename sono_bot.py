@@ -10,6 +10,12 @@
 import json, time, hashlib, hmac, requests, threading, logging, sys
 from datetime import datetime
 
+# ── Score engine unificado (misma lógica que la SPA) ─────
+import sys
+sys.path.insert(0, r'C:\Users\sparreno\.openclaw\workspace')
+from sono_score import compute_score as sono_compute_score
+# ────────────────────────────────────────────────────────────
+
 # Forzar encoding UTF-8 para logging a archivo
 logging.basicConfig(
     level=logging.INFO,
@@ -112,77 +118,8 @@ def calcADX(candles, p=14):
     return round((abs(diP - diM) / (diP + diM + 0.001)) * 100, 1)
 
 def computeScore(candles):
-    if not candles or len(candles) < 210:
-        return None
-    closes = [c['close'] for c in candles]
-    price = closes[-1]
-    ma6 = calcMA(closes, 6)
-    ma40 = calcMA(closes, 40)
-    ma70 = calcMA(closes, 70)
-    ma200 = calcMA(closes, 200)
-    bb = calcBB(closes, 20)
-    adx = calcADX(candles, 14)
-    rsi = calcRSI(closes, 14)
-    atr_val = calcATR(candles, 14)
-
-    # Pilar 1 - MA crosses (max 35)
-    p1 = 0
-    if ma6 and ma40:
-        p1 += 12 if ma6 > ma40 else 0
-    if ma6 and ma70:
-        p1 += 10 if ma6 > ma70 else 0
-    if ma40 and ma200:
-        p1 += 13 if ma40 > ma200 else 0
-
-    # Pilar 2 - Momentum (max 35)
-    p2 = 0
-    if adx is not None:
-        p2 += 15 if adx > 35 else 10 if adx > 25 else 3
-    if rsi is not None:
-        p2 += 12 if 50 < rsi < 70 else 7 if rsi >= 35 else 2
-    if ma200:
-        p2 += 8 if price > ma200 else 0
-
-    # Pilar 3 - Bollinger (max 30)
-    p3 = 0
-    if bb:
-        range_p = bb['upper'] - bb['lower']
-        pctB = (price - bb['lower']) / range_p if range_p > 0 else 0.5
-        if pctB < 0.15:
-            p3 += 28
-        elif pctB < 0.35:
-            p3 += 20
-        elif pctB < 0.65:
-            p3 += 14
-        elif pctB < 0.85:
-            p3 += 7
-        else:
-            p3 += 2
-
-    total = min(100, round(p1 + p2 + p3))
-
-    # Determinar señal
-    if total >= 78:
-        signal = 'COMPRA_FUERTE'; action = 'BUY'; level = 6
-    elif total >= 62:
-        signal = 'COMPRA'; action = 'BUY'; level = 5
-    elif total >= 52:
-        signal = 'ACUMULACION'; action = 'HOLD'; level = 4
-    elif total >= 42:
-        signal = 'NEUTRAL'; action = 'HOLD'; level = 3
-    elif total >= 30:
-        signal = 'DISTRIBUCION'; action = 'HOLD'; level = 2
-    elif total >= 18:
-        signal = 'VENTA'; action = 'SELL'; level = 1
-    else:
-        signal = 'CAPITULACION'; action = 'SELL'; level = 0
-
-    return {
-        'total': total, 'level': level, 'signal': signal, 'action': action,
-        'p1': p1, 'p2': p2, 'p3': p3,
-        'price': price, 'atr': atr_val, 'ma6': ma6, 'ma40': ma40,
-        'ma200': ma200, 'adx': adx, 'rsi': rsi
-    }
+    """Wrapper: delega en sono_score.py (contrato unificado)."""
+    return sono_compute_score(candles)
 
 # ==================================================-------------
 # PIONEX API
