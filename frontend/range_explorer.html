@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Range Intelligence | BTC</title>
+<script>var currentAsset="BTCUSDT",currentAssetLabel="BTC";</script>
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
@@ -17,6 +18,13 @@
   <nav class="topbar-actions">
     <a href="index.html">Dashboard</a>
     <a href="trades_explorer.html">Trades</a>
+    
+<div class="asset-tabs" style="margin-left:auto">
+<button class="asset-btn active" data-asset="BTC">BTC</button>
+<button class="asset-btn" data-asset="ETH">ETH</button>
+<button class="asset-btn" data-asset="SOL">SOL</button>
+<button class="asset-btn" data-asset="XRP">XRP</button>
+</div>
   </nav>
 </header>
 
@@ -382,6 +390,22 @@ function connectWS(){
 }
 
 // ── INIT ──────────────────────────────
+function onAssetChange(asset,label){COIN=asset;currentAsset=asset;currentAssetLabel=label;document.title="Range Intelligence | "+label;fetchAllKlines().then(function(){renderHero();renderTFCards()});}
+
+// Asset selector - multi asset support
+document.querySelectorAll('.asset-btn').forEach(function(btn){
+ btn.addEventListener('click',function(){
+  document.querySelectorAll('.asset-btn').forEach(function(b){b.classList.remove('active')});
+  this.classList.add('active');
+  var a=this.dataset.asset;
+  var sm={BTC:'BTCUSDT',ETH:'ETHUSDT',SOL:'SOLUSDT',XRP:'XRPUSDT'};
+  currentAsset=sm[a]||'BTCUSDT';
+  currentAssetLabel=a;
+  // Re-trigger full data load
+  if(typeof onAssetChange==='function')onAssetChange(currentAsset,currentAssetLabel);
+ })
+});
+
 async function init(){
   await fetchAllKlines();
   renderHero();

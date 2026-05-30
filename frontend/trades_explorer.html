@@ -17,6 +17,13 @@
   <div class="topbar-actions">
     <a href="index.html">Dashboard</a>
     <a href="range_explorer.html">Rangos</a>
+    
+<div class="asset-tabs" style="margin-left:auto">
+<button class="asset-btn active" data-asset="BTC">BTC</button>
+<button class="asset-btn" data-asset="ETH">ETH</button>
+<button class="asset-btn" data-asset="SOL">SOL</button>
+<button class="asset-btn" data-asset="XRP">XRP</button>
+</div>
   </div>
 </header>
 
@@ -170,6 +177,8 @@
 </main>
 
 <script>
+var currentAsset="BTCUSDT",currentAssetLabel="BTC";
+
 'use strict';
 
 // ── DATOS DEMO (reemplazar con fetch a tu API) ──────────
