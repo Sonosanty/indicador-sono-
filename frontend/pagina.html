@@ -3,15 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Indicador BTC Macro</title>
+<title>SONO PRO — Score Maestro · Macro · Live</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body class="btc-dashboard">
 
 <header class="topbar">
   <div>
-    <h1>Indicador BTC Macro</h1>
-    <p>Contexto macro · BTC live · señales · lectura multi-timeframe</p>
+    <h1>SONO PRO <span style="font-size:12px;color:var(--tx3);font-weight:400;">— Score Maestro</span></h1>
+    <div class="live-bar">
+      <span class="live-dot on" id="liveDot"></span>
+      <span class="live-label" id="liveLabel">LIVE</span>
+      <span class="live-stale" id="liveStale">—</span>
+      <span class="live-latency" id="liveLatency">—</span>
+    </div>
   </div>
   <nav class="topbar-actions">
     <a href="trades_explorer.html">Trades</a>
@@ -20,6 +25,41 @@
 </header>
 
 <main class="dashboard-shell">
+
+  <!-- ASSET SELECTOR -->
+  <div class="asset-row" style="margin-bottom:10px;">
+    <span style="font-size:10px;color:var(--tx3);font-weight:600;letter-spacing:1px;text-transform:uppercase;">Activo:</span>
+    <button class="asset-btn active" data-asset="BTC">BTC</button>
+    <button class="asset-btn" data-asset="ETH">ETH</button>
+    <button class="asset-btn" data-asset="SOL">SOL</button>
+    <button class="asset-btn" data-asset="XRP">XRP</button>
+  </div>
+
+  <!-- SCORE MAESTRO HERO -->
+  <div class="score-hero-bar">
+    <div>
+      <div class="label">Score Maestro</div>
+      <div class="score-num" id="smScore">--</div>
+    </div>
+    <div style="flex:1;">
+      <div class="score-signal" id="smSignal">&#8212;</div>
+      <div style="font-size:11px;color:var(--tx3);margin-top:4px;" id="smDecision">&#8212;</div>
+    </div>
+    <div class="pillar-inline">
+      <span class="pillar-chip" id="smP1">P1: --</span>
+      <span class="pillar-chip" id="smP2">P2: --</span>
+      <span class="pillar-chip" id="smP3">P3: --</span>
+    </div>
+    <div style="text-align:right;font-size:9px;color:var(--tx4);font-family:var(--mono);">
+      <div id="smRSI">RSI: --</div>
+      <div id="smADX">ADX: --</div>
+    </div>
+  </div>
+
+  <!-- SCORE TIMELINE -->
+  <div class="signal-line" id="signalTimeline">
+    <div class="signal-item"><span style="color:var(--tx4);">Esperando primera se&ntilde;al...</span></div>
+  </div>
 
   <!-- ── MACRO TOP: PRECIO + ESTADO ── -->
   <section class="macro-top-grid">
@@ -384,6 +424,316 @@ async function init() {
 }
 
 init();
+// ── ASSET SELECTOR ──
+document.querySelectorAll('.asset-btn').forEach(function(btn){
+  btn.addEventListener('click', async function(){
+    document.querySelectorAll('.asset-btn').forEach(function(b){b.classList.remove('active')});
+    this.classList.add('active');
+    activeAsset = this.dataset.asset;
+    document.getElementById('assetLabel').textContent = activeAsset;
+    _prevSignal = null;
+    await loadPrice();
+    await updateScore();
+  });
+});
+
+// ── LIVE STATUS ──
+let wsConnected = false;
+let lastTick = Date.now();
+let staleTimer = null;
+let _prevSignal = null;
+
+function setLiveStatus(status) {
+  var dot = document.getElementById('liveDot');
+  var label = document.getElementById('liveLabel');
+  dot.className = 'live-dot ' + status;
+  label.textContent = status === 'on' ? 'LIVE' : status === 'stalled' ? 'STALLED' : 'ERROR';
+  label.style.color = status === 'on' ? 'var(--green)' : status === 'stalled' ? 'var(--yellow)' : 'var(--red)';
+}
+
+function updateStale() {
+  if(!lastTick) return;
+  var secs = Math.floor((Date.now() - lastTick) / 1000);
+  var el = document.getElementById('liveStale');
+  if(!el) return;
+  el.textContent = secs < 60 ? secs + 's' : Math.floor(secs/60) + 'm ' + (secs%60) + 's';
+  if(secs > 30) setLiveStatus('stalled');
+  if(secs > 120) setLiveStatus('error');
+}
+
+// ── WEB AUDIO ──
+var audioCtx = null;
+function playAlert(){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'sine'; o.frequency.value = 880;
+    g.gain.value = 0.08;
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + 0.5);
+  }catch(e){}
+}
+
+// ── LOCALSTORAGE SEÑALES ──
+var signalHistory = JSON.parse(localStorage.getItem('sono_signals') || '[]');
+
+function saveSignal(score, signal, price){
+  var entry = {t:Date.now(), time:new Date().toLocaleTimeString('es-ES'), score:score, signal:signal, price:price, asset:activeAsset};
+  signalHistory.unshift(entry);
+  if(signalHistory.length > 50) signalHistory = signalHistory.slice(0, 50);
+  localStorage.setItem('sono_signals', JSON.stringify(signalHistory));
+  renderTimeline();
+  var fs = document.getElementById('footerSignals');
+  if(fs) fs.textContent = signalHistory.length + ' senales hoy';
+}
+
+function renderTimeline(){
+  var el = document.getElementById('signalTimeline');
+  if(!el) return;
+  if(!signalHistory.length){
+    el.innerHTML = '<div class=\"signal-item\"><span style=\"color:var(--tx4);\">Esperando primera senal...</span></div>';
+    return;
+  }
+  el.innerHTML = signalHistory.slice(0, 8).map(function(s){
+    var dotColor = s.signal === 'COMPRA FUERTE' || s.signal === 'COMPRA' ? 'var(--green)' : 
+                   s.signal === 'VENTA' || s.signal === 'VENTA FUERTE' ? 'var(--red)' : 'var(--yellow)';
+    return '<div class=\"signal-item\"><span class=\"signal-dot\" style=\"background:'+dotColor+'\"></span>'+
+           '<span class=\"signal-time\">'+s.time+'</span>'+
+           '<strong>'+s.signal+'</strong> <span style=\"color:var(--tx4)\">'+s.score+'/100</span></div>';
+  }).join('');
+}
+
+// ── CALC RSI ──
+function calcRSI(closes, period){
+  period = period || 14;
+  var rsi = new Array(closes.length).fill(0);
+  var gains=0, losses=0;
+  for(var i=1;i<=period;i++){
+    var d=closes[i]-closes[i-1];
+    d>0?gains+=d:losses-=d;
+  }
+  var avgG=gains/period, avgL=losses/period||0.001;
+  rsi[period]=100-100/(1+avgG/avgL);
+  for(var i=period+1;i<closes.length;i++){
+    var d=closes[i]-closes[i-1];
+    avgG=(avgG*(period-1)+(d>0?d:0))/period;
+    avgL=(avgL*(period-1)+(d<0?-d:0))/period;
+    rsi[i]=100-100/(1+avgG/avgL);
+  }
+  return rsi;
+}
+
+// ── CALC ADX ──
+function calcADX(closes, period){
+  period = period || 14;
+  if(!closes || closes.length < period * 2) return 25;
+  var sumDX = 0;
+  for(var i = closes.length - period * 2; i < closes.length - 1; i++){
+    var up = closes[i+1] - closes[i];
+    var dn = closes[i] - closes[i+1];
+    var tr = Math.max(Math.abs(closes[i+1]-closes[i]), Math.abs(closes[i+1]-closes[i]), Math.abs(closes[i+1]-closes[i])) || 1;
+    var dmP = Math.max(up, 0);
+    var dmM = Math.max(dn, 0);
+    var diP = dmP/tr*100, diM = dmM/tr*100;
+    sumDX += Math.abs(diP-diM)/(diP+diM+0.001)*100;
+  }
+  return sumDX / (period * 2 - 1);
+}
+
+// ── SCORE MAESTRO (3 PILARES) ──
+function computeScore(closes){
+  if(!closes || closes.length < 210) return null;
+  
+  var rsiArr = calcRSI(closes, 14);
+  var rsi = rsiArr[rsiArr.length-1] || 50;
+  var adx = calcADX(closes, 14);
+  
+  var p1=0, p2=0, p3=0;
+  
+  if(closes.length >= 200){
+    var ma6 = closes.slice(-6).reduce(function(a,b){return a+b},0)/6;
+    var ma40 = closes.slice(-40).reduce(function(a,b){return a+b},0)/40;
+    var ma70 = closes.slice(-70).reduce(function(a,b){return a+b},0)/70;
+    var ma200 = closes.slice(-200).reduce(function(a,b){return a+b},0)/200;
+    if(ma6 > ma40) p1 += 12;
+    if(ma6 > ma70) p1 += 10;
+    if(ma40 > ma200) p1 += 13;
+  }
+  
+  if(rsi > 50 && rsi < 70) p2 += 12;
+  else if(rsi >= 35) p2 += 7;
+  else p2 += 2;
+  
+  if(adx > 35) p2 += 15;
+  else if(adx > 25) p2 += 10;
+  else p2 += 3;
+  
+  var price = closes[closes.length-1];
+  var bb20 = closes.slice(-20).reduce(function(a,b){return a+b},0)/20;
+  var bbStd = Math.sqrt(closes.slice(-20).map(function(c){return (c-bb20)*(c-bb20)}).reduce(function(a,b){return a+b},0)/20);
+  var bbUpper = bb20 + 2*bbStd, bbLower = bb20 - 2*bbStd;
+  var bbp = bbStd > 0 ? (price - bbLower) / (bbUpper - bbLower) : 0.5;
+  
+  if(bbp < 0.15) p3 = 28;
+  else if(bbp < 0.35) p3 = 20;
+  else if(bbp < 0.65) p3 = 14;
+  else if(bbp < 0.85) p3 = 7;
+  else p3 = 2;
+  
+  var total = Math.min(100, Math.max(0, p1 + p2 + p3));
+  
+  var signal, decision, zone;
+  if(total >= 78){ signal='COMPRA FUERTE'; decision='LONG'; zone='Euforia'; }
+  else if(total >= 62){ signal='COMPRA'; decision='LONG PRUDENTE'; zone='Optimismo'; }
+  else if(total >= 52){ signal='ACUMULAR'; decision='ESPERAR'; zone='Neutral+'; }
+  else if(total >= 42){ signal='NEUTRAL'; decision='ESPERAR'; zone='Neutral'; }
+  else if(total >= 30){ signal='VENTA'; decision='SHORT PRUDENTE'; zone='Miedo'; }
+  else if(total >= 18){ signal='VENTA FUERTE'; decision='SHORT'; zone='Acumulacion'; }
+  else{ signal='CAPITULACION'; decision='CASH/FUERA'; zone='Panico'; }
+  
+  return {total:total, p1:p1, p2:p2, p3:p3, rsi:rsi, adx:adx, signal:signal, decision:decision, zone:zone, bbp:bbp, price:price};
+}
+
+// ── FETCH KLINES ──
+async function fetchKlines(sym, tf, limit){
+  tf = tf || '15m';
+  limit = limit || 210;
+  try{
+    var d = await fetchJSON('https://api.binance.com/api/v3/klines?symbol='+sym+'&interval='+tf+'&limit='+limit);
+    return d.map(function(k){return parseFloat(k[4])});
+  }catch(e){ return null; }
+}
+
+// ── ACTUALIZAR SCORE ──
+async function updateScore(){
+  var sym = 'BTCUSDT';
+  if(window.ASSET_MAP && ASSET_MAP[activeAsset]) sym = ASSET_MAP[activeAsset];
+  else if(activeAsset === 'BTC') sym = 'BTCUSDT';
+  else if(activeAsset === 'ETH') sym = 'ETHUSDT';
+  else if(activeAsset === 'SOL') sym = 'SOLUSDT';
+  else if(activeAsset === 'XRP') sym = 'XRPUSDT';
+  
+  var closes = await fetchKlines(sym);
+  if(!closes) return;
+  
+  var score = computeScore(closes);
+  if(!score) return;
+  
+  setText('smScore', score.total);
+  setText('smSignal', score.signal);
+  var sigEl = document.getElementById('smSignal');
+  if(sigEl){
+    sigEl.className = 'score-signal ' +
+      (score.signal.indexOf('COMPRA') >= 0 ? 'score-buy' :
+       score.signal.indexOf('VENTA') >= 0 || score.signal === 'CAPITULACION' ? 'score-sell' :
+       score.signal === 'ACUMULAR' ? 'score-accum' : 'score-neutral');
+  }
+  setText('smDecision', score.decision + ' . ' + score.zone);
+  setText('smP1', 'P1: '+score.p1+'/35');
+  setText('smP2', 'P2: '+score.p2+'/35');
+  setText('smP3', 'P3: '+score.p3+'/30');
+  setText('smRSI', 'RSI: '+score.rsi.toFixed(1));
+  setText('smADX', 'ADX: '+score.adx.toFixed(1));
+  
+  // Alerta sonora al cambiar senal
+  if(window._prevSignal !== undefined && window._prevSignal !== null && score.signal !== window._prevSignal){
+    playAlert();
+    saveSignal(score.total, score.signal, score.price);
+  }
+  window._prevSignal = score.signal;
+  
+  // Primera senal
+  if(window._prevSignal && score.signal !== 'NEUTRAL'){
+    saveSignal(score.total, score.signal, score.price);
+  }
+}
+
+function setText(id, val){
+  var el = document.getElementById(id);
+  if(el) el.textContent = val;
+}
+
+// ── PATCH: loadPrice con asset selector ──
+// La funcion loadPrice ya existe arriba, la sobreescribimos
+var _origLoadPrice = window.loadPrice;
+window.loadPrice = async function(){
+  var sym = 'BTCUSDT';
+  if(activeAsset === 'ETH') sym = 'ETHUSDT';
+  else if(activeAsset === 'SOL') sym = 'SOLUSDT';
+  else if(activeAsset === 'XRP') sym = 'XRPUSDT';
+  
+  try{
+    var d = await fetchJSON('https://api.binance.com/api/v3/ticker/24hr?symbol='+sym);
+    var eur = await fetchJSON('https://api.binance.com/api/v3/ticker/price?symbol=EURUSDT');
+    EUR_RATE = parseFloat(eur.price) || 0.857;
+    window.priceData = {
+      usd: parseFloat(d.lastPrice), chg: parseFloat(d.priceChangePercent),
+      high: parseFloat(d.highPrice), low: parseFloat(d.lowPrice),
+      vol: parseFloat(d.quoteVolume)
+    };
+    applyPrice();
+    lastTick = Date.now();
+    setLiveStatus('on');
+    // Actualizar score con el nuevo activo
+    await updateScore();
+  }catch(e){ console.warn('Price error:', e.message); }
+};
+
+// ── STALE TIMER ──
+// Parchear applyPrice para resetear stale
+var _origApply = window.applyPrice;
+window.applyPrice = function(){
+  if(!window.priceData) return;
+  var usd = priceData.usd, chg = priceData.chg, high = priceData.high, low = priceData.low;
+  var eur = usd * EUR_RATE;
+  var up = chg >= 0;
+  setText('btcUsdLive', '$' + (usd>=100?fmtN(usd,2):fmtN(usd,4)));
+  setText('btcEurLive', '\u20AC'+fmtN(eur,2));
+  var hEl = document.getElementById('historyBTC');
+  if(hEl) hEl.textContent = 'Historico cargado . min $'+fmtN(low,0)+' . max $'+fmtN(high,0);
+  var badge = document.getElementById('btcChange24hLive');
+  if(badge){
+    badge.textContent = (up?'+':'')+fmtN(chg,2)+'% 24h';
+    badge.className = 'badge '+(chg>0.3?'positivo':chg<-0.3?'negativo':'neutro');
+  }
+  var t = now();
+  setText('lastUpdateBTC', 'Ultima actualizacion: '+t);
+  setText('lastSnapshotFooter', t);
+  lastTick = Date.now();
+  setLiveStatus('on');
+};
+
+// ── PATCH: connectWS para latencia ──
+var _origWS = window.connectWS;
+if(window.connectWS){
+  window.connectWS = function(){
+    try{
+      var ws = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade');
+      ws.onmessage = function(e){
+        var d = JSON.parse(e.data);
+        var p = parseFloat(d.p);
+        if(p && window.priceData){
+          priceData.usd = p;
+          applyPrice();
+        }
+        var latEl = document.getElementById('liveLatency');
+        if(latEl) latEl.textContent = new Date().toLocaleTimeString('es-ES');
+      };
+      ws.onclose = function(){ setTimeout(function(){ try{ window.connectWS(); }catch(e){} }, 5000); };
+      ws.onerror = function(){ ws.close(); };
+    }catch(e){}
+  };
+}
+
+// ── INIT PATCH ──
+renderTimeline();
+setInterval(updateStale, 2000);
+
+console.log('SONO PRO — Score Maestro loaded');
 </script>
 </body>
 </html>
+
+
+
