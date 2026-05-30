@@ -5,7 +5,7 @@
 // ÚNICAMENTE en el JSON; este código lo consume.
 // ═══════════════════════════════════════════════════════════════
 
-import scoreConfig from '../../indicador-sono-repo/sono-score-config.json'
+import scoreConfig from '../sono-score-config.json'
 
 // ── helpers ──────────────────────────────────────────────
 export const calcMA = (arr, p) =>

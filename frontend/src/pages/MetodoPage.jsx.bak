@@ -1,16 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
-import { Chart, registerables } from 'chart.js'
 import TopBar from '../components/TopBar.jsx'
-import { computeScore, calcMA, calcBB, calcRSI, calcADX, calcATR } from '../engine/scoreEngine.js'
 import './pages.css'
-
-Chart.register(...registerables)
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 const SYMBOLS = { BTC: 'BTCUSDT', ETH: 'ETHUSDT', SOL: 'SOLUSDT', XRP: 'XRPUSDT' }
 const DECIMALS = { BTC: 2, ETH: 2, SOL: 3, XRP: 4 }
-const BINANCE_INTERVALS = { '1m': '1m', '5m': '5m', '1h': '1h', '4h': '4h', '1d': '1d' }
-const CANDLE_LIMITS = { '1m': 48, '5m': 72, '1h': 48, '4h': 48, '1d': 50 }
+const TF_MAP = { '1m': 1, '5m': 5, '1h': 60, '4h': 240, '1d': '1d' }
+const CANDLE_LIMITS = { 1: 48, 5: 72, 60: 48, 240: 48, '1d': 50 }
 
 const fmt = (n, d = 2) => n == null || isNaN(n) ? '—' : n.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })
 
@@ -109,33 +105,69 @@ function useFNG() {
   return fg
 }
 
-// ─── SCORE CALC (usando scoreEngine.js real) ────────────────
-function computeScoreReal(candles, fg) {
-  // Usa el computeScore del engine real, que necesita 210+ velas
-  const score = computeScore(candles)
-  if (!score) return null
-  
-  // Determinar label y color
-  let label = score.label
-  let color = score.biasColor === 'success' ? 'var(--go)' :
-               score.biasColor === 'primary' ? 'var(--info)' :
-               score.biasColor === 'warning' ? 'var(--caution)' : 'var(--stop)'
-  
-  return {
-    total: score.total,
-    p1: score.p1,
-    p2: score.p2,
-    p3: score.p3,
-    label,
-    color,
-    rsi: score.rsi,
-    adx: score.adx,
-    ma6: score.ma6,
-    ma40: score.ma40,
-    ma70: score.ma70,
-    ma200: score.ma200,
-    bb: score.bb
+// ─── SCORE CALC ──────────────────────────────────────────────
+function calcScoreFromIndicators(fg, maRatio, rsi) {
+  let p1 = 15
+  if (maRatio != null) {
+    if (maRatio > 1.02) p1 = 35
+    else if (maRatio > 1.005) p1 = 25
+    else if (maRatio < 0.98) p1 = 5
+    else if (maRatio < 0.995) p1 = 10
   }
+  let p2 = 15
+  if (fg != null) {
+    if (fg < 20) p2 = 28
+    else if (fg < 40) p2 = 22
+    else if (fg < 55) p2 = 15
+    else if (fg < 75) p2 = 5
+    else p2 = 0
+  }
+  let p3 = 13
+  if (rsi != null) {
+    if (rsi < 30) p3 = 25
+    else if (rsi < 40) p3 = 20
+    else if (rsi < 50) p3 = 13
+    else if (rsi < 60) p3 = 8
+    else if (rsi < 70) p3 = 5
+    else p3 = 0
+  }
+  const total = Math.min(100, Math.max(0, p1 + p2 + p3))
+  let label = 'NEUTRO'
+  let color = 'var(--caution)'
+  if (fg != null && fg < 30) label = 'PÁNICO'
+  else if (total >= 65) label = 'ACUMULACIÓN'
+  else if (total >= 50) label = 'NEUTRAL'
+  else if (total >= 35) label = 'MIEDO'
+  else label = 'PÁNICO'
+  if (total >= 60) color = 'var(--go)'
+  else if (total < 40) color = 'var(--stop)'
+  else color = 'var(--caution)'
+  return { total, p1, p2, p3, label, color }
+}
+
+function calcMA(data, period) {
+  return data.map((_, i) => {
+    const slice = data.slice(Math.max(0, i + 1 - period), i + 1)
+    return slice.length < period ? null : +(slice.reduce((a, b) => a + b.c, 0) / period).toFixed(2)
+  })
+}
+
+function calcRSI(data, period) {
+  const gains = [], losses = []
+  for (let i = 1; i < data.length; i++) {
+    const d = data[i].c - data[i - 1].c
+    gains.push(Math.max(0, d))
+    losses.push(Math.max(0, -d))
+  }
+  const rsi = [null]
+  for (let i = period; i <= gains.length; i++) {
+    const avgG = gains.slice(i - period, i).reduce((a, b) => a + b, 0) / period
+    const avgL = losses.slice(i - period, i).reduce((a, b) => a + b, 0) / period
+    const rs = avgL === 0 ? 100 : avgG / avgL
+    rsi.push(+Math.round(100 - 100 / (1 + rs)))
+  }
+  while (rsi.length < data.length) rsi.unshift(null)
+  return rsi
 }
 
 // ─── COMPONENTS ──────────────────────────────────────────────
@@ -188,10 +220,7 @@ export default function MetodoPage({ activeAsset = 'BTC', onSetAsset = () => {} 
   const [maSignal, setMaSignal] = useState({ text: '—', cls: 'sv-warn' })
   const [bbSignal, setBbSignal] = useState({ text: '—', cls: 'sv-warn' })
   const [rsi, setRsi] = useState(null)
-  const [adx, setAdx] = useState(null)
-  const [lastPrice, setLastPrice] = useState(null)
   const chartRef = useRef(null)
-  const canvasRef = useRef(null)
   const asset = selectedAsset
 
   // FNG
@@ -226,56 +255,33 @@ export default function MetodoPage({ activeAsset = 'BTC', onSetAsset = () => {} 
     return () => clearInterval(iv)
   }, [])
 
-  // Cargar velas (AL MENOS 220 para score real) + calcular indicadores + chart
+  // Cargar velas + calcular indicadores + chart
   useEffect(() => {
-    const limit = Math.max(220, CANDLE_LIMITS[currentTF] || 48)
+    const interval = TF_MAP[currentTF]
+    const limit = CANDLE_LIMITS[typeof interval === 'number' ? interval : interval] || 48
 
     const load = async () => {
       try {
         const r = await fetch(`https://api.binance.com/api/v3/klines?symbol=${SYMBOLS[asset]}&interval=${currentTF}&limit=${limit}`)
         const d = await r.json()
-        const candles = d.map(k => ({ open: parseFloat(k[1]), high: parseFloat(k[2]), low: parseFloat(k[3]), close: parseFloat(k[4]), volume: parseFloat(k[5]), time: k[0] }))
+        const candles = d.map(k => ({ t: k[0], o: parseFloat(k[1]), h: parseFloat(k[2]), l: parseFloat(k[3]), c: parseFloat(k[4]), v: parseFloat(k[5]) }))
 
         if (candles.length < 10) return
-        const prices = candles.map(c => c.close)
+        const prices = candles.map(c => c.c)
         const labels = candles.map(c => {
-          const dt = new Date(c.time)
-          const h = dt.getHours().toString().padStart(2, '0')
-          const m = dt.getMinutes().toString().padStart(2, '0')
-          return currentTF === '1d' ? `${dt.getDate()}/${dt.getMonth()+1}` : `${h}:${m}`
+          const dt = new Date(c.t)
+          return dt.getHours().toString().padStart(2, '0') + ':' + dt.getMinutes().toString().padStart(2, '0')
         })
-
-        // Calcular MAs con el engine real
-        const ma6 = candles.map((_, i) => {
-          const pricesSlice = prices.slice(Math.max(0, i + 1 - 6), i + 1)
-          return pricesSlice.length < 6 ? null : pricesSlice.reduce((a, b) => a + b, 0) / 6
-        })
-        const ma20 = candles.map((_, i) => {
-          const pricesSlice = prices.slice(Math.max(0, i + 1 - 20), i + 1)
-          return pricesSlice.length < 20 ? null : pricesSlice.reduce((a, b) => a + b, 0) / 20
-        })
-        const ma70 = candles.map((_, i) => {
-          const pricesSlice = prices.slice(Math.max(0, i + 1 - 70), i + 1)
-          return pricesSlice.length < 70 ? null : pricesSlice.reduce((a, b) => a + b, 0) / 70
-        })
-
-        // RSI con el engine real
-        const rsiVals = candles.map((_, i) => calcRSI(prices.slice(0, i + 1), 14))
-        
+        const ma6 = calcMA(candles, 6).map(v => v != null ? parseFloat(v) : null)
+        const ma70 = calcMA(candles, 70).map(v => v != null ? parseFloat(v) : null)
+        const rsiArr = calcRSI(candles, 14)
         const lastMA6 = ma6[ma6.length - 1]
         const lastMA70 = ma70[ma70.length - 1]
-        const lastRSI = rsiVals[rsiVals.length - 1]
-        const currentPrice = prices[prices.length - 1]
-        
-        setLastPrice(currentPrice)
-        setRsi(lastRSI)
+        const lastRSI = rsiArr[rsiArr.length - 1]
+        const lastPrice = candles[candles.length - 1].c
+        const lastCandle = candles[candles.length - 1]
 
-        // Calcular ADX
-        const adxVal = calcADX(candles, 14)
-        setAdx(adxVal)
-        
-        // Calcular ATR
-        const atrVal = calcATR(candles, 14)
+        setRsi(lastRSI)
 
         // MA signal
         if (lastMA6 != null && lastMA70 != null && lastMA70 > 0) {
@@ -283,9 +289,13 @@ export default function MetodoPage({ activeAsset = 'BTC', onSetAsset = () => {} 
           if (ratio > 1.01) setMaSignal({ text: 'LONG ↑', cls: 'sv-go' })
           else if (ratio < 0.99) setMaSignal({ text: 'SHORT ↓', cls: 'sv-stop' })
           else setMaSignal({ text: 'NEUTRO', cls: 'sv-warn' })
+
+          // Score
+          const s = calcScoreFromIndicators(fg?.value, ratio, lastRSI)
+          setScore(s)
         }
 
-        // BB signal
+        // BB signal (simplified)
         if (lastRSI != null) {
           if (lastRSI < 30) setBbSignal({ text: 'Sobreventa', cls: 'sv-go' })
           else if (lastRSI > 70) setBbSignal({ text: 'Sobrecompra', cls: 'sv-stop' })
@@ -294,31 +304,12 @@ export default function MetodoPage({ activeAsset = 'BTC', onSetAsset = () => {} 
           else setBbSignal({ text: 'NEUTRO', cls: 'sv-warn' })
         }
 
-        // Score Maestro REAL (necesita 210 velas mínimo)
-        if (candles.length >= 210) {
-          const s = computeScore(candles)
-          if (s) {
-            const color = s.biasColor === 'success' ? 'var(--go)' :
-                           s.biasColor === 'primary' ? 'var(--info)' :
-                           s.biasColor === 'warning' ? 'var(--caution)' : 'var(--stop)'
-            setScore({ total: s.total, p1: s.p1, p2: s.p2, p3: s.p3, label: s.label, color })
-          }
-        } else {
-          // Fallback con menos velas
-          const s = computeScore(candles)
-          if (s) {
-            const color = s.biasColor === 'success' ? 'var(--go)' :
-                           s.biasColor === 'primary' ? 'var(--info)' :
-                           s.biasColor === 'warning' ? 'var(--caution)' : 'var(--stop)'
-            setScore({ total: s.total, p1: s.p1, p2: s.p2, p3: s.p3, label: s.label, color })
-          }
-        }
-
-        // Chart.js (importado como módulo, no CDN)
-        const ctx = chartRef.current?.getContext('2d')
-        if (ctx) {
+        // Chart.js
+        if (window.Chart) {
+          const ctx = chartRef.current?.getContext('2d')
+          if (!ctx) return
           if (chart) chart.destroy()
-          const newChart = new Chart(ctx, {
+          const newChart = new window.Chart(ctx, {
             type: 'line',
             data: {
               labels,
@@ -348,10 +339,16 @@ export default function MetodoPage({ activeAsset = 'BTC', onSetAsset = () => {} 
           setChart(newChart)
         }
 
-      } catch (e) { console.error('MetodoPage error:', e) }
+        // Stop / Target
+        const stopEl = document.getElementById('sig-stop')
+        const targetEl = document.getElementById('sig-target')
+        if (stopEl) stopEl.textContent = '$' + fmt(lastPrice * 0.98, DECIMALS[asset])
+        if (targetEl) targetEl.textContent = '$' + fmt(lastPrice * 1.04, DECIMALS[asset])
+
+      } catch {}
     }
     load()
-  }, [asset, currentTF])
+  }, [asset, currentTF, fg])
 
   const currentTicker = tickerData[asset]
   const currentPrice = currentTicker?.price || 0
