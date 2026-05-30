@@ -11,14 +11,23 @@ export default defineConfig({
       closeBundle() {
         const outDir = path.resolve('..', 'indicador_cloudflare')
         
-        // 1. Copiar metodo.html → metodo/index.html
+        // 1. Copiar pagina.html (v2 dashboard) → /v2/index.html
+        const srcV2 = path.resolve('pagina.html')
+        if (fs.existsSync(srcV2)) {
+          const dstV2 = path.join(outDir, 'v2', 'index.html')
+          fs.mkdirSync(path.dirname(dstV2), { recursive: true })
+          fs.copyFileSync(srcV2, dstV2)
+          console.log('[post-build] pagina.html (v2) copiado a /v2/')
+        }
+
+        // 2. Copiar metodo.html → metodo/index.html
         const srcM = path.resolve('metodo.html')
         const dstM = path.join(outDir, 'metodo', 'index.html')
         fs.mkdirSync(path.dirname(dstM), { recursive: true })
         fs.copyFileSync(srcM, dstM)
         console.log('[post-build] metodo.html copiado')
 
-        // 1b. Copiar _routes.json para que Cloudflare sirva /metodo como estático
+        // 3. Copiar _routes.json para que Cloudflare sirva /metodo y /v2 como estático
         const routesSrc = path.resolve('_routes.json')
         const routesDst = path.join(outDir, '_routes.json')
         if (fs.existsSync(routesSrc)) {
@@ -26,7 +35,7 @@ export default defineConfig({
           console.log('[post-build] _routes.json copiado')
         }
 
-        // 2. Leer el index.html generado por Vite para extraer los hashes de assets
+        // 4. Leer el index.html generado por Vite para extraer los hashes de assets
         const generatedHtml = fs.readFileSync(path.join(outDir, 'index.html'), 'utf-8')
         
         // Extraer los src/href de assets
@@ -36,7 +45,7 @@ export default defineConfig({
         const mainScript = scriptMatch ? scriptMatch[1] : '/assets/index.js'
         const mainCss = cssMatch ? cssMatch[1] : ''
 
-        // 3. Escribir index.html con title correcto y CSP completo
+        // 5. Escribir index.html con title correcto y CSP completo
         const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
