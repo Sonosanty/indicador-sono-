@@ -803,12 +803,8 @@
   <script>
 window.onerror = function(m,s,l,c,e){document.getElementById("connection-status").textContent="Err: "+m;};
 
-window.onerror = function(m,s,l,c,e){document.getElementById("connection-status").textContent="Err: "+m;};
 
-
-// Terminal IDs mapping
-const $ = id => document.getElementById(id);
-
+// Terminal IDs mapping — $ defined in core engine below
 // Core engine functions
 const $=id=>document.getElementById(id);
 const fn=(n,d=2)=>Number(n).toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});

@@ -1,0 +1,18 @@
+{
+  "lastUpdate": "2026-05-30T22:23:00+02:00",
+  "data": {
+    "fearGreed": { "value": 23, "classification": "Extreme Fear", "timestamp": "2026-05-30" },
+    "btcPrice": 73966,
+    "btcDominance": 57.36,
+    "marketCapTotalUsd": 2.58e12,
+    "marketCap24hChange": 1.06,
+    "volume24hChange": -32.55,
+    "btcDominancePrev": 57.36,
+    "fearGreedPrev": 23
+  },
+  "alerts": {
+    "lastFearGreedAlert": null,
+    "lastScoreAlert": null,
+    "lastTradeAlert": null
+  }
+}

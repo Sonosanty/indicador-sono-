@@ -12,7 +12,8 @@ from dotenv import load_dotenv
 from datetime import datetime
 
 # ── Score engine unificado (misma lógica que la SPA) ─────
-sys.path.insert(0, r'C:\Users\sparreno\.openclaw\workspace')
+_BOT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, _BOT_DIR)
 from sono_score import compute_score as sono_compute_score
 # ────────────────────────────────────────────────────────────
 
@@ -345,7 +346,7 @@ class SonoBot:
                         alert_key = f'cross_{asset}'
                         if self._should_alert(alert_key):
                             try:
-                                alert_msg = format_score_cross_alert(asset, old_score, score)
+                                alert_msg = format_score_cross_alert(asset, old_score, score, score)
                                 send_alert(alert_msg)
                                 logger.info(f'Telegram: alerta cambio de señal {asset}: {old_signal} -> {new_signal}')
                             except Exception as e:
@@ -356,8 +357,8 @@ class SonoBot:
                         alert_key = f'extreme_{asset}_{new_signal}'
                         if self._should_alert(alert_key) and old_signal != new_signal:
                             try:
-                                alert_msg = format_score_alert(asset, score)
-                                send_alert(f'🚨 <b>ALERTA EXTREMA: {asset}</b>\n' + alert_msg.split('\n', 1)[1])
+                                alert_msg = format_score_alert(asset, score, price=None, action=f'ALERTA EXTREMA: {new_signal}')
+                                send_alert(alert_msg)
                                 logger.info(f'Telegram: alerta extrema {asset}: {new_signal}')
                             except Exception as e:
                                 logger.error(f'Error enviando alerta extrema: {e}')

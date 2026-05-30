@@ -1,54 +1,36 @@
-"""
-telegram_alerts.py — Alertas a Telegram para Sono Bot.
-
-Dependencias: requests
-Token y chat_id desde variables de entorno (TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
-Carga desde .env via python-dotenv si esta disponible.
-
-Para desactivar: TELEGRAM_DISABLED=1 en .env o variable de entorno
-"""
-import sys, os, logging, json
-from datetime import datetime
-
-# Cargar .env si existe
-try:
-    from dotenv import load_dotenv
-    dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
-    if os.path.exists(dotenv_path):
-        load_dotenv(dotenv_path)
-except ImportError:
-    pass
-
-# Configuracion
-BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
-CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', '')
-DISABLED = os.getenv('TELEGRAM_DISABLED', '0') == '1'
-
-# Si no hay token, desactivado
-if not BOT_TOKEN:
-    DISABLED = True
+#!/usr/bin/env python3
+"""Telegram alerts system for Sono Bot."""
+import os
+import logging
+import requests
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 
-import requests
+# Load env vars
+load_dotenv()
 
-TELEGRAM_API = f'https://api.telegram.org/bot{BOT_TOKEN}'
+DISABLED = os.environ.get('TELEGRAM_DISABLED', '0') == '1'
+TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '')
+TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID', '')
+
+if DISABLED:
+    logger.info('Telegram alerts DISABLED (TELEGRAM_DISABLED=1)')
 
 
-def send_alert(message, chat_id=None):
-    """Envia mensaje a Telegram."""
-    if DISABLED:
-        return False
-    cid = chat_id or CHAT_ID
-    if not cid:
+def send_alert(message):
+    """Send alert to Telegram."""
+    if DISABLED or not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
+        logger.debug(f'[Telegram disabled] Would send: {message[:80]}...')
         return False
     try:
-        r = requests.post(f'{TELEGRAM_API}/sendMessage', json={
-            'chat_id': cid,
+        url = f'https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage'
+        r = requests.post(url, json={
+            'chat_id': TELEGRAM_CHAT_ID,
             'text': message,
             'parse_mode': 'Markdown'
         }, timeout=10)
-        if r.status_code != 200:
+        if not r.ok:
             logger.error(f'Telegram error {r.status_code}: {r.text}')
             return False
         return True
@@ -57,25 +39,34 @@ def send_alert(message, chat_id=None):
         return False
 
 
-def format_score_alert(balances, score, price, asset, action=''):
-    """Formatea alerta de score."""
+def format_score_alert(asset, score, price=None, action=''):
+    """Formatea alerta de score. Llamada desde sono_bot."""
     if DISABLED:
         return ''
-    emoji = '🟢' if score >= 70 else '🟡' if score >= 50 else '🔴'
-    return f'{emoji} *{asset}* Score: {score}/100 | ${price:,.2f} | {action}'
+    price_str = f' | ${price:,.2f}' if price else ''
+    if score >= 70:
+        emoji = '🟢'
+    elif score >= 50:
+        emoji = '🟡'
+    else:
+        emoji = '🔴'
+    return f'{emoji} *{asset}* Score: {score}/100{price_str} | {action}'
 
 
-def format_trade_alert(action, asset, price, size, reason=''):
+def format_trade_alert(action, asset, price, size, reason='', pnl=None):
     """Formatea alerta de trade."""
     if DISABLED:
         return ''
-    side = '🟢 BUY' if action == 'BUY' else '🔴 SELL'
-    return f'{side} *{asset}* ${price:,.2f} | Size: {size:.6f} | {reason}'
+    side = '✅ BUY' if action == 'BUY' else '❌ SELL'
+    pnl_str = ''
+    if pnl:
+        pnl_str = f' | PnL: ${pnl:.2f}' if isinstance(pnl, (int, float)) else ''
+    return f'{side} *{asset}* ${price:,.2f} | Size: {size:.6f} | {reason}{pnl_str}'
 
 
 def format_score_cross_alert(asset, old_score, new_score, price):
     """Formatea alerta de cruce de score."""
     if DISABLED:
         return ''
-    direction = '⬆️' if new_score > old_score else '⬇️'
+    direction = '🟢' if new_score > old_score else '🔴'
     return f'{direction} *{asset}* Score {old_score}→{new_score} @ ${price:,.2f}'

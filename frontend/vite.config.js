@@ -54,6 +54,13 @@ export default defineConfig({
           console.log('[post-build] _routes.json copiado')
         }
 
+        // 3b. sono-terminal.js (external JS)
+        const jsSrc = path.resolve('sono-terminal.js')
+        if (fs.existsSync(jsSrc)) {
+          fs.copyFileSync(jsSrc, path.join(outDir, 'sono-terminal.js'))
+          console.log('[post-build] sono-terminal.js copiado')
+        }
+
         // 4. pagina.html es ya /index.html (sobrescribe SPA)
         if (fs.existsSync(srcPag)) {
           fs.copyFileSync(srcPag, path.join(outDir, 'index.html'))

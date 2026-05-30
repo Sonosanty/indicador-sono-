@@ -13,14 +13,19 @@ indicador_cloudflare/
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Logs
+# Logs + temp files
 *.log
 logs/
+*.bak
+temp_*
+tmp/
 
 # Python
 venv/
@@ -28,7 +33,7 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Workspace files (do not commit agent identity)
+# Agent workspace (do not commit agent identity)
 AGENTS.md
 MEMORY.md
 SOUL.md
@@ -36,17 +41,17 @@ IDENTITY.md
 USER.md
 TOOLS.md
 HEARTBEAT.md
+memory/
 
 # Backups
 backup_*/
+backup_*
 
 # Wrangler cache
 .wrangler/cache/
 
 # Submodules / carpetas con git propio
 indicador-sono-repo/
-backup_sono_*/
-backup_*/
 
 # Heap snapshots
 *.heapsnapshot
@@ -54,9 +59,22 @@ backup_*/
 # Skills (subrepos)
 skills/*
 
-# Credenciales
+# Credenciales (all variants)
 .env
-.env.local
-.env.production
+.env.*
 *.credentials.json
+*.credentials.rar
+*credentials*
 *_config.json
+pionex_credentials.rar
+test_pionex*
+check_pionex*
+_check_pionex*
+
+# Audio / media
+*.mp3
+*.wav
+
+# Reports / temporary audit files
+reports/
+_audit_*

@@ -11,7 +11,7 @@ import json
 import math
 import os
 
-_CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'indicador-sono-repo', 'sono-score-config.json')
+_CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'indicador-sono-repo/sono-score-config.json')
 
 with open(_CONFIG_PATH) as f:
     _CFG = json.load(f)
