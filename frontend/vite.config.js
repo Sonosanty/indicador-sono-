@@ -11,13 +11,29 @@ export default defineConfig({
       closeBundle() {
         const outDir = path.resolve('..', 'indicador_cloudflare')
         
-        // 1. Copiar pagina.html (v2 dashboard) → /v2/index.html
-        const srcV2 = path.resolve('pagina.html')
-        if (fs.existsSync(srcV2)) {
+        // 1. Copiar assets del nuevo diseño v3 (mifuturapp)
+        const assets = [
+          { src: 'pagina.html', dst: 'index.html', label: 'Dashboard' },
+          { src: 'range_explorer.html', dst: 'range_explorer.html', label: 'Rangos' },
+          { src: 'trades_explorer.html', dst: 'trades_explorer.html', label: 'Trades' },
+          { src: 'style.css', dst: 'style.css', label: 'Stylesheet' },
+        ]
+        assets.forEach(a => {
+          const srcPath = path.resolve(a.src)
+          if (fs.existsSync(srcPath)) {
+            const dstPath = path.join(outDir, a.dst)
+            fs.copyFileSync(srcPath, dstPath)
+            console.log('[post-build] ' + a.label + ' copiado a /' + a.dst)
+          }
+        })
+
+        // 1b. Copiar pagina.html como /v2/index.html (backwards compat)
+        const srcPag = path.resolve('pagina.html')
+        if (fs.existsSync(srcPag)) {
           const dstV2 = path.join(outDir, 'v2', 'index.html')
           fs.mkdirSync(path.dirname(dstV2), { recursive: true })
-          fs.copyFileSync(srcV2, dstV2)
-          console.log('[post-build] pagina.html (v2) copiado a /v2/')
+          fs.copyFileSync(srcPag, dstV2)
+          console.log('[post-build] pagina.html copiado a /v2/')
         }
 
         // 2. Copiar metodo.html → metodo/index.html y /v2/metodo/
@@ -42,8 +58,13 @@ export default defineConfig({
           console.log('[post-build] _routes.json copiado')
         }
 
-        // 4. Leer el index.html generado por Vite para extraer los hashes de assets
-        const generatedHtml = fs.readFileSync(path.join(outDir, 'index.html'), 'utf-8')
+        // 4. (omitido) pagina.html ya fue copiado a /index.html arriba
+        //    No reescribir con SPA template para que / sirva el nuevo dashboard
+        //    La SPA se sirve desde /app/ (via _routes.json) si es necesario
+        console.log('[post-build] /index.html es el nuevo dashboard (SPA disponible en /app/)')
+        return
+        
+        // Leer el index.html generado por Vite para extraer los hashes de assets
         
         // Extraer los src/href de assets
         const scriptMatch = generatedHtml.match(/<script type="module" crossorigin src="(\/assets\/[^"]+)"><\/script>/)
