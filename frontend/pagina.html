@@ -158,6 +158,16 @@ body::after{
   border:1px solid var(--border-dim);border-radius:3px;
   font-size:8px;color:var(--tx3);
 }
+.asset-selector{
+  display:flex;gap:8px;justify-content:center;margin:16px 0 24px;
+}
+.asset-btn{
+  padding:8px 24px;border-radius:12px;border:1px solid var(--border-dim);
+  background:var(--bg2);color:var(--tx3);font-family:var(--font);
+  font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;
+}
+.asset-btn:hover{border-color:var(--green);color:var(--tx1);background:rgba(0,245,118,0.05);}
+.asset-btn.active{border-color:var(--green);color:var(--green);background:rgba(0,245,118,0.1);box-shadow:0 0 20px rgba(0,245,118,0.15);}
 .hero-usd{
   font-family:var(--mono);font-size:42px;font-weight:600;
   color:var(--tx1);letter-spacing:-2px;line-height:1;
@@ -482,7 +492,13 @@ body::after{
         <span class="src-chip">Binance</span>
         <span class="src-chip">Live</span>
       </div>
-      <div class="hero-usd" id="hPrice">--</div>
+      <div class="asset-selector">
+  <button class="asset-btn active" data-asset="BTC">BTC</button>
+  <button class="asset-btn" data-asset="ETH">ETH</button>
+  <button class="asset-btn" data-asset="SOL">SOL</button>
+  <button class="asset-btn" data-asset="XRP">XRP</button>
+</div>
+<div class="hero-usd" id="hPrice">--</div>
       <div class="hero-eur" id="hEur">€ --</div>
       <div class="hero-meta">
         <div class="chg-badge chg-up" id="hChg">-- %</div>
@@ -1275,3 +1291,5 @@ init().catch(e=>{
 </script>
 </body>
 </html>
+
+
