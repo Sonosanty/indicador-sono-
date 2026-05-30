@@ -14,14 +14,21 @@ import logging
 import os
 import time
 import requests
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 
-# ── Config ──────────────────────────────────────────────────────
+# ── Config — lee de .env (fallback a telegram_config.json) ─────
 _CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'telegram_config.json')
 
 def _load_config():
-    """Carga credenciales desde telegram_config.json."""
+    """Carga credenciales desde .env primero, fallback telegram_config.json."""
+    load_dotenv(r'C:\Users\sparreno\.openclaw\workspace\.env')
+    token = os.getenv('TELEGRAM_BOT_TOKEN')
+    chat_id = os.getenv('TELEGRAM_CHAT_ID')
+    if token and chat_id:
+        return token, chat_id
+    # Fallback a JSON legacy
     try:
         with open(_CONFIG_PATH) as f:
             cfg = json.load(f)

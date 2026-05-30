@@ -7,11 +7,11 @@
 #
 # Uso: python sono_bot.py
 
-import json, time, hashlib, hmac, requests, threading, logging, sys
+import json, time, hashlib, hmac, requests, threading, logging, sys, os
+from dotenv import load_dotenv
 from datetime import datetime
 
 # ── Score engine unificado (misma lógica que la SPA) ─────
-import sys
 sys.path.insert(0, r'C:\Users\sparreno\.openclaw\workspace')
 from sono_score import compute_score as sono_compute_score
 # ────────────────────────────────────────────────────────────
@@ -65,11 +65,12 @@ LOG_FILE = 'sono_bot.log'
 # CREDENCIALES
 # ==================================================-------------
 
-with open('C:/Users/sparreno/.openclaw/workspace/pionex_credentials.json') as f:
-    _creds = json.load(f)
-
-PIONEX_KEY = _creds['api_key']
-PIONEX_SECRET = _creds['api_secret']
+load_dotenv(r'C:\Users\sparreno\.openclaw\workspace\.env')
+PIONEX_KEY = os.getenv('PIONEX_API_KEY', '')
+PIONEX_SECRET = os.getenv('PIONEX_API_SECRET', '')
+if not PIONEX_KEY or not PIONEX_SECRET:
+    print('ERROR: PIONEX_API_KEY / PIONEX_API_SECRET no encontradas en .env')
+    sys.exit(1)
 
 # ==================================================-------------
 # INDICADORES TÉCNICOS — DELEGADOS A sono_score.py
@@ -88,11 +89,33 @@ def computeScore(candles):
 
 PIONEX_BASE = 'https://api.pionex.com'
 
+# Cache de offset contra servidor Pionex (evita INVALID_TIMESTAMP)
+_pionex_time_offset = None
+
+def _sync_pionex_timestamp():
+    """Sincroniza reloj local con Pionex."""
+    global _pionex_time_offset
+    try:
+        t0 = time.time()
+        r = requests.get(PIONEX_BASE + '/api/v1/common/time', timeout=10)
+        t1 = time.time()
+        d = r.json()
+        if 'serverTime' in d:
+            _pionex_time_offset = d['serverTime'] - ((t0 + t1) / 2 * 1000)
+            logger.info(f'Pionex time offset: {_pionex_time_offset:.0f}ms')
+    except Exception as e:
+        logger.warning(f'Error sync timestamp Pionex: {e}')
+
+_sync_pionex_timestamp()
+
 def _pionex_sig(method, path, params=None):
     """Genera firma HMAC SHA256 para Pionex API."""
     if params is None:
         params = {}
-    params['timestamp'] = str(int(time.time() * 1000))
+    ts = int(time.time() * 1000)
+    if _pionex_time_offset is not None:
+        ts += int(_pionex_time_offset)
+    params['timestamp'] = str(ts)
     # Ordenar alfabéticamente por key
     sorted_params = sorted(params.items())
     query = '&'.join(f'{k}={v}' for k, v in sorted_params)
@@ -285,6 +308,9 @@ class SonoBot:
         """Calcula Score para cada activo y decide si tradear."""
         for asset in ASSETS:
             try:
+                # Refrescar balance antes de cada activo (evita recomprar con saldo ya gastado)
+                if self.paper_mode:
+                    self.balances = dict(self.paper_balances)
                 candles = fetch_candles(asset)
                 score = computeScore(candles)
                 if not score:
@@ -310,7 +336,7 @@ class SonoBot:
                     f'P1={score["p1"]} P2={score["p2"]} P3={score["p3"]} '
                     f'RSI={score["rsi"]} ADX={score["adx"]} '
                     f'Price=${price:.2f} '
-                    'ATR=$' + (f'{atr:.2f}' if atr else 'N/A')
+                    f'ATR=${atr:.2f}' if atr else 'ATR=N/A'
                 )
                 
                 # ═══ Alertas Telegram por cambio de categoría ═══
@@ -350,15 +376,16 @@ class SonoBot:
             logger.warning(f'No config for {asset}')
             return
         usdt_balance = self.balances.get(cfg['quote'], 0)
+        # Verificar saldo ANTES de calcular riesgo
+        if usdt_balance < cfg['min_trade']:
+            logger.warning(f'{asset}: Saldo insuficiente. {cfg["quote"]}={usdt_balance:.2f}, necesita min {cfg["min_trade"]:.2f}')
+            return
         risk_amount = usdt_balance * cfg['risk_per_trade']
         # Si el riesgo calculado es menor que el minimo, usar el minimo
         if risk_amount < cfg['min_trade']:
             amount = min(cfg['min_trade'], usdt_balance)
         else:
             amount = round(risk_amount, 2)
-        if amount < cfg['min_trade']:
-            logger.warning(f'{asset}: Saldo insuficiente. {cfg["quote"]}={usdt_balance:.2f}, necesita min {cfg["min_trade"]:.2f}')
-            return
         amount = round(amount, 2)
         size = amount / price
         if self.paper_mode:
@@ -581,3 +608,4 @@ if __name__ == '__main__':
     print('Iniciando bot...')
     bot = SonoBot()
     bot.run_forever(interval_seconds=120)
+

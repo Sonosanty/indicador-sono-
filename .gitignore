@@ -40,5 +40,23 @@ HEARTBEAT.md
 # Backups
 backup_*/
 
-# Wrangler cache (do not track)
+# Wrangler cache
 .wrangler/cache/
+
+# Submodules / carpetas con git propio
+indicador-sono-repo/
+backup_sono_*/
+backup_*/
+
+# Heap snapshots
+*.heapsnapshot
+
+# Skills (subrepos)
+skills/*
+
+# Credenciales
+.env
+.env.local
+.env.production
+*.credentials.json
+*_config.json

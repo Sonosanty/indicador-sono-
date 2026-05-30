@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-05-30T16:52:00+02:00",
+  "btc_price": 73929.18,
+  "fear_greed": 23,
+  "market_cap": "2.57T",
+  "btc_dominance": 57.49,
+  "bot_btc_position": "LONG",
+  "bot_btc_entry": 73846.0,
+  "bot_btc_score": 67,
+  "bot_btc_amount": 0.001083,
+  "confidence": 20,
+  "regimen": "ACUMULACION",
+  "estado_macro": 1,
+  "recommendation": "HOLD"
+}
