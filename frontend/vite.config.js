@@ -20,12 +20,19 @@ export default defineConfig({
           console.log('[post-build] pagina.html (v2) copiado a /v2/')
         }
 
-        // 2. Copiar metodo.html → metodo/index.html
+        // 2. Copiar metodo.html → metodo/index.html y /v2/metodo/
         const srcM = path.resolve('metodo.html')
-        const dstM = path.join(outDir, 'metodo', 'index.html')
-        fs.mkdirSync(path.dirname(dstM), { recursive: true })
-        fs.copyFileSync(srcM, dstM)
-        console.log('[post-build] metodo.html copiado')
+        if (fs.existsSync(srcM)) {
+          const dstM = path.join(outDir, 'metodo', 'index.html')
+          fs.mkdirSync(path.dirname(dstM), { recursive: true })
+          fs.copyFileSync(srcM, dstM)
+          console.log('[post-build] metodo.html copiado a /metodo/')
+          
+          const dstV2M = path.join(outDir, 'v2', 'metodo', 'index.html')
+          fs.mkdirSync(path.dirname(dstV2M), { recursive: true })
+          fs.copyFileSync(srcM, dstV2M)
+          console.log('[post-build] metodo.html copiado a /v2/metodo/')
+        }
 
         // 3. Copiar _routes.json para que Cloudflare sirva /metodo y /v2 como estático
         const routesSrc = path.resolve('_routes.json')
@@ -98,3 +105,4 @@ export default defineConfig({
     cssCodeSplit: true
   }
 })
+
