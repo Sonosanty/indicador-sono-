@@ -21,3 +21,24 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Workspace files (do not commit agent identity)
+AGENTS.md
+MEMORY.md
+SOUL.md
+IDENTITY.md
+USER.md
+TOOLS.md
+HEARTBEAT.md
+
+# Backups
+backup_*/
+
+# Wrangler cache (do not track)
+.wrangler/cache/
