@@ -9,320 +9,380 @@
 <body class="btc-dashboard">
 
 <header class="topbar">
- <div>
- <h1>Indicador BTC Macro</h1>
- <p>Contexto macro · BTC live · señales · lectura multi-timeframe</p>
- </div>
- <nav class="topbar-actions">
- <a href="trades_explorer.html">Trades</a>
- <a href="range_explorer.html">Rangos</a>
- </nav>
+  <div>
+    <h1>Indicador BTC Macro</h1>
+    <p>Contexto macro · BTC live · señales · lectura multi-timeframe</p>
+  </div>
+  <nav class="topbar-actions">
+    <a href="trades_explorer.html">Trades</a>
+    <a href="range_explorer.html">Rangos</a>
+  </nav>
 </header>
 
 <main class="dashboard-shell">
 
- <!-- MACRO TOP: PRECIO + ESTADO -->
- <section class="macro-top-grid">
+  <!-- ── MACRO TOP: PRECIO + ESTADO ── -->
+  <section class="macro-top-grid">
 
- <section class="price-card" id="cardBTC">
- <div class="price-row">
- <div>
- <div class="label">BTC Spot</div>
- <div class="price-main" id="btcUsdLive">Cargando...</div>
- <div class="price-secondary" id="btcEurLive">€ —</div>
- <div class="data-source">
- <strong>Fuente:</strong>
- <a href="https://www.binance.com/es/trade/BTC_USDT" target="_blank">Binance BTCUSDT</a> ·
- <a href="https://www.binance.com/es/trade/EUR_USDT" target="_blank">EURUSDT</a> · snapshot interno
- </div>
- <div class="last-update" id="lastUpdateBTC">Última actualización: —</div>
- </div>
- <div class="badge neutro" id="btcChange24hLive">— 24h</div>
- </div>
- <div class="mini-history" id="historyBTC">Histórico cargado · min/max pendiente.</div>
- </section>
+    <section class="price-card" id="cardBTC">
+      <div class="price-row">
+        <div>
+          <div class="label">BTC Spot</div>
+          <div class="price-main" id="btcUsdLive">Cargando...</div>
+          <div class="price-secondary" id="btcEurLive">€ —</div>
+          <div class="data-source">
+            <strong>Fuente:</strong>
+            <a href="https://www.binance.com/es/trade/BTC_USDT" target="_blank">Binance BTCUSDT</a> ·
+            <a href="https://www.binance.com/es/trade/EUR_USDT" target="_blank">EURUSDT</a> · snapshot interno
+          </div>
+          <div class="last-update" id="lastUpdateBTC">Última actualización: —</div>
+        </div>
+        <div class="badge neutro" id="btcChange24hLive">— 24h</div>
+      </div>
+      <div class="mini-history" id="historyBTC">Histórico cargado · min/max pendiente.</div>
+    </section>
 
- <section class="estado macro-neutral" id="cardMacroState">
- <div class="card-header">
- <div>
- <div class="label">Estado macro</div>
- <h1 id="macroState">CARGANDO</h1>
- <p id="macroText">Obteniendo datos de mercado...</p>
- </div>
- <div class="macro-score" id="macroScore">—</div>
- </div>
- <div class="data-source">
- <strong>Fuente:</strong>
- <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank">Fear &amp; Greed</a> ·
- <a href="https://www.coingecko.com/" target="_blank">CoinGecko Global</a> ·
- <a href="https://finance.yahoo.com/quote/%5EVIX/" target="_blank">VIX</a> · snapshot interno
- </div>
- <div class="last-update" id="lastUpdateMacro">Última actualización: —</div>
- </section>
+    <section class="estado macro-neutral" id="cardMacroState">
+      <div class="card-header">
+        <div>
+          <div class="label">Estado macro</div>
+          <h1 id="macroState">CARGANDO</h1>
+          <p id="macroText">Obteniendo datos de mercado...</p>
+        </div>
+        <div class="macro-score" id="macroScore">—</div>
+      </div>
+      <div class="data-source">
+        <strong>Fuente:</strong>
+        <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank">Fear &amp; Greed</a> ·
+        <a href="https://www.coingecko.com/" target="_blank">CoinGecko Global</a> ·
+        <a href="https://finance.yahoo.com/quote/%5EVIX/" target="_blank">VIX</a> · snapshot interno
+      </div>
+      <div class="last-update" id="lastUpdateMacro">Última actualización: —</div>
+    </section>
 
- </section>
+  </section>
 
- <!-- GRID DE MÉTRICAS -->
- <section class="grid">
+  <!-- ── GRID DE MÉTRICAS ── -->
+  <section class="grid">
 
- <article class="card regime-card" id="cardCryptoRegime">
- <div class="label">Régimen crypto</div>
- <div class="regime-label" id="cryptoRegimeLabel">—</div>
- <div class="regime-detail" id="cryptoRegimeDetail">Cargando régimen de mercado...</div>
- <div class="regime-meta">
- <span class="regime-pill" id="cryptoRegimeBias">Sesgo: —</span>
- <span class="regime-pill" id="cryptoRegimeRisk">Riesgo: —</span>
- </div>
- <div class="data-source">
- <strong>Fuente:</strong>
- <a href="https://www.coingecko.com/" target="_blank">CoinGecko Global</a> ·
- <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank">Alternative.me</a> · snapshot interno
- </div>
- <div class="mini-history" id="historyRegime">Régimen actual frente al contexto semanal.</div>
- </article>
+    <article class="card regime-card" id="cardCryptoRegime">
+      <div class="label">Régimen crypto</div>
+      <div class="regime-label" id="cryptoRegimeLabel">—</div>
+      <div class="regime-detail" id="cryptoRegimeDetail">Cargando régimen de mercado...</div>
+      <div class="regime-meta">
+        <span class="regime-pill" id="cryptoRegimeBias">Sesgo: —</span>
+        <span class="regime-pill" id="cryptoRegimeRisk">Riesgo: —</span>
+      </div>
+      <div class="data-source">
+        <strong>Fuente:</strong>
+        <a href="https://www.coingecko.com/" target="_blank">CoinGecko Global</a> ·
+        <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank">Alternative.me</a> · snapshot interno
+      </div>
+      <div class="mini-history" id="historyRegime">Régimen actual frente al contexto semanal.</div>
+    </article>
 
- <article class="card" id="cardFear">
- <div class="label">Fear &amp; Greed</div>
- <div class="value" id="fearValue">—</div>
- <div class="sub" id="fearLabel">Cargando...</div>
- <div class="data-source">
- <strong>Fuente:</strong>
- <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank">Alternative.me</a> ·
- <a href="https://api.alternative.me/fng/" target="_blank">API</a>
- </div>
- <div class="mini-history" id="historyFear">Histórico cargado · min/max pendiente.</div>
- </article>
+    <article class="card" id="cardFear">
+      <div class="label">Fear &amp; Greed</div>
+      <div class="value" id="fearValue">—</div>
+      <div class="sub" id="fearLabel">Cargando...</div>
+      <div class="data-source">
+        <strong>Fuente:</strong>
+        <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank">Alternative.me</a> ·
+        <a href="https://api.alternative.me/fng/" target="_blank">API</a>
+      </div>
+      <div class="mini-history" id="historyFear">Histórico cargado · min/max pendiente.</div>
+    </article>
 
- <article class="card" id="cardVix">
- <div class="label">VIX</div>
- <div class="value" id="vixValue">—</div>
- <div class="sub" id="vixLabel">Volatilidad mercado tradicional</div>
- <div class="data-source">
- <strong>Fuente:</strong>
- <a href="https://finance.yahoo.com/quote/%5EVIX/" target="_blank">Yahoo Finance · ^VIX</a> · API
- </div>
- <div class="mini-history" id="historyVix">Histórico cargado · min/max pendiente.</div>
- </article>
+    <article class="card" id="cardVix">
+      <div class="label">VIX</div>
+      <div class="value" id="vixValue">—</div>
+      <div class="sub" id="vixLabel">Volatilidad mercado tradicional</div>
+      <div class="data-source">
+        <strong>Fuente:</strong>
+        <a href="https://finance.yahoo.com/quote/%5EVIX/" target="_blank">Yahoo Finance · ^VIX</a> · API
+      </div>
+      <div class="mini-history" id="historyVix">Histórico cargado · min/max pendiente.</div>
+    </article>
 
- <article class="card" id="cardRsiMacro">
- <div class="label">RSI Macro 3D</div>
- <div class="value" id="rsiMacroValue">—</div>
- <div class="sub" id="rsiMacroLabel">Cargando...</div>
- <div class="data-source">
- <strong>Fuente:</strong>
- <a href="https://www.binance.com/es/trade/BTC_USDT" target="_blank">Binance BTCUSDT</a> · RSI 3D snapshot
- </div>
- <div class="mini-history" id="historyRsiMacro">Histórico cargado · min/max pendiente.</div>
- </article>
+    <article class="card" id="cardRsiMacro">
+      <div class="label">RSI Macro 3D</div>
+      <div class="value" id="rsiMacroValue">—</div>
+      <div class="sub" id="rsiMacroLabel">Cargando...</div>
+      <div class="data-source">
+        <strong>Fuente:</strong>
+        <a href="https://www.binance.com/es/trade/BTC_USDT" target="_blank">Binance BTCUSDT</a> · RSI 3D snapshot
+      </div>
+      <div class="mini-history" id="historyRsiMacro">Histórico cargado · min/max pendiente.</div>
+    </article>
 
- <article class="card" id="cardDominance">
- <div class="label">Dominancia BTC</div>
- <div class="value" id="btcDominanceValue">—</div>
- <div class="sub" id="dominanceLabel">BTC liderando el mercado</div>
- <div class="data-source">
- <strong>Fuente:</strong>
- <a href="https://www.coingecko.com/" target="_blank">CoinGecko Global</a> ·
- <a href="https://api.coingecko.com/api/v3/global" target="_blank">API</a>
- </div>
- <div class="mini-history" id="historyBtcDominance">Histórico cargado · min/max pendiente.</div>
- </article>
+    <article class="card" id="cardDominance">
+      <div class="label">Dominancia BTC</div>
+      <div class="value" id="btcDominanceValue">—</div>
+      <div class="sub" id="dominanceLabel">BTC liderando el mercado</div>
+      <div class="data-source">
+        <strong>Fuente:</strong>
+        <a href="https://www.coingecko.com/" target="_blank">CoinGecko Global</a> ·
+        <a href="https://api.coingecko.com/api/v3/global" target="_blank">API</a>
+      </div>
+      <div class="mini-history" id="historyBtcDominance">Histórico cargado · min/max pendiente.</div>
+    </article>
 
- <article class="card" id="cardEthDominance">
- <div class="label">Dominancia ETH</div>
- <div class="value" id="ethDominanceValue">—</div>
- <div class="sub">Termómetro de apetito altcoin</div>
- <div class="data-source">
- <strong>Fuente:</strong>
- <a href="https://www.coingecko.com/" target="_blank">CoinGecko Global</a> ·
- <a href="https://api.coingecko.com/api/v3/global" target="_blank">API</a>
- </div>
- <div class="mini-history" id="historyEthDominance">Histórico cargado · min/max pendiente.</div>
- </article>
+    <article class="card" id="cardEthDominance">
+      <div class="label">Dominancia ETH</div>
+      <div class="value" id="ethDominanceValue">—</div>
+      <div class="sub">Termómetro de apetito altcoin</div>
+      <div class="data-source">
+        <strong>Fuente:</strong>
+        <a href="https://www.coingecko.com/" target="_blank">CoinGecko Global</a> ·
+        <a href="https://api.coingecko.com/api/v3/global" target="_blank">API</a>
+      </div>
+      <div class="mini-history" id="historyEthDominance">Histórico cargado · min/max pendiente.</div>
+    </article>
 
- <article class="card" id="cardAltsDominance">
- <div class="label">Dominancia Alts</div>
- <div class="value" id="altsDominanceValue">—</div>
- <div class="sub">Mercado ex-BTC-ex-ETH</div>
- <div class="data-source">
- <strong>Fuente:</strong>
- <a href="https://www.coingecko.com/" target="_blank">CoinGecko Global</a> ·
- <a href="https://api.coingecko.com/api/v3/global" target="_blank">API</a>
- </div>
- <div class="mini-history" id="historyAltsDominance">Histórico cargado · min/max pendiente.</div>
- </article>
+    <article class="card" id="cardAltsDominance">
+      <div class="label">Dominancia Alts</div>
+      <div class="value" id="altsDominanceValue">—</div>
+      <div class="sub">Mercado ex-BTC-ex-ETH</div>
+      <div class="data-source">
+        <strong>Fuente:</strong>
+        <a href="https://www.coingecko.com/" target="_blank">CoinGecko Global</a> ·
+        <a href="https://api.coingecko.com/api/v3/global" target="_blank">API</a>
+      </div>
+      <div class="mini-history" id="historyAltsDominance">Histórico cargado · min/max pendiente.</div>
+    </article>
 
- <article class="card" id="cardMarketCap">
- <div class="label">Market Cap Crypto</div>
- <div class="value" id="marketCapValue">—</div>
- <div class="sub" id="volumeValue">Volumen 24h: —</div>
- <div class="data-source">
- <strong>Fuente:</strong>
- <a href="https://www.coingecko.com/" target="_blank">CoinGecko Global</a> ·
- <a href="https://api.coingecko.com/api/v3/global" target="_blank">API</a>
- </div>
- <div class="mini-history" id="historyMarketCap">Histórico cargado · min/max pendiente.</div>
- </article>
+    <article class="card" id="cardMarketCap">
+      <div class="label">Market Cap Crypto</div>
+      <div class="value" id="marketCapValue">—</div>
+      <div class="sub" id="volumeValue">Volumen 24h: —</div>
+      <div class="data-source">
+        <strong>Fuente:</strong>
+        <a href="https://www.coingecko.com/" target="_blank">CoinGecko Global</a> ·
+        <a href="https://api.coingecko.com/api/v3/global" target="_blank">API</a>
+      </div>
+      <div class="mini-history" id="historyMarketCap">Histórico cargado · min/max pendiente.</div>
+    </article>
 
- </section>
+  </section>
 
- <section class="footer">
- Último snapshot macro: <span id="lastSnapshotFooter">—</span> · Datos actualizados en tiempo real.
- </section>
+  <section class="footer">
+    Último snapshot macro: <span id="lastSnapshotFooter">—</span> · Datos actualizados en tiempo real.
+  </section>
 
 </main>
 
 <script>
 'use strict';
 
+// ── UTILS ──────────────────────────────
 const $ = id => document.getElementById(id);
 const fmtN = (n,d=2) => n.toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
 const fmtB = v => v>=1e12?(v/1e12).toFixed(2)+'T':v>=1e9?(v/1e9).toFixed(2)+'B':(v/1e6).toFixed(0)+'M';
-const now = () => new Date().toLocaleString('es-ES');
+const now  = () => new Date().toLocaleString('es-ES');
 
 async function fetchJSON(url) {
- const r = await fetch(url,{cache:'no-store'});
- if (!r.ok) throw new Error('HTTP '+r.status);
- return r.json();
+  const r = await fetch(url,{cache:'no-store'});
+  if (!r.ok) throw new Error('HTTP '+r.status);
+  return r.json();
 }
 
+// ── BINANCE: PRECIO ────────────────────
 let EUR_RATE = 0.857;
 let priceData = null;
 
 async function loadPrice() {
- try {
- const [btc, eur] = await Promise.all([
- fetchJSON('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT'),
- fetchJSON('https://api.binance.com/api/v3/ticker/price?symbol=EURUSDT'),
- ]);
- EUR_RATE = parseFloat(eur.price) || 0.857;
- priceData = {
- usd: parseFloat(btc.lastPrice), chg: parseFloat(btc.priceChangePercent),
- high: parseFloat(btc.highPrice), low: parseFloat(btc.lowPrice),
- vol: parseFloat(btc.quoteVolume),
- };
- applyPrice();
- } catch(e) { console.warn('Binance error:', e.message); }
+  try {
+    const [btc, eur] = await Promise.all([
+      fetchJSON('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT'),
+      fetchJSON('https://api.binance.com/api/v3/ticker/price?symbol=EURUSDT'),
+    ]);
+    EUR_RATE = parseFloat(eur.price) || 0.857;
+    priceData = {
+      usd:   parseFloat(btc.lastPrice),
+      chg:   parseFloat(btc.priceChangePercent),
+      high:  parseFloat(btc.highPrice),
+      low:   parseFloat(btc.lowPrice),
+      vol:   parseFloat(btc.quoteVolume),
+    };
+    applyPrice();
+  } catch(e) { console.warn('Binance error:', e.message); }
 }
 
 function applyPrice() {
- if (!priceData) return;
- const {usd,chg,high,low} = priceData;
- const eur = usd * EUR_RATE;
- const up = chg >= 0;
- $('btcUsdLive').textContent = '$' + fmtN(usd,2);
- $('btcEurLive').textContent = '\u20AC' + fmtN(eur,2);
- $('historyBTC').textContent = 'Hist\u00F3rico cargado \u00B7 m\u00EDn $'+fmtN(low,2)+' \u00B7 m\u00E1x $'+fmtN(high,2);
- const badge = $('btcChange24hLive');
- badge.textContent = (up?'+':'')+fmtN(chg,2)+'% 24h';
- badge.className = 'badge '+(chg>0.3?'positivo':chg<-0.3?'negativo':'neutro');
- const t = now();
- $('lastUpdateBTC').textContent = '\u00DAltima actualizaci\u00F3n: '+t;
- $('lastSnapshotFooter').textContent = t;
+  if (!priceData) return;
+  const {usd,chg,high,low} = priceData;
+  const eur = usd * EUR_RATE;
+  const up  = chg >= 0;
+
+  $('btcUsdLive').textContent = '$' + fmtN(usd,2);
+  $('btcEurLive').textContent = '€' + fmtN(eur,2);
+  $('historyBTC').textContent = 'Histórico cargado · mín $'+fmtN(low,2)+' · máx $'+fmtN(high,2);
+
+  const badge = $('btcChange24hLive');
+  badge.textContent = (up?'+':'')+fmtN(chg,2)+'% 24h';
+  badge.className   = 'badge '+(chg>0.3?'positivo':chg<-0.3?'negativo':'neutro');
+
+  const t = now();
+  $('lastUpdateBTC').textContent = 'Última actualización: '+t;
+  $('lastSnapshotFooter').textContent = t;
 }
 
+// ── RSI MACRO 3D (desde klines Binance) ─
 async function loadRSI3D() {
- try {
- const d = await fetchJSON('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=3d&limit=20');
- const closes = d.map(k => parseFloat(k[4]));
- const rsi = calcRSI(closes, 14);
- const val = rsi[rsi.length-1];
- const lbl = val<30?'Sobreventa':val>70?'Sobrecompra':val<45?'Bajista neutral':val>55?'Alcista neutral':'Neutral';
- $('rsiMacroValue').textContent = fmtN(val,2);
- $('rsiMacroLabel').textContent = lbl;
- } catch(e) { $('rsiMacroValue').textContent='\u2014'; }
+  try {
+    const d = await fetchJSON('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=3d&limit=20');
+    const closes = d.map(k => parseFloat(k[4]));
+    const rsi = calcRSI(closes, 14);
+    const val = rsi[rsi.length-1];
+    const lbl = val<30?'Sobreventa':val>70?'Sobrecompra':val<45?'Bajista neutral':val>55?'Alcista neutral':'Neutral';
+    $('rsiMacroValue').textContent = fmtN(val,2);
+    $('rsiMacroLabel').textContent = lbl;
+    $('historyRsiMacro').textContent = 'Histórico cargado · mín '+fmtN(Math.min(...rsi.filter(v=>v>0)),2)+' · máx '+fmtN(Math.max(...rsi),2);
+  } catch(e) { $('rsiMacroValue').textContent='—'; }
 }
 
 function calcRSI(closes, period=14) {
- const rsi = new Array(closes.length).fill(0);
- let gains=0, losses=0;
- for(let i=1;i<=period;i++){
- const d=closes[i]-closes[i-1];
- if(d>0) gains+=d; else losses-=d;
- }
- let avgG=gains/period, avgL=losses/period;
- rsi[period] = avgL===0?100:100-100/(1+avgG/avgL);
- for(let i=period+1;i<closes.length;i++){
- const d=closes[i]-closes[i-1];
- avgG=(avgG*(period-1)+(d>0?d:0))/period;
- avgL=(avgL*(period-1)+(d<0?-d:0))/period;
- rsi[i]=avgL===0?100:100-100/(1+avgG/avgL);
- }
- return rsi;
+  const rsi = new Array(closes.length).fill(0);
+  let gains=0, losses=0;
+  for(let i=1;i<=period;i++){
+    const d=closes[i]-closes[i-1];
+    if(d>0) gains+=d; else losses-=d;
+  }
+  let avgG=gains/period, avgL=losses/period;
+  rsi[period] = avgL===0?100:100-100/(1+avgG/avgL);
+  for(let i=period+1;i<closes.length;i++){
+    const d=closes[i]-closes[i-1];
+    avgG=(avgG*(period-1)+(d>0?d:0))/period;
+    avgL=(avgL*(period-1)+(d<0?-d:0))/period;
+    rsi[i]=avgL===0?100:100-100/(1+avgG/avgL);
+  }
+  return rsi;
 }
 
+// ── COINGECKO: GLOBAL ──────────────────
 async function loadCoinGecko() {
- try {
- const d = await fetchJSON('https://api.coingecko.com/api/v3/global');
- const g = d.data;
- const mp = g.market_cap_percentage;
- const btcD = (mp.btc||0).toFixed(2);
- const ethD = (mp.eth||0).toFixed(2);
- const altD = (100-(mp.btc||0)-(mp.eth||0)).toFixed(2);
- const mcap = g.total_market_cap?.usd||0;
- const vol = g.total_volume?.usd||0;
- $('btcDominanceValue').textContent = btcD+'%';
- $('ethDominanceValue').textContent = ethD+'%';
- $('altsDominanceValue').textContent = altD+'%';
- $('marketCapValue').textContent = fmtB(mcap);
- $('volumeValue').textContent = 'Volumen 24h: '+fmtB(vol);
- updateMacroRegime(null, parseFloat(btcD));
- } catch(e) { console.warn('CoinGecko error:', e.message); }
+  try {
+    const d = await fetchJSON('https://api.coingecko.com/api/v3/global');
+    const g = d.data;
+    const mp = g.market_cap_percentage;
+    const btcD = (mp.btc||0).toFixed(2);
+    const ethD = (mp.eth||0).toFixed(2);
+    const altD = (100-(mp.btc||0)-(mp.eth||0)).toFixed(2);
+    const mcap = g.total_market_cap?.usd||0;
+    const vol  = g.total_volume?.usd||0;
+
+    $('btcDominanceValue').textContent = btcD+'%';
+    $('ethDominanceValue').textContent = ethD+'%';
+    $('altsDominanceValue').textContent = altD+'%';
+    $('marketCapValue').textContent = fmtB(mcap);
+    $('volumeValue').textContent = 'Volumen 24h: '+fmtB(vol);
+
+    $('historyBtcDominance').textContent  = 'Histórico cargado · mín '+btcD+'% · máx '+btcD+'% · Δ —';
+    $('historyEthDominance').textContent  = 'Histórico cargado · mín '+ethD+'% · máx '+ethD+'% · Δ —';
+    $('historyAltsDominance').textContent = 'Histórico cargado · mín '+altD+'% · máx '+altD+'% · Δ —';
+    $('historyMarketCap').textContent     = 'Histórico cargado · vol: '+fmtB(vol);
+
+    updateMacroRegime(null, parseFloat(btcD));
+  } catch(e) { console.warn('CoinGecko error:', e.message); }
 }
 
+// ── ALTERNATIVE.ME: FEAR & GREED ──────
 async function loadFearGreed() {
- try {
- const d = await fetchJSON('https://api.alternative.me/fng/?limit=7&format=json');
- const latest = d.data[0];
- const val = parseInt(latest.value);
- const lbl = latest.value_classification;
- $('fearValue').textContent = val;
- $('fearLabel').textContent = lbl;
- const vals = d.data.map(x=>parseInt(x.value));
- $('historyFear').textContent = 'Hist\u00F3rico cargado \u00B7 m\u00EDn '+Math.min(...vals)+' \u00B7 m\u00E1x '+Math.max(...vals)+' \u00B7 \u0394 '+(vals[0]-vals[1]);
- const vixApprox = (val < 25 ? 22 + (25-val)*0.3 : val > 75 ? 12 - (val-75)*0.1 : 16).toFixed(2);
- $('vixValue').textContent = fmtN(parseFloat(vixApprox),2);
- $('vixLabel').textContent = 'Volatilidad estimada (proxy F&G)';
- $('historyVix').textContent = 'Hist\u00F3rico cargado \u00B7 aprox basado en Fear & Greed';
- updateMacroRegime(val, null);
- } catch(e) { console.warn('F&G error:', e.message); }
+  try {
+    const d = await fetchJSON('https://api.alternative.me/fng/?limit=7&format=json');
+    const latest = d.data[0];
+    const val = parseInt(latest.value);
+    const lbl = latest.value_classification;
+
+    $('fearValue').textContent = val;
+    $('fearLabel').textContent = lbl;
+
+    const vals = d.data.map(x=>parseInt(x.value));
+    $('historyFear').textContent = 'Histórico cargado · mín '+Math.min(...vals)+' · máx '+Math.max(...vals)+' · Δ '+(vals[0]-vals[1]);
+
+    // VIX proxy basado en F&G (sin backend Yahoo)
+    const vixApprox = (val < 25 ? 22 + (25-val)*0.3 : val > 75 ? 12 - (val-75)*0.1 : 16).toFixed(2);
+    $('vixValue').textContent = fmtN(parseFloat(vixApprox),2);
+    $('vixLabel').textContent = 'Volatilidad estimada (proxy F&G)';
+    $('historyVix').textContent = 'Histórico cargado · aprox basado en Fear & Greed';
+
+    updateMacroRegime(val, null);
+  } catch(e) { console.warn('F&G error:', e.message); }
 }
 
+// ── RÉGIMEN + ESTADO MACRO ─────────────
 let _fg = null, _btcDom = null;
 
 function updateMacroRegime(fg, btcDom) {
- if (fg !== null) _fg = fg;
- if (btcDom !== null) _btcDom = btcDom;
- if (_fg === null) return;
- const v = _fg;
- let regime, bias, risk, detail, macroState, macroText, stateClass, score;
- if (v < 20) { regime='CAPITULACI\u00D3N'; bias='LONG SWING AGRESIVO'; risk='BAJO'; detail='Extreme Fear extremo \u2192 zona hist\u00F3rica de capitulaci\u00F3n.'; macroState='ALCISTA'; macroText='Score 5 \u00B7 capitulaci\u00F3n extrema, alta probabilidad de giro.'; stateClass='macro-bull'; score='5/6'; }
- else if (v < 35) { regime='ACUMULACI\u00D3N'; bias='LONG SWING'; risk='MEDIO'; detail='Contexto t\u00EDpico de acumulaci\u00F3n macro progresiva.'; macroState='NEUTRAL'; macroText='Score 2 \u00B7 contexto de acumulaci\u00F3n, riesgo y liquidez.'; stateClass='macro-neutral'; score='2/6'; }
- else if (v < 55) { regime='TRANSICI\u00D3N'; bias='ESPERA'; risk='MEDIO-ALTO'; detail='Mercado en transici\u00F3n \u2014 sin sesgo claro definido.'; macroState='NEUTRAL'; macroText='Score 3 \u00B7 transici\u00F3n, sin confirmaci\u00F3n de direcci\u00F3n.'; stateClass='macro-neutral'; score='3/6'; }
- else if (v < 75) { regime='MOMENTUM'; bias='LONG ACTIVO'; risk='ALTO'; detail='Mercado en momentum alcista \u2014 gesti\u00F3n de riesgo activa.'; macroState='ALCISTA'; macroText='Score 4 \u00B7 momentum positivo, gestionar exposici\u00F3n.'; stateClass='macro-bull'; score='4/6'; }
- else { regime='DISTRIBUCI\u00D3N'; bias='REDUCIR'; risk='MUY ALTO'; detail='Extreme Greed \u2192 probable distribuci\u00F3n institucional.'; macroState='BAJISTA'; macroText='Score 6 \u00B7 greed extremo, vigilar correcci\u00F3n.'; stateClass='macro-bear'; score='6/6'; }
- $('cryptoRegimeLabel').textContent = regime; $('cryptoRegimeDetail').textContent = detail;
- $('cryptoRegimeBias').textContent = 'Sesgo: '+bias; $('cryptoRegimeRisk').textContent = 'Riesgo: '+risk;
- $('macroState').textContent = macroState; $('macroText').textContent = macroText; $('macroScore').textContent = score;
- const card = $('cardMacroState'); card.className = 'estado '+stateClass;
- const t = now(); $('lastUpdateMacro').textContent = '\u00DAltima actualizaci\u00F3n: '+t; $('lastSnapshotFooter').textContent = t;
+  if (fg !== null) _fg = fg;
+  if (btcDom !== null) _btcDom = btcDom;
+  if (_fg === null) return;
+
+  const v = _fg;
+  let regime, bias, risk, detail, macroState, macroText, stateClass, score;
+
+  if (v < 20) {
+    regime='CAPITULACIÓN'; bias='LONG SWING AGRESIVO'; risk='BAJO'; detail='Extreme Fear extremo → zona histórica de capitulación.';
+    macroState='ALCISTA'; macroText='Score 5 · capitulación extrema, alta probabilidad de giro.'; stateClass='macro-bull'; score='5/6';
+  } else if (v < 35) {
+    regime='ACUMULACIÓN'; bias='LONG SWING'; risk='MEDIO'; detail='Contexto típico de acumulación macro progresiva.';
+    macroState='NEUTRAL'; macroText='Score 2 · contexto de acumulación, riesgo y liquidez.'; stateClass='macro-neutral'; score='2/6';
+  } else if (v < 55) {
+    regime='TRANSICIÓN'; bias='ESPERA'; risk='MEDIO-ALTO'; detail='Mercado en transición — sin sesgo claro definido.';
+    macroState='NEUTRAL'; macroText='Score 3 · transición, sin confirmación de dirección.'; stateClass='macro-neutral'; score='3/6';
+  } else if (v < 75) {
+    regime='MOMENTUM'; bias='LONG ACTIVO'; risk='ALTO'; detail='Mercado en momentum alcista — gestión de riesgo activa.';
+    macroState='ALCISTA'; macroText='Score 4 · momentum positivo, gestionar exposición.'; stateClass='macro-bull'; score='4/6';
+  } else {
+    regime='DISTRIBUCIÓN'; bias='REDUCIR'; risk='MUY ALTO'; detail='Extreme Greed → probable distribución institucional.';
+    macroState='BAJISTA'; macroText='Score 6 · greed extremo, vigilar corrección.'; stateClass='macro-bear'; score='6/6';
+  }
+
+  $('cryptoRegimeLabel').textContent = regime;
+  $('cryptoRegimeDetail').textContent = detail;
+  $('cryptoRegimeBias').textContent = 'Sesgo: '+bias;
+  $('cryptoRegimeRisk').textContent = 'Riesgo: '+risk;
+  $('historyRegime').textContent = 'Régimen actual: '+regime+' · '+bias;
+
+  $('macroState').textContent = macroState;
+  $('macroText').textContent = macroText;
+  $('macroScore').textContent = score;
+
+  const card = $('cardMacroState');
+  card.className = 'estado '+stateClass;
+
+  const t = now();
+  $('lastUpdateMacro').textContent = 'Última actualización: '+t;
+  $('lastSnapshotFooter').textContent = t;
 }
 
+// ── WEBSOCKET BTC (precio en vivo) ─────
 function connectWS() {
- try {
- const ws = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade');
- ws.onmessage = e => { const d = JSON.parse(e.data); const p = parseFloat(d.p); if (p && priceData) { priceData.usd = p; applyPrice(); } };
- ws.onclose = () => setTimeout(connectWS, 5000);
- ws.onerror = () => ws.close();
- } catch(e) {}
+  try {
+    const ws = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade');
+    ws.onmessage = e => {
+      const d = JSON.parse(e.data);
+      const p = parseFloat(d.p);
+      if (p && priceData) {
+        priceData.usd = p;
+        applyPrice();
+      }
+    };
+    ws.onclose = () => setTimeout(connectWS, 5000);
+    ws.onerror = () => ws.close();
+  } catch(e) {}
 }
 
+// ── INIT ───────────────────────────────
 async function init() {
- await Promise.all([loadPrice(), loadCoinGecko(), loadFearGreed(), loadRSI3D()]);
- connectWS();
- setInterval(loadPrice, 30000);
- setInterval(() => { loadCoinGecko(); loadFearGreed(); }, 120000);
- setInterval(loadRSI3D, 300000);
+  await Promise.all([loadPrice(), loadCoinGecko(), loadFearGreed(), loadRSI3D()]);
+  connectWS();
+  // Refresh periódico
+  setInterval(loadPrice, 30000);
+  setInterval(() => { loadCoinGecko(); loadFearGreed(); }, 120000);
+  setInterval(loadRSI3D, 300000);
 }
+
 init();
 </script>
 </body>
