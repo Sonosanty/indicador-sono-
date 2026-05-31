@@ -1,119 +1,107 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Método Sono — Estrategia de Trading</title>
-  <link rel="stylesheet" href="css/sono.css">
-  <style>
-    .method-hero { text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(0,150,255,0.15), rgba(120,50,200,0.1)); border-radius: 20px; margin-bottom: 2rem; }
-    .method-hero h1 { font-size: 2.5rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, #00aaff, #aa55ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .method-hero p { color: var(--text-secondary); font-size: 1.1rem; }
-    .pillar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
-    .pillar-card { background: var(--card-bg, rgba(255,255,255,0.04)); border: 1px solid var(--border-color, rgba(255,255,255,0.08)); border-radius: 16px; padding: 1.5rem; }
-    .pillar-card h3 { margin-top: 0; display: flex; align-items: center; gap: 0.5rem; }
-    .pillar-card .pts { color: var(--accent, #00aaff); font-size: 0.9rem; }
-    .score-formula { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; margin: 1.5rem 0; }
-    .score-formula .line { padding: 0.25rem 0; }
-    .score-formula .highlight { color: #ffd700; }
-    .zone-tag { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; margin: 0.1rem; }
-    .zone-panico { background: #ff1744; color: #fff; }
-    .zone-miedo { background: #ff9100; color: #000; }
-    .zone-neutral { background: #9e9e9e; color: #fff; }
-    .zone-optimismo { background: #00e676; color: #000; }
-    .zone-euforia { background: #00e5ff; color: #000; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 0.5rem; text-align: left; border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08)); }
-    th { font-size: 0.8rem; color: var(--text-secondary); }
-    @media (max-width: 640px) { .method-hero h1 { font-size: 1.8rem; } }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Metodo Sono - Estrategia de Trading</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Inter",sans-serif;background:#0f172a;color:#f1f5f9;-webkit-font-smoothing:antialiased}
+.ap{max-width:1100px;margin:0 auto;padding:.75rem 1rem}
+.tp{display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;margin-bottom:.75rem;flex-wrap:wrap;gap:8px}
+.lg{font-size:15px;font-weight:700}.lg span{color:#3b82f6}
+.nv{display:flex;gap:4px;flex-wrap:wrap}
+.nv a{padding:6px 14px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:500;color:#94a3b8}
+.nv a:hover,.nv a.ac{background:#1e293b;color:#f1f5f9}
+.hero{text-align:center;padding:2.5rem 1.5rem;background:linear-gradient(135deg,rgba(59,130,246,.1),rgba(139,92,246,.08));border-radius:16px;margin-bottom:2rem}
+.hero h1{font-size:2rem;margin-bottom:.5rem;background:linear-gradient(135deg,#3b82f6,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:#94a3b8;font-size:1rem}
+.gr3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0}
+.cd{background:#0f172a;border:.5px solid rgba(255,255,255,.06);border-radius:16px;padding:1.25rem}
+.cd h3{font-size:1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:6px}
+.pts{color:#3b82f6;font-size:.85rem;font-weight:500}
+.cd ul{list-style:none;padding:0;font-size:.9rem;color:#94a3b8;line-height:1.8}
+.cd ul li:before{content:"• ";color:#3b82f6}
+.formula{background:#1e293b;border-radius:12px;padding:1.25rem;font-family:"JetBrains Mono",monospace;font-size:.85rem;margin:1rem 0;line-height:2}
+.fh{color:#fbbf24}
+table{width:100%;border-collapse:collapse;margin:1rem 0}
+th,td{padding:.6rem .75rem;text-align:left;border-bottom:.5px solid rgba(255,255,255,.06)}
+th{font-size:.8rem;color:#64748b;font-weight:500;text-transform:uppercase}
+td{font-size:.9rem}
+.zt{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.75rem;font-weight:600}
+.zp{background:rgba(239,68,68,.2);color:#ef4444}
+.zm{background:rgba(245,158,11,.2);color:#f59e0b}
+.zn{background:rgba(148,163,184,.2);color:#94a3b8}
+.zo{background:rgba(34,197,94,.2);color:#22c55e}
+.ze{background:rgba(59,130,246,.2);color:#3b82f6}
+.alert{border-left:3px solid #3b82f6;background:rgba(59,130,246,.04);padding:1.25rem;border-radius:12px;margin:2rem 0;font-size:.9rem;color:#94a3b8}
+.alert strong{color:#f1f5f9}
+@media(max-width:768px){.gr3{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-  <div class="app-container">
-                <nav class="top-nav">
-      <a href="/" class="nav-link">📊 Dashboard</a>
-      <a href="/rangos.html" class="nav-link">🎯 Rangos</a>
-      <a href="/metodo.html" class="nav-link active">📐 Metodo</a>
-      <a href="/trades.html" class="nav-link">📝 Trades</a>
-    </nav>
+<div class="ap">
+<div class="tp">
+<div class="lg">SONO <span>PRO</span> V6</div>
+<div class="nv">
+<a href="/">Dashboard V6</a>
+<a href="/rangos.html">Rangos</a>
+<a href="/metodo.html" class="ac">Metodo</a>
+<a href="/trades.html">Trades</a>
+</div>
+<span style="font-size:11px;color:#64748b"><span class="ld" style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;margin-right:5px;animation:pp 2s infinite"></span>LIVE</span>
+</div>
 
-    <main class="main-content">
-      <div class="method-hero">
-        <h1>📐 Método Sono</h1>
-        <p>Híbrido cuantitativo · Score Macro + Método Ajram · 3 pilares</p>
-      </div>
+<div class="hero">
+<h1>Metodo Sono</h1>
+<p>Hibrido cuantitativo &middot; Score Macro + 3 pilares</p>
+</div>
 
-      <div class="pillar-grid">
-        <div class="pillar-card">
-          <h3>📊 Pilar 1 <span class="pts">— Cruces de MAs (35 pts)</span></h3>
-          <p>Cruce de medias móviles como señal direccional primaria.</p>
-          <ul style="list-style: none; padding: 0;">
-            <li>• MA6 × MA70: hasta 15 pts</li>
-            <li>• Precio vs MA40: hasta 10 pts</li>
-            <li>• Precio vs MA200: hasta 10 pts</li>
-          </ul>
-        </div>
+<div class="gr3">
+<div class="cd"><h3><span style="font-size:1.2rem">&#x1F4CA;</span> Pilar 1 <span class="pts">&mdash; MAs (35 pts)</span></h3>
+<ul><li>Cruce MA6 x MA70: hasta 15 pts</li><li>Precio vs MA40: hasta 10 pts</li><li>Precio vs MA200: hasta 10 pts</li></ul></div>
+<div class="cd"><h3><span style="font-size:1.2rem">&#x26A1;</span> Pilar 2 <span class="pts">&mdash; Momentum (35 pts)</span></h3>
+<ul><li>ADX > 25: tendencia con fuerza (15 pts)</li><li>RSI: zonas sobrecompra/venta (20 pts)</li></ul></div>
+<div class="cd"><h3><span style="font-size:1.2rem">&#x1F4C9;</span> Pilar 3 <span class="pts">&mdash; Bollinger (30 pts)</span></h3>
+<ul><li>%B cerca de 1.0: sobrecompra</li><li>%B cerca de 0.0: sobreventa</li><li>Cruce de banda: posible reversion</li></ul></div>
+</div>
 
-        <div class="pillar-card">
-          <h3>⚡ Pilar 2 <span class="pts">— Momentum (35 pts)</span></h3>
-          <p>ADX mide fuerza direccional; RSI mide posición relativa.</p>
-          <ul style="list-style: none; padding: 0;">
-            <li>• ADX &gt; 25: tendencia con fuerza (15 pts)</li>
-            <li>• RSI: zonas sobrecompra/sobreventa (20 pts)</li>
-          </ul>
-        </div>
+<h2 style="font-size:1.1rem;font-weight:600;margin-top:1.5rem">Formula Score Maestro 0-100</h2>
+<div class="formula">
+<div><span class="fh">Score</span> = P1 + P2 + P3</div>
+<div>&#x251C;&#x2500;&#x2500; <span class="fh">P1</span> = f(MA6x70) + f(precio vs MA40) + f(precio vs MA200)</div>
+<div>&#x251C;&#x2500;&#x2500; <span class="fh">P2</span> = f(ADX) + f(RSI)</div>
+<div>&#x2514;&#x2500;&#x2500; <span class="fh">P3</span> = f(Bollinger %B)</div>
+</div>
 
-        <div class="pillar-card">
-          <h3>📉 Pilar 3 <span class="pts">— Bollinger %B (30 pts)</span></h3>
-          <p>Posición del precio dentro de las Bandas de Bollinger.</p>
-          <ul style="list-style: none; padding: 0;">
-            <li>• %B cerca de 1.0 → sobrecompra</li>
-            <li>• %B cerca de 0.0 → sobreventa</li>
-            <li>• Cruce de banda como señal de reversión</li>
-          </ul>
-        </div>
-      </div>
+<h2 style="font-size:1.1rem;font-weight:600;margin-top:1.5rem">Zonas de Decision</h2>
+<table>
+<tr><th>Score</th><th>Serial</th><th>Decision</th><th>Zona</th></tr>
+<tr><td>78-100</td><td>Compra fuerte</td><td>LONG</td><td><span class="zt ze">Euforia</span></td></tr>
+<tr><td>62-77</td><td>Compra</td><td>LONG prudente</td><td><span class="zt zo">Optimismo</span></td></tr>
+<tr><td>52-61</td><td>Acumular</td><td>Esperar</td><td><span class="zt zn">Neutral+</span></td></tr>
+<tr><td>42-51</td><td>Neutral</td><td>Esperar</td><td><span class="zt zn">Neutral</span></td></tr>
+<tr><td>30-41</td><td>Venta</td><td>SHORT prudente</td><td><span class="zt zm">Miedo</span></td></tr>
+<tr><td>18-29</td><td>Venta fuerte</td><td>SHORT</td><td><span class="zt zm">Miedo</span></td></tr>
+<tr><td>0-17</td><td>Capitulacion</td><td>CASH / fuera</td><td><span class="zt zp">Panico</span></td></tr>
+</table>
 
-      <h2>Score Maestro — Fórmula</h2>
-      <div class="score-formula">
-        <div class="line"><span class="highlight">Score 0-100</span> = P1 + P2 + P3</div>
-        <div class="line">├── <span class="highlight">P1</span> = f(MA6×70) + f(precio vs MA40) + f(precio vs MA200)</div>
-        <div class="line">├── <span class="highlight">P2</span> = f(ADX) + f(RSI)</div>
-        <div class="line">└── <span class="highlight">P3</span> = f(Bollinger %B)</div>
-        <div class="line" style="margin-top: 0.8rem;">Donde cada f() mapea el valor técnico a 0-100% del pilar.</div>
-      </div>
+<h2 style="font-size:1.1rem;font-weight:600;margin-top:1.5rem">Contexto Adicional</h2>
+<p style="color:#94a3b8;font-size:.9rem;line-height:1.8">El Score se pondera con factores macro para la serial final:</p>
+<ul style="color:#94a3b8;font-size:.9rem;line-height:2;list-style:none;padding:0;margin:.5rem 0">
+<li><strong style="color:#f1f5f9">Fear & Greed:</strong> &lt;20 refuerza compra (maximo miedo); &gt;80 refuerza venta (maxima codicia)</li>
+<li><strong style="color:#f1f5f9">VIX:</strong> &gt;25 volatilidad extrema, reducir tamano posicion</li>
+<li><strong style="color:#f1f5f9">Dominancia BTC:</strong> &gt;60% altcoins debiles, priorizar BTC</li>
+</ul>
 
-      <h2>Zonas de Decisión</h2>
-      <table>
-        <tr><th>Score</th><th>Señal</th><th>Decisión</th><th>Zona</th></tr>
-        <tr><td>78-100</td><td>COMPRA FUERTE</td><td>LONG</td><td><span class="zone-tag zone-euforia">Euforia</span></td></tr>
-        <tr><td>62-77</td><td>COMPRA</td><td>LONG PRUDENTE</td><td><span class="zone-tag zone-optimismo">Optimismo</span></td></tr>
-        <tr><td>52-61</td><td>ACUMULAR</td><td>ESPERAR</td><td><span class="zone-tag zone-neutral">Neutral+</span></td></tr>
-        <tr><td>42-51</td><td>NEUTRAL</td><td>ESPERAR</td><td><span class="zone-tag zone-neutral">Neutral</span></td></tr>
-        <tr><td>30-41</td><td>VENTA</td><td>SHORT PRUDENTE</td><td><span class="zone-tag zone-miedo">Miedo</span></td></tr>
-        <tr><td>18-29</td><td>VENTA FUERTE</td><td>SHORT</td><td><span class="zone-tag zone-miedo">Miedo</span></td></tr>
-        <tr><td>0-17</td><td>CAPITULACIÓN</td><td>CASH / FUERA</td><td><span class="zone-tag zone-panico">Pánico</span></td></tr>
-      </table>
+<div class="alert"><strong>&#x26A0;&#xFE0F;</strong> Este metodo es cuantitativo y mecanico. No garantiza resultados. Usalo como herramienta de apoyo, no como consejo financiero.</div>
 
-      <h2>Contexto Adicional</h2>
-      <p>El Score se pondera con factores macro para la señal final:</p>
-      <ul>
-        <li><strong>Fear & Greed:</strong> &lt;20 → refuerza compra (máximo miedo); &gt;80 → refuerza venta (máxima codicia)</li>
-        <li><strong>VIX:</strong> &gt;25 → volatilidad extrema, reducir tamaño posición</li>
-        <li><strong>Dominancia BTC:</strong> &gt;60% → altcoins débiles, priorizar BTC</li>
-      </ul>
-
-      <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(0,150,255,0.05); border-radius: 12px; border-left: 3px solid #00aaff;">
-        <p style="margin: 0;"><strong>⚠️</strong> Este método es cuantitativo y mecánico. No garantiza resultados. Úsalo como herramienta de apoyo, no como consejo financiero.</p>
-      </div>
-    </main>
-  </div>
-
-  <script>
-    // Highlight nav link
-    document.querySelectorAll('.nav-link').forEach(function(el) {
-      if (el.pathname === '/metodo' || el.pathname === '/metodo.html') el.classList.add('active');
-    });
-  </script>
+<div style="font-size:11px;color:#64748b;text-align:center;padding-top:4px;margin-top:12px">SONO PRO V6 &middot; Datos en tiempo real de Binance, CoinGecko, Alternative.me, Proxy VIX</div>
+</div>
+<style>
+@keyframes pp{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
 </body>
 </html>
