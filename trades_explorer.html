@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trades Realtime · Indicador BTC</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body class="btc-dashboard">
+
+<header class="topbar">
+  <div>
+    <h1>Trades Realtime</h1>
+    <p>Auditoría de señales abiertas y cerradas por websocket</p>
+  </div>
+  <div class="topbar-actions">
+    <a href="index.html">Dashboard</a>
+    <a href="range_explorer.html">Rangos</a>
+    
+<div class="asset-tabs" style="margin-left:auto">
+<button class="asset-btn active" data-asset="BTC">BTC</button>
+<button class="asset-btn" data-asset="ETH">ETH</button>
+<button class="asset-btn" data-asset="SOL">SOL</button>
+<button class="asset-btn" data-asset="XRP">XRP</button>
+</div>
+  </div>
+</header>
+
+<main class="dashboard-shell">
+
+  <!-- ── HERO ROW ── -->
+  <section class="trades-hero">
+    <article class="card">
+      <div class="label">BTC Live</div>
+      <div class="value" id="livePrice">—</div>
+      <div class="source">Binance aggTrade</div>
+    </article>
+    <article class="card mini">
+      <div class="label">Abiertos</div>
+      <div class="value" id="summaryOpen">—</div>
+    </article>
+    <article class="card" id="wsCard">
+      <div class="label">Realtime</div>
+      <div class="value">
+        <span class="trade-status-dot"></span>
+        <span id="wsStatus">Conectando...</span>
+      </div>
+      <div class="source" id="wsLatency">Sin conexión</div>
+    </article>
+    <article class="card mini">
+      <div class="label">Cerrados</div>
+      <div class="value" id="summaryClosed">—</div>
+    </article>
+  </section>
+
+  <!-- ── ANALYTICS ── -->
+  <div class="analytics-grid">
+
+    <section class="trade-summary-grid" id="tradeSummary">
+      <article class="card"><div class="label">TP / BE / SL</div><div class="value" id="summaryTpSl">—</div></article>
+      <article class="card"><div class="label">Winrate</div><div class="value" id="summaryWinrate">—</div></article>
+      <article class="card"><div class="label">R gestionado total</div><div class="value" id="summaryRTotal">—</div></article>
+      <article class="card"><div class="label">R gestionado medio</div><div class="value" id="summaryRAvg">—</div></article>
+      <article class="card"><div class="label">PnL cierre total</div><div class="value" id="summaryPnlTotal">—</div></article>
+      <article class="card"><div class="label">PnL cierre medio</div><div class="value" id="summaryPnlAvg">—</div></article>
+    </section>
+
+    <section class="tf-panel trades-panel chart-panel">
+      <div class="tf-header">
+        <div>
+          <h2>Equity Curve</h2>
+          <p class="sub">Evolución acumulada del sistema en múltiplos R.</p>
+        </div>
+      </div>
+      <div class="equity-kpis">
+        <div><span>Max DD</span><strong id="equityMaxDd">—</strong></div>
+        <div><span>Profit Factor</span><strong id="equityProfitFactor">—</strong></div>
+        <div><span>Expectancy</span><strong id="equityExpectancy">—</strong></div>
+        <div><span>Mejor R</span><strong id="equityBestR">—</strong></div>
+        <div><span>Peor R</span><strong id="equityWorstR">—</strong></div>
+      </div>
+      <div style="padding:0 16px 16px; flex:1; min-height:160px;">
+        <canvas id="equityChart" role="img" aria-label="Equity curve acumulada en R"></canvas>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ── RENDIMIENTO POR SETUP ── -->
+  <section class="tf-panel trades-panel">
+    <div class="tf-header">
+      <div>
+        <h2>Rendimiento por Setup</h2>
+        <p class="sub">Agrupación estadística por estructura detectada.</p>
+      </div>
+    </div>
+    <table class="tf-table">
+      <thead><tr>
+        <th>Setup</th><th>Trades</th><th>TP / BE / SL</th>
+        <th>Winrate</th><th>R total</th><th>R medio</th><th>Profit Factor</th>
+      </tr></thead>
+      <tbody id="setupStatsBody"></tbody>
+    </table>
+  </section>
+
+  <!-- ── RENDIMIENTO POR TIMEFRAME ── -->
+  <section class="tf-panel trades-panel">
+    <div class="tf-header">
+      <div>
+        <h2>Rendimiento por Timeframe</h2>
+        <p class="sub">Comparativa de rendimiento según timeframe.</p>
+      </div>
+    </div>
+    <table class="tf-table">
+      <thead><tr>
+        <th>Timeframe</th><th>Trades</th><th>TP / BE / SL</th>
+        <th>Winrate</th><th>R total</th><th>R medio</th><th>Profit Factor</th>
+      </tr></thead>
+      <tbody id="tfStatsBody"></tbody>
+    </table>
+  </section>
+
+  <!-- ── FILTROS ── -->
+  <section class="trades-toolbar">
+    <div class="tabs-row">
+      <button class="tab-btn active" data-tab="open" onclick="switchTradeTab('open',this)">OPEN</button>
+      <button class="tab-btn" data-tab="closed" onclick="switchTradeTab('closed',this)">CLOSED</button>
+    </div>
+    <div class="filters-row">
+      <select id="filterSide" onchange="applyFilters()">
+        <option value="ALL">Todos los lados</option>
+        <option value="LONG">LONG</option>
+        <option value="SHORT">SHORT</option>
+      </select>
+      <input type="text" id="filterSetup" placeholder="Buscar setup..." oninput="applyFilters()">
+    </div>
+  </section>
+
+  <!-- ── TRADES ABIERTOS ── -->
+  <section class="tf-panel trades-panel tab-panel active" id="tab-open">
+    <div class="tf-header">
+      <div>
+        <h2>Trades activos</h2>
+        <p class="sub">Operaciones abiertas monitorizadas por BTC websocket.</p>
+      </div>
+      <div class="range-refresh-pill" id="lastRefresh">Actualizando...</div>
+    </div>
+    <table class="tf-table">
+      <thead><tr>
+        <th>ID</th><th>Estado</th><th>TF</th><th>Side</th><th>Setup</th>
+        <th>Entry</th><th>SL</th><th>TP1</th><th>TP2</th><th>TP3</th>
+        <th>MFE</th><th>MAE</th><th>Duración</th><th>R actual</th><th>Abierto</th>
+      </tr></thead>
+      <tbody id="openTradesBody"></tbody>
+    </table>
+  </section>
+
+  <!-- ── TRADES CERRADOS ── -->
+  <section class="tf-panel trades-panel tab-panel" id="tab-closed">
+    <div class="tf-header">
+      <div>
+        <h2>Trades cerrados</h2>
+        <p class="sub">Primer toque confirmado en realtime.</p>
+      </div>
+    </div>
+    <table class="tf-table">
+      <thead><tr>
+        <th>ID</th><th>Resultado</th><th>TF</th><th>Side</th><th>Setup</th>
+        <th>Entry</th><th>Cierre</th><th>TP1</th><th>SL</th>
+        <th>MFE</th><th>MAE</th><th>Duración</th><th>R gest.</th><th>PnL</th><th>Touch time</th>
+      </tr></thead>
+      <tbody id="closedTradesBody"></tbody>
+    </table>
+  </section>
+
+</main>
+
+<script>
+var currentAsset="BTCUSDT",currentAssetLabel="BTC";
+
+'use strict';
+
+// ── DATOS DEMO (reemplazar con fetch a tu API) ──────────
+const DEMO_OPEN = [
+  {id:233,tf:'candles_3m',side:'LONG',setup:'lower_rejection',entry:73948.13,sl:73840.81,tp1:74014.30,tp2:74047.38,tp3:74097.01,mfe:0,mae:0,dur:'9m 53s',r:0.00,opened:'30/05/26 19:03:27'},
+  {id:232,tf:'candles_15m',side:'LONG',setup:'lower_rejection',entry:73989.03,sl:73517.19,tp1:74249.47,tp2:74384.19,tp3:74922.27,mfe:0,mae:0,dur:'57m 52s',r:0.00,opened:'30/05/26 15:28'},
+  {id:220,tf:'candles_5m',side:'LONG',setup:'bullish_impulse',entry:74030.01,sl:73755.20,tp1:74198.12,tp2:74283.68,tp3:74410.51,mfe:0,mae:0,dur:'1h 57m',r:0.00,opened:'30/05/26 17:25'},
+];
+
+const DEMO_CLOSED = [
+  {id:219,res:'TP',tf:'candles_3m',side:'LONG',setup:'sell_absorption',entry:73500,close:74014,tp1:74014,sl:73200,mfe:514,mae:0,dur:'22m',r:1.71,pnl:5.13,touch:'30/05/26 14:22'},
+  {id:218,res:'SL',tf:'candles_5m',side:'SHORT',setup:'bearish_impulse',entry:74200,close:73800,tp1:73800,sl:74500,mfe:400,mae:0,dur:'1h',r:-1.00,pnl:-3.00,touch:'30/05/26 12:10'},
+  {id:217,res:'TP',tf:'candles_3m',side:'LONG',setup:'lower_rejection',entry:72800,close:73500,tp1:73500,sl:72400,mfe:700,mae:0,dur:'45m',r:1.75,pnl:7.00,touch:'30/05/26 10:30'},
+  {id:216,res:'BE',tf:'candles_5m',side:'LONG',setup:'buy_absorption',entry:73100,close:73100,tp1:73600,sl:72700,mfe:300,mae:0,dur:'30m',r:0.00,pnl:0.00,touch:'30/05/26 09:00'},
+  {id:215,res:'TP',tf:'candles_15m',side:'LONG',setup:'lower_rejection',entry:71000,close:72500,tp1:72500,sl:70200,mfe:1500,mae:0,dur:'3h',r:1.88,pnl:15.00,touch:'29/05/26 15:00'},
+  {id:214,res:'SL',tf:'candles_3m',side:'SHORT',setup:'upper_rejection',entry:73900,close:74200,tp1:73200,sl:74200,mfe:0,mae:300,dur:'15m',r:-1.00,pnl:-3.00,touch:'29/05/26 12:00'},
+];
+
+const SETUPS = {
+  'bearish_impulse':  {tp:17,be:10,sl:9},
+  'sell_absorption':  {tp:9, be:1, sl:4},
+  'lower_rejection':  {tp:16,be:15,sl:19},
+  'upper_rejection':  {tp:13,be:5, sl:11},
+  'buy_absorption':   {tp:5, be:2, sl:4},
+  'bullish_impulse':  {tp:21,be:8, sl:31},
+};
+
+const TFS = {
+  'candles_3m':  {tp:43,be:20,sl:38},
+  'candles_5m':  {tp:31,be:10,sl:31},
+  'candles_15m': {tp:7, be:0, sl:9},
+};
+
+// ── UTILS ──────────────────────────────
+const $ = id => document.getElementById(id);
+const fmtN = (n,d=2) => Number(n).toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
+
+function wr(tp,be,sl){ const total=tp+be+sl; return total?((tp/total)*100).toFixed(1)+'%':'—'; }
+function pf(tp,sl){ return sl===0?'∞':(tp/sl).toFixed(2); }
+function rMed(rArr){ return rArr.length?(rArr.reduce((a,b)=>a+b,0)/rArr.length).toFixed(2)+'R':'—'; }
+
+// ── RENDER STATS TABLES ────────────────
+function renderSetupTable(){
+  const b = $('setupStatsBody'); b.innerHTML='';
+  Object.entries(SETUPS).forEach(([name,{tp,be,sl}])=>{
+    const rArr = DEMO_CLOSED.filter(t=>t.setup===name).map(t=>t.r);
+    const rTot = rArr.reduce((a,b)=>a+b,0).toFixed(2);
+    const rCol = parseFloat(rTot)>=0?'positive':'negative';
+    b.innerHTML += `<tr>
+      <td>${name}</td><td>${tp+be+sl}</td>
+      <td>${tp} / ${be} / ${sl}</td>
+      <td>${wr(tp,be,sl)}</td>
+      <td class="${rCol}">${rTot}R</td>
+      <td>${rMed(rArr)}</td>
+      <td>${pf(tp,sl)}</td>
+    </tr>`;
+  });
+}
+
+function renderTFTable(){
+  const b = $('tfStatsBody'); b.innerHTML='';
+  Object.entries(TFS).forEach(([name,{tp,be,sl}])=>{
+    const rArr = DEMO_CLOSED.filter(t=>t.tf===name).map(t=>t.r);
+    const rTot = rArr.reduce((a,b)=>a+b,0).toFixed(2);
+    const rCol = parseFloat(rTot)>=0?'positive':'negative';
+    b.innerHTML += `<tr>
+      <td>${name}</td><td>${tp+be+sl}</td>
+      <td>${tp} / ${be} / ${sl}</td>
+      <td>${wr(tp,be,sl)}</td>
+      <td class="${rCol}">${rTot}R</td>
+      <td>${rMed(rArr)}</td>
+      <td>${pf(tp,sl)}</td>
+    </tr>`;
+  });
+}
+
+// ── SUMMARY KPIS ──────────────────────
+function renderSummary(){
+  const allTP=DEMO_CLOSED.filter(t=>t.res==='TP').length;
+  const allBE=DEMO_CLOSED.filter(t=>t.res==='BE').length;
+  const allSL=DEMO_CLOSED.filter(t=>t.res==='SL').length;
+  $('summaryTpSl').textContent = allTP+' / '+allBE+' / '+allSL;
+  $('summaryWinrate').textContent = wr(allTP,allBE,allSL);
+  const rAll=DEMO_CLOSED.map(t=>t.r);
+  const rTot=rAll.reduce((a,b)=>a+b,0);
+  $('summaryRTotal').textContent = rTot.toFixed(2)+'R';
+  $('summaryRAvg').textContent = rMed(rAll);
+  const pnlAll=DEMO_CLOSED.map(t=>t.pnl||0);
+  const pnlTot=pnlAll.reduce((a,b)=>a+b,0);
+  $('summaryPnlTotal').textContent = fmtN(pnlTot,2)+'$';
+  $('summaryPnlAvg').textContent = fmtN(pnlTot/DEMO_CLOSED.length,2)+'$';
+  $('summaryOpen').textContent = DEMO_OPEN.length;
+  $('summaryClosed').textContent = DEMO_CLOSED.length;
+
+  // Equity KPIs
+  const rSorted=[...rAll].sort((a,b)=>b-a);
+  let cum=0,peak=0,maxDD=0;
+  rAll.forEach(r=>{cum+=r;if(cum>peak)peak=cum;if(peak-cum>maxDD)maxDD=peak-cum;});
+  $('equityMaxDd').textContent = '-'+maxDD.toFixed(2)+'R';
+  $('equityProfitFactor').textContent = pf(allTP,allSL);
+  $('equityExpectancy').textContent = rMed(rAll);
+  $('equityBestR').textContent = rSorted[0].toFixed(2)+'R';
+  $('equityWorstR').textContent = rSorted[rSorted.length-1].toFixed(2)+'R';
+}
+
+// ── EQUITY CHART ──────────────────────
+function renderChart(){
+  const ctx=document.getElementById('equityChart');
+  if(!ctx) return;
+  let cum=0;
+  const data=[0,...DEMO_CLOSED.map(t=>{cum+=t.r;return parseFloat(cum.toFixed(2));})];
+  new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:['Inicio',...DEMO_CLOSED.map((_,i)=>'#'+(i+1))],
+      datasets:[{
+        label:'Equity R',data,
+        borderColor:'#2d82f0',backgroundColor:'rgba(45,130,240,0.08)',
+        borderWidth:2,pointRadius:2,tension:0.3,fill:true,
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'#4a6a8a',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},
+        y:{ticks:{color:'#4a6a8a',font:{size:9},callback:v=>v+'R'},grid:{color:'rgba(255,255,255,0.04)'}},
+      }
+    }
+  });
+}
+
+// ── OPEN TRADES TABLE ─────────────────
+let _livePrice = 73900;
+
+function renderOpenTrades(){
+  const side=$('filterSide')?.value||'ALL';
+  const setup=$('filterSetup')?.value||'';
+  const filtered=DEMO_OPEN.filter(t=>(side==='ALL'||t.side===side)&&(!setup||t.setup.includes(setup)));
+  $('openTradesBody').innerHTML=filtered.map(t=>{
+    const rCur=t.side==='LONG'?(_livePrice-t.entry)/(t.entry-t.sl):-((_livePrice-t.entry)/(t.sl-t.entry));
+    return `<tr>
+      <td>${t.id}</td>
+      <td><span class="badge-open">OPEN</span></td>
+      <td>${t.tf}</td>
+      <td><span class="badge-side ${t.side}">${t.side}</span></td>
+      <td>${t.setup}</td>
+      <td>${fmtN(t.entry,2)}</td>
+      <td style="color:var(--red)">${fmtN(t.sl,2)}</td>
+      <td style="color:var(--green)">${fmtN(t.tp1,2)}</td>
+      <td style="color:var(--green)">${fmtN(t.tp2,2)}</td>
+      <td style="color:var(--green)">${fmtN(t.tp3,2)}</td>
+      <td>${fmtN(t.mfe,2)}</td>
+      <td>${fmtN(t.mae,2)}</td>
+      <td>${t.dur}</td>
+      <td class="${rCur>=0?'positive':'negative'}">${rCur.toFixed(2)}R</td>
+      <td style="color:var(--tx3);font-size:10px">${t.opened}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderClosedTrades(){
+  $('closedTradesBody').innerHTML=DEMO_CLOSED.map(t=>{
+    const rCol=t.r>0?'positive':t.r<0?'negative':'neutral';
+    const resCls=t.res==='TP'?'TP':t.res==='SL'?'SL':'BE';
+    return `<tr>
+      <td>${t.id}</td>
+      <td><span class="badge-result ${resCls}">${t.res}</span></td>
+      <td>${t.tf}</td>
+      <td><span class="badge-side ${t.side}">${t.side}</span></td>
+      <td>${t.setup}</td>
+      <td>${fmtN(t.entry,2)}</td>
+      <td>${fmtN(t.close,2)}</td>
+      <td style="color:var(--green)">${fmtN(t.tp1,2)}</td>
+      <td style="color:var(--red)">${fmtN(t.sl,2)}</td>
+      <td>${fmtN(t.mfe,2)}</td>
+      <td>${fmtN(t.mae,2)}</td>
+      <td>${t.dur}</td>
+      <td class="${rCol}">${t.r>0?'+':''}${t.r}R</td>
+      <td class="${rCol}">${t.pnl>0?'+':''}${fmtN(t.pnl,2)}$</td>
+      <td style="color:var(--tx3);font-size:10px">${t.touch}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── TABS ──────────────────────────────
+function switchTradeTab(tab,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab)?.classList.add('active');
+  btn.classList.add('active');
+}
+
+function applyFilters(){ renderOpenTrades(); }
+
+// ── WEBSOCKET ─────────────────────────
+function connectWS(){
+  try {
+    const ws=new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade');
+    ws.onopen=()=>{ $('wsStatus').textContent='ONLINE'; };
+    ws.onmessage=e=>{
+      const d=JSON.parse(e.data);
+      _livePrice=parseFloat(d.p);
+      $('livePrice').textContent='$'+_livePrice.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+      $('wsLatency').textContent='Último tick: '+new Date().toLocaleTimeString('es-ES');
+      $('lastRefresh').textContent='Actualizado: '+new Date().toLocaleTimeString('es-ES');
+      renderOpenTrades();
+    };
+    ws.onclose=()=>{ $('wsStatus').textContent='DESCONECTADO'; setTimeout(connectWS,5000); };
+    ws.onerror=()=>ws.close();
+  } catch(e) { $('wsStatus').textContent='ERROR WS'; }
+}
+
+// ── INIT ──────────────────────────────
+renderSummary();
+renderSetupTable();
+renderTFTable();
+renderOpenTrades();
+renderClosedTrades();
+renderChart();
+connectWS();
+</script>
+</body>
+</html>

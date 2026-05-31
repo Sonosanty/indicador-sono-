@@ -42,3 +42,7 @@ backup_*/
 
 # Wrangler cache (do not track)
 .wrangler/cache/
+
+# Credenciales.env
+*.credentials.json
+*_config.json
