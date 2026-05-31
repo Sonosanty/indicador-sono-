@@ -219,12 +219,41 @@ function updateConfluence(){
  var labels=['RSI 15m alcista','ADX 15m > 25','RSI 5m alineado','Precio sobre MA40','Confluencia > 60'];var html='';for(var i=0;i<criteria.length;i++){html+=('<div class="check-item"><span>'+(criteria[i]?'✅':'⬜')+'</span> '+labels[i]+'</div>')};$(('entry-checklist')).innerHTML=html;
 }
 
-function init(){
- document.querySelectorAll('.ab button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.ab button').forEach(function(x){x.classList.remove('ac')});this.classList.add('ac');var s=this.getAttribute('data-a');BinanceData.changeAsset(s)})});
- BinanceData.init('BTCUSDT','3m',{onStatus:setStatus,onPrice:function(d){if(d&&d.price)$(('r-price')).textContent='$'+Math.round(d.price).toLocaleString('en-US');$(('r-sub')).textContent=d.symbol+'/USDT · Tiempo Real'},onKlines:function(tf,klines){klinesData[tf]=klines;var data=analyzeTF(tf,klines);if(data)updateTFCard(tf,data);updateConfluence()}});
+function startRangos(){
+ if(typeof SonoEngine==='undefined'||typeof BinanceData==='undefined'){
+  setTimeout(startRangos,200);
+  $(('conf-score')).textContent='--';
+  $(('conf-bias')).textContent='Cargando...';
+  return;
+ }
+ document.querySelectorAll('.ab button').forEach(function(b){
+  b.addEventListener('click',function(){
+   document.querySelectorAll('.ab button').forEach(function(x){x.classList.remove('ac')});
+   this.classList.add('ac');
+   BinanceData.changeAsset(this.getAttribute('data-a'));
+  });
+ });
+ BinanceData.init('BTCUSDT','3m',{
+  onStatus:setStatus,
+  onPrice:function(d){
+   if(d&&d.price)$(('r-price')).textContent='$'+Math.round(d.price).toLocaleString('en-US');
+   $(('r-sub')).textContent=d.symbol+'/USDT · Tiempo Real';
+  },
+  onKlines:function(tf,klines){
+   klinesData[tf]=klines;
+   var data=analyzeTF(tf,klines);
+   if(data)updateTFCard(tf,data);
+   updateConfluence();
+  }
+ });
 }
-init();
+if(document.readyState==='loading'){
+ document.addEventListener('DOMContentLoaded',startRangos);
+} else {
+ startRangos();
+}
 </script>
 </body>
 </html>
+
 
