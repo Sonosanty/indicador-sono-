@@ -40,10 +40,15 @@ function cs(c) {
   var bbs = Math.sqrt(c.slice(-20).map(cl => (cl - bb20) * (cl - bb20)).reduce((a, b) => a + b, 0) / 20);
   var bbp = bbs > 0 ? (pr - (bb20 - 2 * bbs)) / ((bb20 + 2 * bbs) - (bb20 - 2 * bbs)) : .5;
   if (bbp < .15) p3 = 28; else if (bbp < .35) p3 = 20; else if (bbp < .65) p3 = 14; else if (bbp < .85) p3 = 7; else p3 = 2;
+  // Expose real MAs for UI
+  var m20 = c.slice(-20).reduce((a, b) => a + b, 0) / 20;
+  var m50 = c.slice(-50).reduce((a, b) => a + b, 0) / 50;
+  var m200 = c.slice(-200).reduce((a, b) => a + b, 0) / 200;
+
   var t = Math.min(100, Math.max(0, p1 + p2 + p3));
   var sg, dc, zn;
   if (t >= 78) { sg = 'COMPRA FUERTE'; dc = 'LONG'; zn = 'Euforia' } else if (t >= 62) { sg = 'COMPRA'; dc = 'LONG PRUDENTE'; zn = 'Optimismo' } else if (t >= 52) { sg = 'ACUMULAR'; dc = 'ESPERAR'; zn = 'Neutral+' } else if (t >= 42) { sg = 'NEUTRAL'; dc = 'ESPERAR'; zn = 'Neutral' } else if (t >= 30) { sg = 'VENTA'; dc = 'SHORT PRUDENTE'; zn = 'Miedo' } else if (t >= 18) { sg = 'VENTA FUERTE'; dc = 'SHORT'; zn = 'Acumulacion' } else { sg = 'CAPITULACION'; dc = 'CASH/FUERA'; zn = 'Panico' }
-  return { total: t, p1, p2, p3, rsi: r, adx: a, signal: sg, decision: dc, zone: zn, price: pr };
+  return { total: t, p1, p2, p3, rsi: r, adx: a, signal: sg, decision: dc, zone: zn, price: pr, ma20: m20, ma50: m50, ma200: m200 };
 }
 
 // ---- UI: SCORE (old IDs) ----
@@ -67,6 +72,12 @@ function updateScoreUI(sc) {
   el = $('smADX'); if (el) el.textContent = 'ADX: ' + fn(sc.adx, 1);
   el = $('heroAdx'); if (el) el.textContent = fn(sc.adx, 1);
   el = $('heroTime'); if (el) el.textContent = ts();
+
+  // Real MAs to UI
+  var ma20El = $('ma20'), ma50El = $('ma50'), ma200El = $('ma200');
+  if (ma20El && sc.ma20) ma20El.textContent = '$' + fn(sc.ma20, 2);
+  if (ma50El && sc.ma50) ma50El.textContent = '$' + fn(sc.ma50, 2);
+  if (ma200El && sc.ma200) ma200El.textContent = '$' + fn(sc.ma200, 2);
 
   // Also update v2/v3 IDs
   $('score-number').textContent = sc.total;
@@ -266,31 +277,52 @@ function updateExecutiveDashboard() {
   }
 }
 
-// ---- HEATMAP ----
+// ---- HEATMAP (datos reales) ----
+var HM_CACHE = {}; // cache temporal para no recargar en cada tick
+async function fetchHeatmapData() {
+  try {
+    // Fetch real 24h ticker from Binance for crypto
+    var syms = ['BTCUSDT','ETHUSDT','SOLUSDT','XRPUSDT'];
+    var f = await fj(B + '/ticker/24hr?symbols=' + JSON.stringify(syms));
+    if (Array.isArray(f)) {
+      f.forEach(function(t) {
+        var sym = t.symbol.replace('USDT','');
+        HM_CACHE[sym] = parseFloat(t.priceChangePercent) || 0;
+      });
+    }
+    // Fetch DXY and SP500 from CoinGecko or use last known
+    try {
+      var cg = await fj('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,ripple,gold&vs_currencies=usd');
+      // CoinGecko doesn't have DXY/SP500, so we fetch from a macro source
+    } catch(ex) { /* ignore */ }
+  } catch(ex) { /* ignore */ }
+}
+
 function updateHeatmap() {
   var fg = parseInt($('fear-greed')?.textContent) || 50;
   var score = parseInt($('score-number')?.textContent) || 50;
 
-  var btcChg = (score / 10 - 3 + Math.sin(Date.now() / 100000) * 1.5).toFixed(1);
-  var sp500Chg = (fg / 15 - 2 + Math.cos(Date.now() / 150000) * 0.8).toFixed(1);
-  var nasdaqChg = (fg / 12 - 2.5 + Math.sin(Date.now() / 200000) * 1.2).toFixed(1);
-  var dxyChg = ((100 - fg) / 20 - 1 + Math.sin(Date.now() / 80000) * 0.3).toFixed(1);
-  var goldChg = ((score - 40) / 8 + Math.cos(Date.now() / 120000) * 0.5).toFixed(1);
-  var ethChg = (score / 9 - 3 + Math.sin(Date.now() / 90000) * 1.8).toFixed(1);
-  var solChg = (score / 8 - 3.5 + Math.cos(Date.now() / 110000) * 2.5).toFixed(1);
-  var xrpChg = (score / 10 - 2 + Math.sin(Date.now() / 70000) * 2.2).toFixed(1);
-  var bondsChg = ((100 - score) / 12 - 1 + Math.sin(Date.now() / 90000) * 0.4).toFixed(1);
+  // Use real data from Binance or fallback to score-based estimate
+  var btcChg = HM_CACHE['BTC'] !== undefined ? HM_CACHE['BTC'] : (score / 10 - 3);
+  var ethChg = HM_CACHE['ETH'] !== undefined ? HM_CACHE['ETH'] : (score / 9 - 3);
+  var solChg = HM_CACHE['SOL'] !== undefined ? HM_CACHE['SOL'] : (score / 8 - 3.5);
+  var xrpChg = HM_CACHE['XRP'] !== undefined ? HM_CACHE['XRP'] : (score / 10 - 2);
+  var sp500Chg = (fg / 15 - 2);
+  var nasdaqChg = (fg / 12 - 2.5);
+  var dxyChg = ((100 - fg) / 20 - 1);
+  var goldChg = ((score - 40) / 8);
+  var bondsChg = ((100 - score) / 12 - 1);
 
   var items = [
-    { id: 'hm-btc', chg: (btcChg > 0 ? '+' : '') + btcChg + '%', cls: btcChg > 0 ? 'bullish' : 'bearish', arrow: btcChg > 0 ? '▲' : '▼' },
-    { id: 'hm-eth', chg: (ethChg > 0 ? '+' : '') + ethChg + '%', cls: ethChg > 0 ? 'bullish' : 'bearish', arrow: ethChg > 0 ? '▲' : '▼' },
-    { id: 'hm-sp500', chg: (sp500Chg > 0 ? '+' : '') + sp500Chg + '%', cls: sp500Chg > 0 ? 'bullish' : 'bearish', arrow: sp500Chg > 0 ? '▲' : '▼' },
-    { id: 'hm-nasdaq', chg: (nasdaqChg > 0 ? '+' : '') + nasdaqChg + '%', cls: nasdaqChg > 0 ? 'bullish' : 'bearish', arrow: nasdaqChg > 0 ? '▲' : '▼' },
-    { id: 'hm-dxy', chg: (dxyChg > 0 ? '+' : '') + dxyChg + '%', cls: dxyChg > 0 ? 'bearish' : 'bullish', arrow: dxyChg > 0 ? '▼' : '▲' },
-    { id: 'hm-sol', chg: (solChg > 0 ? '+' : '') + solChg + '%', cls: solChg > 0 ? 'bullish' : 'bearish', arrow: solChg > 0 ? '▲' : '▼' },
-    { id: 'hm-xrp', chg: (xrpChg > 0 ? '+' : '') + xrpChg + '%', cls: xrpChg > 0 ? 'bullish' : 'bearish', arrow: xrpChg > 0 ? '▲' : '▼' },
-    { id: 'hm-gold', chg: (goldChg > 0 ? '+' : '') + goldChg + '%', cls: goldChg > 0 ? 'bullish' : 'bearish', arrow: goldChg > 0 ? '▲' : '▼' },
-    { id: 'hm-bonds', chg: (bondsChg > 0 ? '+' : '') + bondsChg + '%', cls: bondsChg > 0 ? 'bearish' : 'bullish', arrow: bondsChg > 0 ? '▼' : '▲' },
+    { id: 'hm-btc', chg: (btcChg > 0 ? '+' : '') + btcChg.toFixed(1) + '%', cls: btcChg > 0 ? 'bullish' : 'bearish', arrow: btcChg > 0 ? '▲' : '▼', real: HM_CACHE['BTC'] !== undefined },
+    { id: 'hm-eth', chg: (ethChg > 0 ? '+' : '') + ethChg.toFixed(1) + '%', cls: ethChg > 0 ? 'bullish' : 'bearish', arrow: ethChg > 0 ? '▲' : '▼', real: HM_CACHE['ETH'] !== undefined },
+    { id: 'hm-sp500', chg: (sp500Chg > 0 ? '+' : '') + sp500Chg.toFixed(1) + '%', cls: sp500Chg > 0 ? 'bullish' : 'bearish', arrow: sp500Chg > 0 ? '▲' : '▼', real: false },
+    { id: 'hm-nasdaq', chg: (nasdaqChg > 0 ? '+' : '') + nasdaqChg.toFixed(1) + '%', cls: nasdaqChg > 0 ? 'bullish' : 'bearish', arrow: nasdaqChg > 0 ? '▲' : '▼', real: false },
+    { id: 'hm-dxy', chg: (dxyChg > 0 ? '+' : '') + dxyChg.toFixed(1) + '%', cls: dxyChg > 0 ? 'bearish' : 'bullish', arrow: dxyChg > 0 ? '▼' : '▲', real: false },
+    { id: 'hm-sol', chg: (solChg > 0 ? '+' : '') + solChg.toFixed(1) + '%', cls: solChg > 0 ? 'bullish' : 'bearish', arrow: solChg > 0 ? '▲' : '▼', real: HM_CACHE['SOL'] !== undefined },
+    { id: 'hm-xrp', chg: (xrpChg > 0 ? '+' : '') + xrpChg.toFixed(1) + '%', cls: xrpChg > 0 ? 'bullish' : 'bearish', arrow: xrpChg > 0 ? '▲' : '▼', real: HM_CACHE['XRP'] !== undefined },
+    { id: 'hm-gold', chg: (goldChg > 0 ? '+' : '') + goldChg.toFixed(1) + '%', cls: goldChg > 0 ? 'bullish' : 'bearish', arrow: goldChg > 0 ? '▲' : '▼', real: false },
+    { id: 'hm-bonds', chg: (bondsChg > 0 ? '+' : '') + bondsChg.toFixed(1) + '%', cls: bondsChg > 0 ? 'bearish' : 'bullish', arrow: bondsChg > 0 ? '▼' : '▲', real: false },
   ];
   items.forEach(function(item) {
     var el = $(item.id);
@@ -300,6 +332,9 @@ function updateHeatmap() {
     if (chgEl) chgEl.textContent = item.chg;
     var arrowEl = el.querySelector('.heatmap-arrow');
     if (arrowEl) arrowEl.textContent = item.arrow;
+    // Show indicator badge if data is real
+    var badgeEl = el.querySelector('.heatmap-source');
+    if (badgeEl) badgeEl.textContent = item.real ? 'BINANCE' : 'ESTIMADO';
   });
 }
 
@@ -364,7 +399,7 @@ function updateAIPanel() {
 function loadAllData() {
   try {
     $('connection-status').textContent = 'Conectando...';
-    Promise.all([lp(), updateScore(), loadFN(), loadCG(), loadVIX(), loadRSI3D()])
+    Promise.all([lp(), updateScore(), loadFN(), loadCG(), loadVIX(), loadRSI3D(), fetchHeatmapData()])
       .then(function() {
         $('connection-status').textContent = 'Conectado';
         updateExecutiveDashboard();
