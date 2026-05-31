@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "node copy-static.js"
+    "build": "node ../scripts/copy-static.js"
   }
 }
