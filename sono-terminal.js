@@ -48,24 +48,25 @@ function cs(c) {
 
 // ---- UI: SCORE (old IDs) ----
 function updateScoreUI(sc) {
-  $('smScore').textContent = sc.total;
-  $('heroScore').textContent = sc.total;
-  $('heroScoreNum').textContent = sc.total;
-  $('heroBar').style.width = sc.total + '%';
+  var el;
+  el = $('smScore'); if (el) el.textContent = sc.total;
+  el = $('heroScore'); if (el) el.textContent = sc.total;
+  el = $('heroScoreNum'); if (el) el.textContent = sc.total;
+  el = $('heroBar'); if (el) el.style.width = sc.total + '%';
   var se = $('smSignal');
   if (se) { se.textContent = sc.signal; se.className = 'score-signal ' + (sc.signal.indexOf('COMPRA') >= 0 ? 'score-buy' : sc.signal.indexOf('VENTA') >= 0 || sc.signal === 'CAPITULACION' ? 'score-sell' : sc.signal === 'ACUMULAR' ? 'score-accum' : 'score-neutral'); }
-  $('heroSignal').textContent = sc.signal;
-  $('heroDecision').textContent = sc.decision;
-  $('heroZone').textContent = sc.zone;
-  $('smDecision').textContent = sc.decision + ' - ' + sc.zone;
-  $('smP1').textContent = 'P1: ' + sc.p1 + '/35';
-  $('smP2').textContent = 'P2: ' + sc.p2 + '/35';
-  $('smP3').textContent = 'P3: ' + sc.p3 + '/30';
-  $('smRSI').textContent = 'RSI: ' + fn(sc.rsi, 1);
-  $('heroRsi').textContent = fn(sc.rsi, 1);
-  $('smADX').textContent = 'ADX: ' + fn(sc.adx, 1);
-  $('heroAdx').textContent = fn(sc.adx, 1);
-  $('heroTime').textContent = ts();
+  el = $('heroSignal'); if (el) el.textContent = sc.signal;
+  el = $('heroDecision'); if (el) el.textContent = sc.decision;
+  el = $('heroZone'); if (el) el.textContent = sc.zone;
+  el = $('smDecision'); if (el) el.textContent = sc.decision + ' - ' + sc.zone;
+  el = $('smP1'); if (el) el.textContent = 'P1: ' + sc.p1 + '/35';
+  el = $('smP2'); if (el) el.textContent = 'P2: ' + sc.p2 + '/35';
+  el = $('smP3'); if (el) el.textContent = 'P3: ' + sc.p3 + '/30';
+  el = $('smRSI'); if (el) el.textContent = 'RSI: ' + fn(sc.rsi, 1);
+  el = $('heroRsi'); if (el) el.textContent = fn(sc.rsi, 1);
+  el = $('smADX'); if (el) el.textContent = 'ADX: ' + fn(sc.adx, 1);
+  el = $('heroAdx'); if (el) el.textContent = fn(sc.adx, 1);
+  el = $('heroTime'); if (el) el.textContent = ts();
 
   // Also update v2/v3 IDs
   $('score-number').textContent = sc.total;
@@ -105,14 +106,15 @@ function ap() {
   if (!PD) return;
   var u = PD.usd, c = PD.chg, eu = u * ER, up = c >= 0;
 
-  // Legacy IDs
-  $('btcUsdLive').textContent = '$' + fn(u, 2);
-  $('btcEurLive').textContent = String.fromCharCode(8364) + fn(eu, 2);
-  $('previewPrice').textContent = '$' + fn(u, 2);
-  $('previewChange').textContent = (up ? '+' : '') + fn(c, 2) + '%';
+  // Legacy IDs (may not exist in v3 HTML — guard with null check)
+  var el;
+  el = $('btcUsdLive'); if (el) el.textContent = '$' + fn(u, 2);
+  el = $('btcEurLive'); if (el) el.textContent = String.fromCharCode(8364) + fn(eu, 2);
+  el = $('previewPrice'); if (el) el.textContent = '$' + fn(u, 2);
+  el = $('previewChange'); if (el) el.textContent = (up ? '+' : '') + fn(c, 2) + '%';
   var bdg = $('btcChange24hLive');
   if (bdg) { bdg.textContent = (up ? '+' : '') + fn(c, 2) + '% 24h'; bdg.className = 'badge ' + (c > .3 ? 'positivo' : c < -.3 ? 'negativo' : 'neutro'); }
-  $('lastUpdateBTC').textContent = 'Actualizado: ' + ts();
+  el = $('lastUpdateBTC'); if (el) el.textContent = 'Actualizado: ' + ts();
 
   // V3 IDs
   $('current-price').textContent = '$' + fn(u, 2);
@@ -133,11 +135,11 @@ async function loadFN() {
   try {
     var d = await fj('https://api.alternative.me/fng/?limit=1&format=json');
     var v = parseInt(d.data[0].value), lbl = d.data[0].value_classification;
-    $('fearValue').textContent = v;
-    $('fearLabel').textContent = lbl;
-    $('heroFng').textContent = v;
-    $('fear-greed').textContent = v;
-    $('fg-change').textContent = lbl;
+    var el; el = $('fearValue'); if (el) el.textContent = v;
+    el = $('fearLabel'); if (el) el.textContent = lbl;
+    el = $('heroFng'); if (el) el.textContent = v;
+    el = $('fear-greed'); if (el) el.textContent = v;
+    el = $('fg-change'); if (el) el.textContent = lbl;
   } catch (ex) { /* silent */ }
 }
 
@@ -424,10 +426,10 @@ setInterval(function() {
 
 setInterval(function() { loadFN(); loadCG(); loadVIX(); loadRSI3D(); }, 120000);
 
-setInterval(function() { $('connection-status').textContent = 'Live - ' + ts(); }, 5000);
-setInterval(function() { $('last-update').textContent = ts(); }, 10000);
-setInterval(function() { $('liveLabel').textContent = 'Live - ' + ts(); }, 5000);
-setInterval(function() { $('footerTime').textContent = ts(); }, 10000);
+setInterval(function() { var el=$('connection-status');if(el)el.textContent='Live - '+ts(); }, 5000);
+setInterval(function() { var el=$('last-update');if(el)el.textContent=ts(); }, 10000);
+setInterval(function() { var el=$('liveLabel');if(el)el.textContent='Live - '+ts(); }, 5000);
+setInterval(function() { var el=$('footerTime');if(el)el.textContent=ts(); }, 10000);
 setInterval(function() { updateExecutiveDashboard(); updateHeatmap(); updateAIPanel(); }, 10000);
 
 // ---- DOM READY ----
