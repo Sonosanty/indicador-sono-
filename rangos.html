@@ -253,7 +253,110 @@ if(document.readyState==='loading'){
  startRangos();
 }
 </script>
+<style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}</style>
+<script>
+// ===== SONO ENGINE (embedded for rangos self-contained) =====
+var SonoEngine={};
+(function(){
+function sma(arr,n){if(!arr||arr.length<n)return null;var s=0;for(var i=arr.length-n;i<arr.length;i++)s+=+arr[i];return s/n};
+function rsi(closes,p){p=p||14;if(!closes||closes.length<p+1)return null;var g=0,l=0;for(var i=closes.length-p;i<closes.length;i++){var d=+closes[i]-+closes[i-1];if(d>0)g+=d;else l-=d}return Math.round(100-100/(1+(g/p)/((l/p)||0.0001)))};
+function adx(h,l,c,p){p=p||14;if(!c||c.length<p+2)return null;var pD=[],mD=[],tr=[];for(var i=1;i<c.length;i++){var pH=+h[i]-+h[i-1],mL=+l[i-1]-+l[i];pD.push(pH>mL&&pH>0?pH:0);mD.push(mL>pH&&mL>0?mL:0);tr.push(Math.max(+h[i]-+l[i],Math.abs(+h[i]-+c[i-1]),Math.abs(+l[i]-+c[i-1])))};var sp=0,sm2=0,st=0;for(var i=pD.length-p;i<pD.length;i++){sp+=pD[i];sm2+=mD[i];st+=tr[i]};st=st||1;var pDI=100*sp/st,mDI=100*sm2/st;return{adx:(pDI+mDI)?Math.abs(pDI-mDI)/(pDI+mDI)*100:0,pdi:pDI,mdi:mDI}};
+function bollinger(closes,p,k){p=p||20;k=k||2;if(!closes||closes.length<p)return null;var sl=closes.slice(-p),m=0;for(var i=0;i<p;i++)m+=+sl[i];m/=p;var sd=0;for(var i=0;i<p;i++)sd+=(+sl[i]-m)*(+sl[i]-m);sd=Math.sqrt(sd/p);var up=m+k*sd,dn=m-k*sd;return{upper:up,lower:dn,mid:m,pctB:(+closes[closes.length-1]-dn)/((up-dn)||1)}};
+function rsiLabel(v){if(v===null||v===undefined)return'--';if(v>70)return'SOBRECOMPRA';if(v>60)return'ALCISTA';if(v<30)return'SOBREVENTA';if(v<40)return'BAJISTA';return'NEUTRAL'};
+function pressurePct(adxData,rsiVal){if(!adxData||rsiVal===null||rsiVal===undefined)return 50;var p=50;if(adxData.pdi>adxData.mdi)p+=15;else p-=15;if(rsiVal>55)p+=10;else if(rsiVal<45)p-=10;return Math.min(95,Math.max(5,p))};
+SonoEngine={sma:sma,rsi:rsi,adx:adx,bollinger:bollinger,rsiLabel:rsiLabel,pressurePct:pressurePct};
+})();
+
+// ===== BINANCE DATA (simplified for rangos) =====
+var BinanceData={};
+(function(){
+var currentSymbol='BTCUSDT',currentTF='3m',callbacks={};
+BinanceData.init=function(sym,tf,cb){currentSymbol=sym;currentTF=tf;callbacks=cb||{};load24hr();loadKlines()};
+BinanceData.changeAsset=function(s){currentSymbol=s;load24hr();loadKlines()};
+BinanceData.changeTF=function(t){currentTF=t;loadKlines()};
+
+function load24hr(){
+ fetch('https://api.binance.com/api/v3/ticker/24hr?symbol='+currentSymbol).then(function(r){return r.json()}).then(function(d){
+  if(callbacks.onPrice)callbacks.onPrice({price:+d.lastPrice,symbol:d.symbol,high:+d.highPrice,low:+d.lowPrice,change:+d.priceChangePercent})
+ }).catch(function(){});
+}
+function loadKlines(){
+ var tfs=[currentTF,'15m','5m','3m','1m'];
+ tfs.forEach(function(tf){
+  fetch('https://api.binance.com/api/v3/klines?symbol='+currentSymbol+'&interval='+tf+'&limit=220').then(function(r){return r.json()}).then(function(data){
+   var kl=data.map(function(k){return{c:+k[4],h:+k[2],l:+k[3],o:+k[1],t:k[0]}});
+   if(callbacks.onKlines)callbacks.onKlines(tf,kl)
+  }).catch(function(){});
+ });
+}
+})();
+
+// ===== RANGOS APP =====
+var $=function(id){return document.getElementById(id)};
+var fmt=function(v,d){d=d||2;return v===null||isNaN(v)?'--':Number(v).toFixed(d)};
+function setStatus(t,m){};
+
+var TFS=['15m','5m','3m','1m'];
+var klinesData={};
+
+function analyzeTF(tf,klines){
+ if(!klines||klines.length<30)return null;
+ var closes=klines.map(function(k){return k.c});
+ var highs=klines.map(function(k){return k.h});
+ var lows=klines.map(function(k){return k.l});
+ var price=closes[closes.length-1];
+ var rsiV=SonoEngine.rsi(closes);
+ var adxV=SonoEngine.adx(highs,lows,closes);
+ var bb=SonoEngine.bollinger(closes);
+ var ma40=SonoEngine.sma(closes,40);
+ var pressure=SonoEngine.pressurePct(adxV,rsiV);
+ var isBull=(rsiV>50&&adxV&&adxV.pdi>adxV.mdi&&price>(ma40||0));
+ var isBear=(rsiV<50&&adxV&&adxV.mdi>adxV.pdi&&price<(ma40||999999));
+ return{rsiV:rsiV,adxV:adxV,bb:bb,ma40:ma40,pressure:pressure,price:price,isBull:isBull,isBear:isBear};
+}
+
+function updateTFCard(tf,data){
+ if(!data)return;
+ var rs=data.rsiV,ax=data.adxV,bb=data.bb,ma40=data.ma40,pr=data.pressure,price=data.price,ib=data.isBull,ib2=data.isBear;
+ if(rs!==null){$('rsi-'+tf).textContent=fmt(rs,1);$('rsi-'+tf).className='metric-val '+(rs>60?'green':rs<40?'red':'yellow');$('rsi-'+tf+'-lbl').textContent=SonoEngine.rsiLabel(rs)}
+ if(ax){$('adx-'+tf).textContent=fmt(ax.adx,1);$('adx-'+tf).className='metric-val '+(ax.adx>25?'green':'yellow');$('adx-'+tf+'-lbl').textContent=ax.adx>25?'Tendencia':'Lateral'}
+ if(ma40){$('ma40-'+tf).textContent=fmt(ma40,price>1000?0:4);$('ma40-'+tf).className='metric-val '+(price>ma40?'green':'red');$('ma40-'+tf+'-lbl').textContent=price>ma40?'▲ Sobre MA40':'▼ Bajo MA40'}
+ if(bb){$('bb-'+tf).textContent=bb.pctB.toFixed(2);$('bb-'+tf+'-lbl').textContent=bb.pctB>0.8?'Resistencia':bb.pctB<0.2?'Soporte':'Central'}
+ $('needle-'+tf).style.left=pr+'%';
+ var biasEl=$('bias-'+tf);
+ if(ib){biasEl.textContent='ALCISTA';biasEl.className='bias bull'}else if(ib2){biasEl.textContent='BAJISTA';biasEl.className='bias bear'}else{biasEl.textContent='NEUTRAL';biasEl.className='bias neut'}
+ if($('mini-'+tf+'-rsi')){$('mini-'+tf+'-rsi').textContent='RSI '+(rs?fmt(rs,1):'--');$('mini-'+tf+'-adx').textContent='ADX '+(ax?fmt(ax.adx,1):'--')}
+}
+
+function updateConfluence(){
+ var results=[];for(var i=0;i<TFS.length;i++){var d=klinesData[TFS[i]]?analyzeTF(TFS[i],klinesData[TFS[i]]):null;if(d)results.push(d)}
+ if(!results.length)return;
+ var bullCount=0,bearCount=0;for(var i=0;i<results.length;i++){if(results[i].isBull)bullCount++;if(results[i].isBear)bearCount++}
+ var conf=Math.round((Math.max(bullCount,bearCount)/TFS.length)*100);
+ $('conf-score').textContent=conf;
+ var biasEl=$('conf-bias');
+ if(bullCount>bearCount){biasEl.textContent='CONFLUENCIA ALCISTA';biasEl.className='bias bull'}else if(bearCount>bullCount){biasEl.textContent='CONFLUENCIA BAJISTA';biasEl.className='bias bear'}else{biasEl.textContent='SIN CONFLUENCIA';biasEl.className='bias neut'}
+ $('conf-desc').textContent=bullCount+' TFs alcistas · '+bearCount+' TFs bajistas';
+ var r15=results[0]||{};var criteria=[r15.rsiV>50,r15.adxV&&r15.adxV.adx>25,results.filter(function(r){return r.rsiV>50}).length>=2,results.some(function(r){return r.price>r.ma40}),conf>=60];var count=0;for(var i=0;i<criteria.length;i++)if(criteria[i])count++;
+ $('entry-count').textContent=count+'/5';
+ var labels=['RSI 15m alcista','ADX 15m > 25','RSI 5m alineado','Precio sobre MA40','Confluencia > 60'];var html='';for(var i=0;i<criteria.length;i++){html+=('<div class="check-item"><span>'+(criteria[i]?'✅':'⬜')+'</span> '+labels[i]+'</div>')};$('entry-checklist').innerHTML=html;
+}
+
+function startRangos(){
+ document.querySelectorAll('.ab button').forEach(function(b){
+  b.addEventListener('click',function(){
+   document.querySelectorAll('.ab button').forEach(function(x){x.classList.remove('ac')});
+   this.classList.add('ac');
+   BinanceData.changeAsset(this.getAttribute('data-a')+'USDT');
+  });
+ });
+ BinanceData.init('BTCUSDT','3m',{
+  onStatus:setStatus,
+  onPrice:function(d){if(d&&d.price)$('r-price').textContent='$'+Math.round(d.price).toLocaleString('en-US');$('r-sub').textContent='BTC/USDT · Tiempo Real'},
+  onKlines:function(tf,klines){klinesData[tf]=klines;var data=analyzeTF(tf,klines);if(data)updateTFCard(tf,data);updateConfluence()}
+ });
+}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',startRangos)}else{setTimeout(startRangos,500)}
+</script>
 </body>
 </html>
-
-
