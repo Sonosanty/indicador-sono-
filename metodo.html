@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Método Sono — Estrategia de Trading</title>
+  <link rel="stylesheet" href="css/sono.css">
+  <style>
+    .method-hero { text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, rgba(0,150,255,0.15), rgba(120,50,200,0.1)); border-radius: 20px; margin-bottom: 2rem; }
+    .method-hero h1 { font-size: 2.5rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, #00aaff, #aa55ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .method-hero p { color: var(--text-secondary); font-size: 1.1rem; }
+    .pillar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
+    .pillar-card { background: var(--card-bg, rgba(255,255,255,0.04)); border: 1px solid var(--border-color, rgba(255,255,255,0.08)); border-radius: 16px; padding: 1.5rem; }
+    .pillar-card h3 { margin-top: 0; display: flex; align-items: center; gap: 0.5rem; }
+    .pillar-card .pts { color: var(--accent, #00aaff); font-size: 0.9rem; }
+    .score-formula { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; margin: 1.5rem 0; }
+    .score-formula .line { padding: 0.25rem 0; }
+    .score-formula .highlight { color: #ffd700; }
+    .zone-tag { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; margin: 0.1rem; }
+    .zone-panico { background: #ff1744; color: #fff; }
+    .zone-miedo { background: #ff9100; color: #000; }
+    .zone-neutral { background: #9e9e9e; color: #fff; }
+    .zone-optimismo { background: #00e676; color: #000; }
+    .zone-euforia { background: #00e5ff; color: #000; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 0.5rem; text-align: left; border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08)); }
+    th { font-size: 0.8rem; color: var(--text-secondary); }
+    @media (max-width: 640px) { .method-hero h1 { font-size: 1.8rem; } }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+        <nav class="top-nav">
+      <a href="/" class="nav-link">📊 Dashboard</a>
+      <a href="/rangos.html" class="nav-link">🎯 Rangos</a>
+      <a href="/metodo.html" class="nav-link active">📐 Metodo</a>
+      <a href="/trades.html" class="nav-link">📝 Trades</a>
+    </nav>
+
+    <main class="main-content">
+      <div class="method-hero">
+        <h1>📐 Método Sono</h1>
+        <p>Híbrido cuantitativo · Score Macro + Método Ajram · 3 pilares</p>
+      </div>
+
+      <div class="pillar-grid">
+        <div class="pillar-card">
+          <h3>📊 Pilar 1 <span class="pts">— Cruces de MAs (35 pts)</span></h3>
+          <p>Cruce de medias móviles como señal direccional primaria.</p>
+          <ul style="list-style: none; padding: 0;">
+            <li>• MA6 × MA70: hasta 15 pts</li>
+            <li>• Precio vs MA40: hasta 10 pts</li>
+            <li>• Precio vs MA200: hasta 10 pts</li>
+          </ul>
+        </div>
+
+        <div class="pillar-card">
+          <h3>⚡ Pilar 2 <span class="pts">— Momentum (35 pts)</span></h3>
+          <p>ADX mide fuerza direccional; RSI mide posición relativa.</p>
+          <ul style="list-style: none; padding: 0;">
+            <li>• ADX &gt; 25: tendencia con fuerza (15 pts)</li>
+            <li>• RSI: zonas sobrecompra/sobreventa (20 pts)</li>
+          </ul>
+        </div>
+
+        <div class="pillar-card">
+          <h3>📉 Pilar 3 <span class="pts">— Bollinger %B (30 pts)</span></h3>
+          <p>Posición del precio dentro de las Bandas de Bollinger.</p>
+          <ul style="list-style: none; padding: 0;">
+            <li>• %B cerca de 1.0 → sobrecompra</li>
+            <li>• %B cerca de 0.0 → sobreventa</li>
+            <li>• Cruce de banda como señal de reversión</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>Score Maestro — Fórmula</h2>
+      <div class="score-formula">
+        <div class="line"><span class="highlight">Score 0-100</span> = P1 + P2 + P3</div>
+        <div class="line">├── <span class="highlight">P1</span> = f(MA6×70) + f(precio vs MA40) + f(precio vs MA200)</div>
+        <div class="line">├── <span class="highlight">P2</span> = f(ADX) + f(RSI)</div>
+        <div class="line">└── <span class="highlight">P3</span> = f(Bollinger %B)</div>
+        <div class="line" style="margin-top: 0.8rem;">Donde cada f() mapea el valor técnico a 0-100% del pilar.</div>
+      </div>
+
+      <h2>Zonas de Decisión</h2>
+      <table>
+        <tr><th>Score</th><th>Señal</th><th>Decisión</th><th>Zona</th></tr>
+        <tr><td>78-100</td><td>COMPRA FUERTE</td><td>LONG</td><td><span class="zone-tag zone-euforia">Euforia</span></td></tr>
+        <tr><td>62-77</td><td>COMPRA</td><td>LONG PRUDENTE</td><td><span class="zone-tag zone-optimismo">Optimismo</span></td></tr>
+        <tr><td>52-61</td><td>ACUMULAR</td><td>ESPERAR</td><td><span class="zone-tag zone-neutral">Neutral+</span></td></tr>
+        <tr><td>42-51</td><td>NEUTRAL</td><td>ESPERAR</td><td><span class="zone-tag zone-neutral">Neutral</span></td></tr>
+        <tr><td>30-41</td><td>VENTA</td><td>SHORT PRUDENTE</td><td><span class="zone-tag zone-miedo">Miedo</span></td></tr>
+        <tr><td>18-29</td><td>VENTA FUERTE</td><td>SHORT</td><td><span class="zone-tag zone-miedo">Miedo</span></td></tr>
+        <tr><td>0-17</td><td>CAPITULACIÓN</td><td>CASH / FUERA</td><td><span class="zone-tag zone-panico">Pánico</span></td></tr>
+      </table>
+
+      <h2>Contexto Adicional</h2>
+      <p>El Score se pondera con factores macro para la señal final:</p>
+      <ul>
+        <li><strong>Fear & Greed:</strong> &lt;20 → refuerza compra (máximo miedo); &gt;80 → refuerza venta (máxima codicia)</li>
+        <li><strong>VIX:</strong> &gt;25 → volatilidad extrema, reducir tamaño posición</li>
+        <li><strong>Dominancia BTC:</strong> &gt;60% → altcoins débiles, priorizar BTC</li>
+      </ul>
+
+      <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(0,150,255,0.05); border-radius: 12px; border-left: 3px solid #00aaff;">
+        <p style="margin: 0;"><strong>⚠️</strong> Este método es cuantitativo y mecánico. No garantiza resultados. Úsalo como herramienta de apoyo, no como consejo financiero.</p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Highlight nav link
+    document.querySelectorAll('.nav-link').forEach(function(el) {
+      if (el.pathname === '/metodo' || el.pathname === '/metodo.html') el.classList.add('active');
+    });
+  </script>
+</body>
+</html>
