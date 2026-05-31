@@ -168,92 +168,6 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);-webkit
 
 <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}</style>
 <script>
-var $=function(id){return document.getElementById(id)};
-var fmt=function(v,d){d=d||2;return v===null||isNaN(v)?'--':Number(v).toFixed(d)};
-function setStatus(t,m){};
-
-var TFS=['15m','5m','3m','1m'];
-var klinesData={};
-
-function analyzeTF(tf,klines){
- if(!klines||klines.length<30)return null;
- var closes=klines.map(function(k){return k.c});
- var highs=klines.map(function(k){return k.h});
- var lows=klines.map(function(k){return k.l});
- var price=closes[closes.length-1];
- var rsiV=SonoEngine.rsi(closes);
- var adxV=SonoEngine.adx(highs,lows,closes);
- var bb=SonoEngine.bollinger(closes);
- var ma40=SonoEngine.sma(closes,40);
- var pressure=SonoEngine.pressurePct(adxV,rsiV);
- var isBull=(rsiV>50&&adxV&&adxV.pdi>adxV.mdi&&price>(ma40||0));
- var isBear=(rsiV<50&&adxV&&adxV.mdi>adxV.pdi&&price<(ma40||999999));
- return{rsiV:rsiV,adxV:adxV,bb:bb,ma40:ma40,pressure:pressure,price:price,isBull:isBull,isBear:isBear};
-}
-
-function updateTFCard(tf,data){
- if(!data)return;
- var rsiV=data.rsiV,adxV=data.adxV,bb=data.bb,ma40=data.ma40,pressure=data.pressure,price=data.price,isBull=data.isBull,isBear=data.isBear;
- if(rsiV!==null){$(('rsi-'+tf)).textContent=fmt(rsiV,1);$(('rsi-'+tf)).className='metric-val '+(rsiV>60?'green':rsiV<40?'red':'yellow');$(('rsi-'+tf+'-lbl')).textContent=SonoEngine.rsiLabel(rsiV)}
- if(adxV){$(('adx-'+tf)).textContent=fmt(adxV.adx,1);$(('adx-'+tf)).className='metric-val '+(adxV.adx>25?'green':'yellow');$(('adx-'+tf+'-lbl')).textContent=adxV.adx>25?'Tendencia':'Lateral'}
- if(ma40){$(('ma40-'+tf)).textContent=fmt(ma40,price>1000?0:4);$(('ma40-'+tf)).className='metric-val '+(price>ma40?'green':'red');$(('ma40-'+tf+'-lbl')).textContent=price>ma40?'▲ Sobre MA40':'▼ Bajo MA40'}
- if(bb){$(('bb-'+tf)).textContent=bb.pctB.toFixed(2);$(('bb-'+tf+'-lbl')).textContent=bb.pctB>0.8?'Resistencia':bb.pctB<0.2?'Soporte':'Central'}
- $(('needle-'+tf)).style.left=pressure+'%';
- var biasEl=$(('bias-'+tf));
- if(isBull){biasEl.textContent='ALCISTA';biasEl.className='bias bull'}else if(isBear){biasEl.textContent='BAJISTA';biasEl.className='bias bear'}else{biasEl.textContent='NEUTRAL';biasEl.className='bias neut'}
- if($(('mini-'+tf+'-rsi'))){$(('mini-'+tf+'-rsi')).textContent='RSI '+(rsiV?fmt(rsiV,1):'--');$(('mini-'+tf+'-adx')).textContent='ADX '+(adxV?fmt(adxV.adx,1):'--');var miniEl=$(('mini-'+tf));if(miniEl)miniEl.className='tf-mini '+(isBull||isBear?'aligned':'')}
-}
-
-function updateConfluence(){
- var results=[];for(var i=0;i<TFS.length;i++){var d=klinesData[TFS[i]]?analyzeTF(TFS[i],klinesData[TFS[i]]):null;if(d)results.push(d)}
- if(!results.length)return;
- var bullCount=0,bearCount=0;for(var i=0;i<results.length;i++){if(results[i].isBull)bullCount++;if(results[i].isBear)bearCount++}
- var conf=Math.round((Math.max(bullCount,bearCount)/TFS.length)*100);
- $(('conf-score')).textContent=conf;
- var biasEl=$(('conf-bias'));
- if(bullCount>bearCount){biasEl.textContent='CONFLUENCIA ALCISTA';biasEl.className='bias bull'}else if(bearCount>bullCount){biasEl.textContent='CONFLUENCIA BAJISTA';biasEl.className='bias bear'}else{biasEl.textContent='SIN CONFLUENCIA';biasEl.className='bias neut'}
- $(('conf-desc')).textContent=bullCount+' TFs alcistas · '+bearCount+' TFs bajistas';
- var r15=results[0]||{};var criteria=[r15.rsiV>50,r15.adxV&&r15.adxV.adx>25,results.filter(function(r){return r.rsiV>50}).length>=2,results.some(function(r){return r.price>r.ma40}),conf>=60];var count=0;for(var i=0;i<criteria.length;i++)if(criteria[i])count++;
- $(('entry-count')).textContent=count+'/5';
- var labels=['RSI 15m alcista','ADX 15m > 25','RSI 5m alineado','Precio sobre MA40','Confluencia > 60'];var html='';for(var i=0;i<criteria.length;i++){html+=('<div class="check-item"><span>'+(criteria[i]?'✅':'⬜')+'</span> '+labels[i]+'</div>')};$(('entry-checklist')).innerHTML=html;
-}
-
-function startRangos(){
- if(typeof SonoEngine==='undefined'||typeof BinanceData==='undefined'){
-  setTimeout(startRangos,200);
-  $(('conf-score')).textContent='--';
-  $(('conf-bias')).textContent='Cargando...';
-  return;
- }
- document.querySelectorAll('.ab button').forEach(function(b){
-  b.addEventListener('click',function(){
-   document.querySelectorAll('.ab button').forEach(function(x){x.classList.remove('ac')});
-   this.classList.add('ac');
-   BinanceData.changeAsset(this.getAttribute('data-a'));
-  });
- });
- BinanceData.init('BTCUSDT','3m',{
-  onStatus:setStatus,
-  onPrice:function(d){
-   if(d&&d.price)$(('r-price')).textContent='$'+Math.round(d.price).toLocaleString('en-US');
-   $(('r-sub')).textContent=d.symbol+'/USDT · Tiempo Real';
-  },
-  onKlines:function(tf,klines){
-   klinesData[tf]=klines;
-   var data=analyzeTF(tf,klines);
-   if(data)updateTFCard(tf,data);
-   updateConfluence();
-  }
- });
-}
-if(document.readyState==='loading'){
- document.addEventListener('DOMContentLoaded',startRangos);
-} else {
- startRangos();
-}
-</script>
-<style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}</style>
-<script>
 // ===== SONO ENGINE (embedded for rangos self-contained) =====
 var SonoEngine={};
 (function(){
@@ -357,8 +271,94 @@ function startRangos(){
 }
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',startRangos)}else{setTimeout(startRangos,500)}
 </script>
+<script>
+var $=function(id){return document.getElementById(id)};
+var fmt=function(v,d){d=d||2;return v===null||isNaN(v)?'--':Number(v).toFixed(d)};
+function setStatus(t,m){};
+
+var TFS=['15m','5m','3m','1m'];
+var klinesData={};
+
+function analyzeTF(tf,klines){
+ if(!klines||klines.length<30)return null;
+ var closes=klines.map(function(k){return k.c});
+ var highs=klines.map(function(k){return k.h});
+ var lows=klines.map(function(k){return k.l});
+ var price=closes[closes.length-1];
+ var rsiV=SonoEngine.rsi(closes);
+ var adxV=SonoEngine.adx(highs,lows,closes);
+ var bb=SonoEngine.bollinger(closes);
+ var ma40=SonoEngine.sma(closes,40);
+ var pressure=SonoEngine.pressurePct(adxV,rsiV);
+ var isBull=(rsiV>50&&adxV&&adxV.pdi>adxV.mdi&&price>(ma40||0));
+ var isBear=(rsiV<50&&adxV&&adxV.mdi>adxV.pdi&&price<(ma40||999999));
+ return{rsiV:rsiV,adxV:adxV,bb:bb,ma40:ma40,pressure:pressure,price:price,isBull:isBull,isBear:isBear};
+}
+
+function updateTFCard(tf,data){
+ if(!data)return;
+ var rsiV=data.rsiV,adxV=data.adxV,bb=data.bb,ma40=data.ma40,pressure=data.pressure,price=data.price,isBull=data.isBull,isBear=data.isBear;
+ if(rsiV!==null){$(('rsi-'+tf)).textContent=fmt(rsiV,1);$(('rsi-'+tf)).className='metric-val '+(rsiV>60?'green':rsiV<40?'red':'yellow');$(('rsi-'+tf+'-lbl')).textContent=SonoEngine.rsiLabel(rsiV)}
+ if(adxV){$(('adx-'+tf)).textContent=fmt(adxV.adx,1);$(('adx-'+tf)).className='metric-val '+(adxV.adx>25?'green':'yellow');$(('adx-'+tf+'-lbl')).textContent=adxV.adx>25?'Tendencia':'Lateral'}
+ if(ma40){$(('ma40-'+tf)).textContent=fmt(ma40,price>1000?0:4);$(('ma40-'+tf)).className='metric-val '+(price>ma40?'green':'red');$(('ma40-'+tf+'-lbl')).textContent=price>ma40?'▲ Sobre MA40':'▼ Bajo MA40'}
+ if(bb){$(('bb-'+tf)).textContent=bb.pctB.toFixed(2);$(('bb-'+tf+'-lbl')).textContent=bb.pctB>0.8?'Resistencia':bb.pctB<0.2?'Soporte':'Central'}
+ $(('needle-'+tf)).style.left=pressure+'%';
+ var biasEl=$(('bias-'+tf));
+ if(isBull){biasEl.textContent='ALCISTA';biasEl.className='bias bull'}else if(isBear){biasEl.textContent='BAJISTA';biasEl.className='bias bear'}else{biasEl.textContent='NEUTRAL';biasEl.className='bias neut'}
+ if($(('mini-'+tf+'-rsi'))){$(('mini-'+tf+'-rsi')).textContent='RSI '+(rsiV?fmt(rsiV,1):'--');$(('mini-'+tf+'-adx')).textContent='ADX '+(adxV?fmt(adxV.adx,1):'--');var miniEl=$(('mini-'+tf));if(miniEl)miniEl.className='tf-mini '+(isBull||isBear?'aligned':'')}
+}
+
+function updateConfluence(){
+ var results=[];for(var i=0;i<TFS.length;i++){var d=klinesData[TFS[i]]?analyzeTF(TFS[i],klinesData[TFS[i]]):null;if(d)results.push(d)}
+ if(!results.length)return;
+ var bullCount=0,bearCount=0;for(var i=0;i<results.length;i++){if(results[i].isBull)bullCount++;if(results[i].isBear)bearCount++}
+ var conf=Math.round((Math.max(bullCount,bearCount)/TFS.length)*100);
+ $(('conf-score')).textContent=conf;
+ var biasEl=$(('conf-bias'));
+ if(bullCount>bearCount){biasEl.textContent='CONFLUENCIA ALCISTA';biasEl.className='bias bull'}else if(bearCount>bullCount){biasEl.textContent='CONFLUENCIA BAJISTA';biasEl.className='bias bear'}else{biasEl.textContent='SIN CONFLUENCIA';biasEl.className='bias neut'}
+ $(('conf-desc')).textContent=bullCount+' TFs alcistas · '+bearCount+' TFs bajistas';
+ var r15=results[0]||{};var criteria=[r15.rsiV>50,r15.adxV&&r15.adxV.adx>25,results.filter(function(r){return r.rsiV>50}).length>=2,results.some(function(r){return r.price>r.ma40}),conf>=60];var count=0;for(var i=0;i<criteria.length;i++)if(criteria[i])count++;
+ $(('entry-count')).textContent=count+'/5';
+ var labels=['RSI 15m alcista','ADX 15m > 25','RSI 5m alineado','Precio sobre MA40','Confluencia > 60'];var html='';for(var i=0;i<criteria.length;i++){html+=('<div class="check-item"><span>'+(criteria[i]?'✅':'⬜')+'</span> '+labels[i]+'</div>')};$(('entry-checklist')).innerHTML=html;
+}
+
+function startRangos(){
+ if(typeof SonoEngine==='undefined'||typeof BinanceData==='undefined'){
+  setTimeout(startRangos,200);
+  $(('conf-score')).textContent='--';
+  $(('conf-bias')).textContent='Cargando...';
+  return;
+ }
+ document.querySelectorAll('.ab button').forEach(function(b){
+  b.addEventListener('click',function(){
+   document.querySelectorAll('.ab button').forEach(function(x){x.classList.remove('ac')});
+   this.classList.add('ac');
+   BinanceData.changeAsset(this.getAttribute('data-a'));
+  });
+ });
+ BinanceData.init('BTCUSDT','3m',{
+  onStatus:setStatus,
+  onPrice:function(d){
+   if(d&&d.price)$(('r-price')).textContent='$'+Math.round(d.price).toLocaleString('en-US');
+   $(('r-sub')).textContent=d.symbol+'/USDT · Tiempo Real';
+  },
+  onKlines:function(tf,klines){
+   klinesData[tf]=klines;
+   var data=analyzeTF(tf,klines);
+   if(data)updateTFCard(tf,data);
+   updateConfluence();
+  }
+ });
+}
+if(document.readyState==='loading'){
+ document.addEventListener('DOMContentLoaded',startRangos);
+} else {
+ startRangos();
+}
+</script>
 </body>
 </html>
+
 
 
 
