@@ -83,7 +83,7 @@
       <div class="card-sub" id="fg-label">--</div>
     </div>
     <div class="card">
-      <div class="card-title">VIX ESTIMADO</div>
+      <div class="card-title" id="vix-title">VIX</div>
       <div class="card-value skel" id="vix-val">--</div>
       <div class="card-sub" id="vix-sub">Volatilidad macro</div>
     </div>
@@ -524,6 +524,8 @@ async function loadMacro() {
   vixEl.classList.remove('skel');
   vixEl.style.color = vix.value > 25 ? 'var(--short)' : vix.value > 15 ? 'var(--wait)' : 'var(--long)';
   $('vix-sub').textContent = vix.estimated ? 'Estimado (proxy F&G)' : 'VIX real';
+  var vixTitleEl = $('vix-title');
+  if (vixTitleEl) vixTitleEl.textContent = vix.estimated ? 'VIX ESTIMADO' : 'VIX REAL';
 
   $('btc-dom').textContent  = gecko.btcDom + '%';
   $('eth-dom').textContent  = gecko.ethDom + '%';
