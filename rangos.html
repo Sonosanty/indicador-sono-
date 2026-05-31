@@ -287,9 +287,9 @@ function updateTFCard(tf,data){
  if(ma40){$('ma40-'+tf).textContent=fmt(ma40,price>1000?0:4);$('ma40-'+tf).className='metric-val '+(price>ma40?'green':'red');$('ma40-'+tf+'-lbl').textContent=price>ma40?'▲ Sobre MA40':'▼ Bajo MA40'}
  if(bb){$('bb-'+tf).textContent=bb.pctB.toFixed(2);$('bb-'+tf+'-lbl').textContent=bb.pctB>0.8?'Resistencia':bb.pctB<0.2?'Soporte':'Central'}
  $('needle-'+tf).style.left=pressure+'%';
- var biasEl=$('bias-'+tf));
+ var biasEl=$('bias-'+tf);
  if(isBull){biasEl.textContent='ALCISTA';biasEl.className='bias bull'}else if(isBear){biasEl.textContent='BAJISTA';biasEl.className='bias bear'}else{biasEl.textContent='NEUTRAL';biasEl.className='bias neut'}
- if($('mini-'+tf+'-rsi'))){$('mini-'+tf+'-rsi').textContent='RSI '+(rsiV?fmt(rsiV,1):'--');$('mini-'+tf+'-adx').textContent='ADX '+(adxV?fmt(adxV.adx,1):'--');var miniEl=$('mini-'+tf));if(miniEl)miniEl.className='tf-mini '+(isBull||isBear?'aligned':'')}
+ if($('mini-'+tf+'-rsi')){$('mini-'+tf+'-rsi').textContent='RSI '+(rsiV?fmt(rsiV,1):'--');$('mini-'+tf+'-adx').textContent='ADX '+(adxV?fmt(adxV.adx,1):'--');var miniEl=$('mini-'+tf);if(miniEl)miniEl.className='tf-mini '+(isBull||isBear?'aligned':'')}
 }
 
 function updateConfluence(){
@@ -298,7 +298,7 @@ function updateConfluence(){
  var bullCount=0,bearCount=0;for(var i=0;i<results.length;i++){if(results[i].isBull)bullCount++;if(results[i].isBear)bearCount++}
  var conf=Math.round((Math.max(bullCount,bearCount)/TFS.length)*100);
  $('conf-score').textContent=conf;
- var biasEl=$('conf-bias'));
+ var biasEl=$('conf-bias');
  if(bullCount>bearCount){biasEl.textContent='CONFLUENCIA ALCISTA';biasEl.className='bias bull'}else if(bearCount>bullCount){biasEl.textContent='CONFLUENCIA BAJISTA';biasEl.className='bias bear'}else{biasEl.textContent='SIN CONFLUENCIA';biasEl.className='bias neut'}
  $('conf-desc').textContent=bullCount+' TFs alcistas · '+bearCount+' TFs bajistas';
  var r15=results[0]||{};var criteria=[r15.rsiV>50,r15.adxV&&r15.adxV.adx>25,results.filter(function(r){return r.rsiV>50}).length>=2,results.some(function(r){return r.price>r.ma40}),conf>=60];var count=0;for(var i=0;i<criteria.length;i++)if(criteria[i])count++;
