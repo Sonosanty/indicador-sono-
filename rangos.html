@@ -346,12 +346,12 @@ function startRangos(){
   b.addEventListener('click',function(){
    document.querySelectorAll('.ab button').forEach(function(x){x.classList.remove('ac')});
    this.classList.add('ac');
-   BinanceData.changeAsset(this.getAttribute('data-a')+'USDT');
+   BinanceData.changeAsset(this.getAttribute('data-a'));
   });
  });
  BinanceData.init('BTCUSDT','3m',{
   onStatus:setStatus,
-  onPrice:function(d){if(d&&d.price)$('r-price').textContent='$'+Math.round(d.price).toLocaleString('en-US');$('r-sub').textContent='BTC/USDT · Tiempo Real'},
+  onPrice:function(d){if(d&&d.price)$('r-price').textContent='$'+Math.round(d.price).toLocaleString('en-US');var symName=currentSymbol.replace('USDT','');$('r-sub').textContent=symName+'/USDT · Tiempo Real'}
   onKlines:function(tf,klines){klinesData[tf]=klines;var data=analyzeTF(tf,klines);if(data)updateTFCard(tf,data);updateConfluence()}
  });
 }
