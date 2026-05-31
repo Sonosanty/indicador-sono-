@@ -153,8 +153,14 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);-webkit
  <div class="main-chart-card">
  <div class="chart-topbar">
  <div class="chart-title-main">
- BTC/USDT
+ <span id="coinLabel">BTC</span>/USDT
  <span class="chip-live" id="priceChip">$—</span>
+ </div>
+ <div style="display:flex;gap:4px">
+ <button class="coin-btn ac" data-coin="BTC" onclick="changeCoin('BTC')" style="padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);cursor:pointer;font-family:var(--font-mono);font-size:11px;transition:.15s">BTC</button>
+ <button class="coin-btn" data-coin="ETH" onclick="changeCoin('ETH')" style="padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);cursor:pointer;font-family:var(--font-mono);font-size:11px;transition:.15s">ETH</button>
+ <button class="coin-btn" data-coin="SOL" onclick="changeCoin('SOL')" style="padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);cursor:pointer;font-family:var(--font-mono);font-size:11px;transition:.15s">SOL</button>
+ <button class="coin-btn" data-coin="XRP" onclick="changeCoin('XRP')" style="padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);cursor:pointer;font-family:var(--font-mono);font-size:11px;transition:.15s">XRP</button>
  </div>
  <div class="tf-row">
  <button class="tf-btn" data-tf="1m" onclick="changeTF('1m')">1m</button>
@@ -320,6 +326,18 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);-webkit
 <script>
 const $=id=>document.getElementById(id);
 let currentTF='3m';
+let currentCoin='BTC';
+function changeCoin(c){
+ currentCoin=c;
+ document.querySelectorAll('.coin-btn').forEach(b=>b.classList.toggle('ac',b.dataset.coin===c));
+ // Estilo inline toggle para .ac
+ document.querySelectorAll('.coin-btn').forEach(b=>{
+  if(b.dataset.coin===c){b.style.background='rgba(59,130,246,.2)';b.style.color='#fff';b.style.borderColor='rgba(59,130,246,.4)';}
+  else{b.style.background='transparent';b.style.color='var(--muted)';b.style.borderColor='rgba(255,255,255,.1)';}
+ });
+ document.getElementById('coinLabel').textContent=c;
+ loadData();
+}
 let charts={price:null,rsi:null,adx:null,bb:null};
 const fmtP=n=>'$'+Math.round(n).toLocaleString('es-ES');
 const fmtK=n=>n>=1e12?'$'+(n/1e12).toFixed(2)+'T':n>=1e9?'$'+(n/1e9).toFixed(1)+'B':'—';
@@ -561,7 +579,7 @@ function changeTF(tf){
 let fngGlobal=50,domGlobal=55;
 async function loadData(){
  try{
- const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${currentTF}&limit=220`);
+ const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=${currentCoin}USDT&interval=${currentTF}&limit=220`);
  const d=await r.json();
  const candles=d.map(c=>({t:+c[0],o:+c[1],h:+c[2],l:+c[3],c:+c[4],v:+c[5]}));
  const cl=candles.map(c=>c.c),hi=candles.map(c=>c.h),lo=candles.map(c=>c.l);
@@ -593,7 +611,7 @@ async function loadMacro(){
 
 async function loadRSIMacro(){
  try{
- const r=await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=50');
+ const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=${currentCoin}USDT&interval=1h&limit=50`);
  const d=await r.json();const cl=d.map(c=>+c[4]);
  let g=0,l=0;const p=14;
  for(let i=cl.length-p;i<cl.length;i++){const dd=cl[i]-cl[i-1];if(dd>0)g+=dd;else l-=dd;}
