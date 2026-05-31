@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "Sono Pro - no SPA routing needed",
+  "description": "Sono Pro - static files, no SPA",
   "include": ["/*"],
   "exclude": []
 }
