@@ -1,2 +1,0 @@
-# HTTP → HTTPS (redundante, Cloudflare ya lo hace)
-http://indicador-sono.pages.dev/* https://indicador-sono.pages.dev/:splat 301

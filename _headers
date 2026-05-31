@@ -1,7 +1,16 @@
 /*
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://*.binance.com https://*.coingecko.com https://api.alternative.me https://cdn.jsdelivr.net https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://api.binance.com https://*.binance.com https://api.coingecko.com https://api.alternative.me https://vix-proxy.sonosanty.workers.dev wss://*.binance.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; frame-src 'none'; object-src 'none'
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+/css/*
+  Cache-Control: public, max-age=86400
+
+/js/*
+  Cache-Control: public, max-age=86400
+
+/favicon.svg
+  Cache-Control: public, max-age=604800

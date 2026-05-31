@@ -1,1 +1,0 @@
-﻿{"name":"ultrafino-files","version":"1.0.0","description":"Lee y analiza archivos de Ultrafino: Excel, Word, TXT, CSV, PS1, PDF","type":"skill","entry":"ultrafino-files.mjs","enabled":true}

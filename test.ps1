@@ -1,1 +1,0 @@
-Write-Output "Hello from test script!"

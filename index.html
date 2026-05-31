@@ -1,907 +1,590 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Indicador Cripto Pro - Sono Terminal</title>
-  
-  <!-- Preconnect para APIs -->
-  <link rel="preconnect" href="https://api.binance.com">
-  <link rel="preconnect" href="https://api.alternative.me">
-  
-  <!-- SEO -->
-  <meta name="description" content="Terminal profesional de criptomonedas con datos en tiempo real, análisis técnico y señales de trading">
-  
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <style>
-    /* ==========================================
-       VARIABLES Y SISTEMA DE DISEÑO
-       ========================================== */
-    :root {
-      --bg-dark: #0a0e14;
-      --bg-card: #151a23;
-      --bg-elevated: #1f2937;
-      --bg-hover: #2d3748;
-      
-      --text-primary: #e2e8f0;
-      --text-secondary: #94a3b8;
-      --text-muted: #64748b;
-      
-      --accent-long: #10b981;
-      --accent-short: #ef4444;
-      --accent-neutral: #6b7280;
-      --accent-warning: #f59e0b;
-      
-      --border-subtle: rgba(255, 255, 255, 0.05);
-      --border-medium: rgba(255, 255, 255, 0.1);
-      
-      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
-      
-      --green-bright: #00c853;
-      --red-bright: #ff5252;
-      --yellow-bright: #ffb300;
-      --blue-bright: #00b0ff;
-      
-      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-      --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: 'JetBrains Mono', monospace;
-      background: var(--bg-dark);
-      color: var(--text-primary);
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-    }
-    
-    /* ==========================================
-       LAYOUT PRINCIPAL - TERMINAL STYLE
-       ========================================== */
-    .terminal-container {
-      max-width: 1800px;
-      margin: 0 auto;
-      padding: 16px;
-    }
-    
-    /* Header compacto tipo terminal */
-    .terminal-header {
-      background: var(--bg-card);
-      border: 1px solid var(--border-medium);
-      border-radius: 8px;
-      padding: 12px 20px;
-      margin-bottom: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 13px;
-    }
-    
-    .terminal-title {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 700;
-      color: var(--accent-long);
-    }
-    
-    .terminal-status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-    
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent-long);
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-    
-    /* Selector de monedas compacto */
-    .coin-tabs {
-      display: flex;
-      gap: 4px;
-      background: var(--bg-card);
-      padding: 4px;
-      border-radius: 6px;
-      margin-bottom: 16px;
-    }
-    
-    .coin-tab {
-      padding: 8px 16px;
-      background: transparent;
-      border: 1px solid transparent;
-      border-radius: 4px;
-      color: var(--text-secondary);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all var(--transition-fast);
-      font-family: inherit;
-    }
-    
-    .coin-tab:hover {
-      background: var(--bg-elevated);
-      color: var(--text-primary);
-    }
-    
-    .coin-tab.active {
-      background: var(--bg-elevated);
-      border-color: var(--accent-long);
-      color: var(--accent-long);
-    }
-    
-    /* Grid principal - 2 columnas en desktop */
-    .main-grid {
-      display: grid;
-      grid-template-columns: 1fr 400px;
-      gap: 16px;
-    }
-    
-    /* ==========================================
-       PRICE TICKER - REAL TIME
-       ========================================== */
-    .price-section {
-      background: var(--bg-card);
-      border: 1px solid var(--border-medium);
-      border-radius: 8px;
-      padding: 24px;
-      margin-bottom: 16px;
-    }
-    
-    .price-main {
-      display: flex;
-      align-items: baseline;
-      gap: 16px;
-      margin-bottom: 12px;
-    }
-    
-    .price-value {
-      font-size: 42px;
-      font-weight: 800;
-      letter-spacing: -1px;
-      color: var(--text-primary);
-      font-variant-numeric: tabular-nums;
-    }
-    
-    .price-change {
-      font-size: 18px;
-      font-weight: 700;
-      padding: 4px 12px;
-      border-radius: 6px;
-    }
-    
-    .price-change.positive { color: var(--accent-long); }
-    .price-change.negative { color: var(--accent-short); }
-    
-    .price-details {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      font-size: 11px;
-    }
-    
-    .price-detail {
-      background: var(--bg-elevated);
-      padding: 8px 12px;
-      border-radius: 6px;
-    }
-    
-    .detail-label {
-      color: var(--text-muted);
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      display: block;
-    }
-    
-    .detail-value {
-      color: var(--text-secondary);
-      font-weight: 600;
-      font-size: 13px;
-    }
-    
-    /* ==========================================
-       SCORE MAESTRO
-       ========================================== */
-    .score-section {
-      background: var(--bg-card);
-      border: 1px solid var(--border-medium);
-      border-radius: 8px;
-      padding: 24px;
-      margin-bottom: 16px;
-    }
-    
-    .score-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    
-    .score-number {
-      font-size: 56px;
-      font-weight: 800;
-      line-height: 1;
-    }
-    
-    .score-bar {
-      height: 8px;
-      background: var(--bg-elevated);
-      border-radius: 4px;
-      overflow: hidden;
-      margin-bottom: 12px;
-    }
-    
-    .score-fill {
-      height: 100%;
-      border-radius: 4px;
-      background: linear-gradient(90deg, var(--accent-short), var(--accent-warning), var(--accent-long));
-      transition: width 0.5s ease;
-    }
-    
-    .score-status {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--accent-long);
-      margin-bottom: 4px;
-    }
-    
-    .score-description {
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-    
-    /* ==========================================
-       MÉTRICAS
-       ========================================== */
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    
-    .metric-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-medium);
-      border-radius: 8px;
-      padding: 16px;
-    }
-    
-    .metric-label {
-      font-size: 10px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
-    }
-    
-    .metric-value {
-      font-size: 18px;
-      font-weight: 700;
-    }
-    
-    .metric-sub {
-      font-size: 11px;
-      color: var(--text-secondary);
-      margin-top: 2px;
-    }
-    
-    /* ==========================================
-       SPARKLINE CANVAS
-       ========================================== */
-    .chart-section {
-      background: var(--bg-card);
-      border: 1px solid var(--border-medium);
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-    
-    .chart-section canvas {
-      width: 100%;
-      height: 100px;
-      border-radius: 4px;
-    }
-    
-    /* ==========================================
-       MOVING AVERAGES
-       ========================================== */
-    .ma-section {
-      background: var(--bg-card);
-      border: 1px solid var(--border-medium);
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-    
-    .ma-grid {
-      display: grid;
-      gap: 8px;
-    }
-    
-    .ma-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 12px;
-      background: var(--bg-elevated);
-      border-radius: 6px;
-      font-size: 12px;
-    }
-    
-    .ma-label {
-      color: var(--text-muted);
-    }
-    
-    .ma-value {
-      font-weight: 600;
-    }
-    
-    /* ==========================================
-       SIGNALS TABLE
-       ========================================== */
-    .signals-section {
-      background: var(--bg-card);
-      border: 1px solid var(--border-medium);
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-    
-    .signals-table {
-      width: 100%;
-      font-size: 11px;
-      border-collapse: collapse;
-    }
-    
-    .signals-table th {
-      text-align: left;
-      padding: 8px;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--border-medium);
-      font-weight: 500;
-    }
-    
-    .signals-table td {
-      padding: 8px;
-      border-bottom: 1px solid var(--border-subtle);
-    }
-    
-    /* ==========================================
-       TRADING ALERT
-       ========================================== */
-    .alert-section {
-      margin-bottom: 16px;
-    }
-    
-    .alert {
-      padding: 16px;
-      border-radius: 8px;
-      font-size: 13px;
-    }
-    
-    .alert.success {
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid var(--accent-long);
-      color: var(--accent-long);
-    }
-    
-    .alert.warning {
-      background: rgba(245, 158, 11, 0.1);
-      border: 1px solid var(--accent-warning);
-      color: var(--accent-warning);
-    }
-    
-    .alert.info {
-      background: rgba(99, 102, 241, 0.1);
-      border: 1px solid var(--accent-neutral);
-      color: var(--text-secondary);
-    }
-    
-    /* ==========================================
-       FOOTER
-       ========================================== */
-    /* ============ EXECUTIVE DASHBOARD ============ */
-    .exec-section {
-      background: var(--bg-card);
-      border: 1px solid var(--border-medium);
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 16px;
-      width: 100%;
-    }
-    .exec-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    .exec-regime {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .exec-badge {
-      font-size: 28px;
-      font-weight: 800;
-      padding: 8px 20px;
-      border-radius: 8px;
-      letter-spacing: 1px;
-    }
-    .exec-badge.risk-on {
-      background: rgba(0, 200, 83, 0.15);
-      color: var(--green-bright);
-      border: 1px solid rgba(0, 200, 83, 0.3);
-    }
-    .exec-badge.risk-off {
-      background: rgba(255, 82, 82, 0.15);
-      color: var(--red-bright);
-      border: 1px solid rgba(255, 82, 82, 0.3);
-    }
-    .exec-badge.transition {
-      background: rgba(255, 179, 0, 0.15);
-      color: var(--yellow-bright);
-      border: 1px solid rgba(255, 179, 0, 0.3);
-    }
-    .exec-score-block {
-      text-align: center;
-    }
-    .exec-score-number {
-      font-size: 64px;
-      font-weight: 800;
-      line-height: 1;
-      color: var(--text-primary);
-    }
-    .exec-score-label {
-      font-size: 11px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-top: 4px;
-    }
-    .exec-metrics {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-    }
-    .exec-metric {
-      background: var(--bg-elevated);
-      border-radius: 8px;
-      padding: 12px 16px;
-    }
-    .exec-metric-label {
-      font-size: 9px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .exec-metric-value {
-      font-size: 18px;
-      font-weight: 700;
-      margin-top: 4px;
-    }
-    .exec-metric-value.green { color: var(--green-bright); }
-    .exec-metric-value.red { color: var(--red-bright); }
-    .exec-metric-value.yellow { color: var(--yellow-bright); }
-    .exec-metric-value.blue { color: var(--blue-bright); }
-    .exec-trend { font-size: 11px; margin-top: 2px; }
-    .exec-trend.up { color: var(--green-bright); }
-    .exec-trend.down { color: var(--red-bright); }
-    
-    /* ============ HEATMAP ============ */
-    .heatmap-section {
-      background: var(--bg-card);
-      border: 1px solid var(--border-medium);
-      border-radius: 12px;
-      padding: 20px 24px;
-      margin-bottom: 16px;
-    }
-    .heatmap-title {
-      font-size: 11px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 12px;
-    }
-    .heatmap-grid {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 8px;
-    }
-    .heatmap-item {
-      border-radius: 8px;
-      padding: 12px;
-      text-align: center;
-    }
-    .heatmap-item.bullish { background: rgba(0, 200, 83, 0.12); }
-    .heatmap-item.bearish { background: rgba(255, 82, 82, 0.12); }
-    .heatmap-neutral { background: rgba(255, 179, 0, 0.08); }
-    .heatmap-symbol { font-size: 13px; font-weight: 700; }
-    .heatmap-change { font-size: 15px; font-weight: 800; margin-top: 4px; }
-    .heatmap-item.bullish .heatmap-change { color: var(--green-bright); }
-    .heatmap-item.bearish .heatmap-change { color: var(--red-bright); }
-    .heatmap-item.neutral .heatmap-change { color: var(--yellow-bright); }
-    .heatmap-arrow { font-size: 11px; margin-top: 2px; }
-    
-    /* ============ SONO AI ============ */
-    .ai-section {
-      background: linear-gradient(135deg, rgba(0, 176, 255, 0.05), rgba(0, 200, 83, 0.03));
-      border: 1px solid rgba(0, 176, 255, 0.15);
-      border-radius: 12px;
-      padding: 20px 24px;
-      margin-bottom: 16px;
-    }
-    .ai-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    .ai-icon {
-      width: 28px; height: 28px;
-      background: var(--blue-bright);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-    }
-    .ai-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--blue-bright);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    .ai-content {
-      font-size: 13px;
-      line-height: 1.7;
-      color: var(--text-secondary);
-    }
-    .ai-probability {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid var(--border-subtle);
-    }
-    .ai-prob-label { font-size: 11px; color: var(--text-muted); }
-    .ai-prob-value { font-size: 22px; font-weight: 800; }
-    .ai-prob-value.high { color: var(--green-bright); }
-    .ai-prob-value.mid { color: var(--yellow-bright); }
-    .ai-prob-value.low { color: var(--red-bright); }
-    .ai-loading { font-size: 12px; color: var(--text-muted); font-style: italic; }
-    
-    @media (max-width: 800px) {
-      .exec-metrics { grid-template-columns: repeat(2, 1fr); }
-      .heatmap-grid { grid-template-columns: repeat(3, 1fr); }
-    }
-    @media (max-width: 480px) {
-      .exec-header { flex-direction: column; align-items: stretch; }
-      .exec-metrics { grid-template-columns: 1fr; }
-      .heatmap-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    .terminal-footer {
-      text-align: center;
-      font-size: 10px;
-      color: var(--text-muted);
-      padding: 20px;
-      border-top: 1px solid var(--border-subtle);
-      margin-top: 24px;
-    }
-    
-    /* ==========================================
-       RESPONSIVE
-       ========================================== */
-    @media (max-width: 1024px) {
-      .main-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-    
-    @media (max-width: 640px) {
-      .price-main {
-        flex-direction: column;
-        gap: 8px;
-      }
-      
-      .price-value {
-        font-size: 28px;
-      }
-      
-      .price-details {
-        grid-template-columns: 1fr;
-      }
-      
-      .metrics-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .coin-tabs {
-        flex-wrap: wrap;
-      }
-      
-      .score-number {
-        font-size: 36px;
-      }
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Sono Pro — Terminal BTC/ETH/SOL/XRP</title>
+  <meta name="description" content="Dashboard profesional de análisis cuantitativo crypto. Score Maestro 0-100, MAs reales, RSI, ADX, Bollinger. BTC ETH SOL XRP. Datos Binance en tiempo real." />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="Sono Pro — Terminal de Trading Cuantitativo" />
+  <meta property="og:description" content="Análisis cuantitativo BTC/ETH/SOL/XRP con datos Binance en tiempo real. Sin registro. Sin backend." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://indicador-sono.pages.dev/" />
+  <link rel="canonical" href="https://indicador-sono.pages.dev/" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/css/sono.css" />
 </head>
 <body>
-  <div class="terminal-container">
-    
-    <!-- Header -->
-    <div class="terminal-header">
-      <div class="terminal-title">
-        <span>👒</span>
-        <span>SONO TERMINAL</span>
-        <span style="font-size:10px;color:var(--text-muted);font-weight:400;">v2.0</span>
-      </div>
-      <div class="terminal-status">
-        <span class="status-dot"></span>
-        <span id="connection-status">Conectando...</span>
-        <span style="margin-left:8px;">|</span>
-        <span id="update-counter">0s</span>
-      </div>
-    </div>
-    
-    <!-- Coin Selector -->
-    <div class="coin-tabs">
-      <button class="coin-tab active" data-coin="BTC">🟠 Bitcoin (BTC)</button>
-      <button class="coin-tab" data-coin="ETH">🔵 Ethereum (ETH)</button>
-      <button class="coin-tab" data-coin="SOL">🟣 Solana (SOL)</button>
-      <button class="coin-tab" data-coin="XRP">🟢 XRP (XRP)</button>
-    </div>
-    
-    <!-- ========== EXECUTIVE DASHBOARD ========== -->
-    <div class="exec-section" id="exec-dashboard">
-      <div class="exec-header">
-        <div class="exec-regime">
-          <div class="exec-badge risk-on" id="exec-regime-badge">RISK ON</div>
-          <div class="exec-score-block">
-            <div class="exec-score-number" id="exec-score">--</div>
-            <div class="exec-score-label">Score Maestro</div>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <span style="font-size:12px;color:var(--text-muted);">Confianza</span>
-          <span style="font-size:24px;font-weight:800;color:var(--green-bright);" id="exec-confidence">--</span>
-          <span style="font-size:11px;color:var(--text-secondary);" id="exec-week-change"></span>
-        </div>
-      </div>
-      <div class="exec-metrics">
-        <div class="exec-metric">
-          <div class="exec-metric-label">Liquidez</div>
-          <div class="exec-metric-value green" id="exec-liquidity">--</div>
-          <div class="exec-trend up" id="exec-liquidity-trend"></div>
-        </div>
-        <div class="exec-metric">
-          <div class="exec-metric-label">Riesgo</div>
-          <div class="exec-metric-value blue" id="exec-risk">--</div>
-          <div class="exec-trend" id="exec-risk-trend"></div>
-        </div>
-        <div class="exec-metric">
-          <div class="exec-metric-label">Sentimiento</div>
-          <div class="exec-metric-value yellow" id="exec-sentiment">--</div>
-          <div class="exec-trend" id="exec-sentiment-trend"></div>
-        </div>
-        <div class="exec-metric">
-          <div class="exec-metric-label">BTC</div>
-          <div class="exec-metric-value green" id="exec-btc">--</div>
-          <div class="exec-trend" id="exec-btc-trend"></div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- ========== HEATMAP ========== -->
-    <div class="heatmap-section">
-      <div class="heatmap-title">🌡 Mercado Global</div>
-      <div class="heatmap-grid" id="heatmap-grid">
-        <div class="heatmap-item" id="hm-btc"><div class="heatmap-symbol">BTC</div><div class="heatmap-change">--</div><div class="heatmap-arrow"></div></div>
-        <div class="heatmap-item" id="hm-eth"><div class="heatmap-symbol">ETH</div><div class="heatmap-change">--</div><div class="heatmap-arrow"></div></div>
-        <div class="heatmap-item" id="hm-sp500"><div class="heatmap-symbol">S&amp;P500</div><div class="heatmap-change">--</div><div class="heatmap-arrow"></div></div>
-        <div class="heatmap-item" id="hm-nasdaq"><div class="heatmap-symbol">NASDAQ</div><div class="heatmap-change">--</div><div class="heatmap-arrow"></div></div>
-        <div class="heatmap-item" id="hm-dxy"><div class="heatmap-symbol">DXY</div><div class="heatmap-change">--</div><div class="heatmap-arrow"></div></div>
-        <div class="heatmap-item" id="hm-sol"><div class="heatmap-symbol">SOL</div><div class="heatmap-change">--</div><div class="heatmap-arrow"></div></div>
-        <div class="heatmap-item" id="hm-xrp"><div class="heatmap-symbol">XRP</div><div class="heatmap-change">--</div><div class="heatmap-arrow"></div></div>
-        <div class="heatmap-item" id="hm-gold"><div class="heatmap-symbol">GOLD</div><div class="heatmap-change">--</div><div class="heatmap-arrow"></div></div>
-        <div class="heatmap-item" id="hm-bonds"><div class="heatmap-symbol">BONDS</div><div class="heatmap-change">--</div><div class="heatmap-arrow"></div></div>
-      </div>
-    </div>
-    
-    <!-- ========== SONO AI ========== -->
-    <div class="ai-section" id="ai-panel">
-      <div class="ai-header">
-        <div class="ai-icon">🧠</div>
-        <div class="ai-title">Sono AI — Interpretación Automática</div>
-      </div>
-      <div class="ai-content" id="ai-content">
-        <span class="ai-loading">Analizando señales de mercado...</span>
-      </div>
-      <div class="ai-probability">
-        <span class="ai-prob-label">Probabilidad Alcista</span>
-        <span class="ai-prob-value" id="ai-probability">--</span>
-        <span style="font-size:11px;color:var(--text-muted);" id="ai-model">Sono AI v1</span>
-      </div>
-      <div class="ai-probability" style="border-top:none;padding-top:4px;margin-top:0;">
-        <span class="ai-prob-label">Recomendación</span>
-        <span style="font-size:13px;font-weight:600;color:var(--accent-long);" id="ai-recommendation">--</span>
-      </div>
-    </div>
-    
-    <!-- Main Grid -->
-    <div class="main-grid">
-      
-      <!-- Columna izquierda -->
-      <div>
-        
-        <!-- Price -->
-        <div class="price-section">
-          <div class="price-main">
-            <div>
-              <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">
-                <span id="current-asset">BTC</span> / USD
-              </div>
-              <div class="price-value" id="current-price">
-                Cargando...
-              </div>
-            </div>
-            <div class="price-change positive" id="price-change">
-              <span>▲</span> 0.00%
-            </div>
-          </div>
-          <div class="price-details">
-            <div class="price-detail">
-              <span class="detail-label">24h High</span>
-              <span class="detail-value" id="high-24h">--</span>
-            </div>
-            <div class="price-detail">
-              <span class="detail-label">24h Low</span>
-              <span class="detail-value" id="low-24h">--</span>
-            </div>
-            <div class="price-detail">
-              <span class="detail-label">Volume 24h</span>
-              <span class="detail-value" id="volume-24h">--</span>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Sparkline -->
-        <div class="chart-section">
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">📈 Sparkline 24h</div>
-          <canvas id="mini-chart"></canvas>
-        </div>
-        
-        <!-- Moving Averages -->
-        <div class="ma-section">
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">📏 Medias Móviles (1H)</div>
-          <div class="ma-grid">
-            <div class="ma-item">
-              <span class="ma-label">MA20 (Rápida)</span>
-              <span class="ma-value" id="ma20">--</span>
-            </div>
-            <div class="ma-item">
-              <span class="ma-label">MA50 (Media)</span>
-              <span class="ma-value" id="ma50">--</span>
-            </div>
-            <div class="ma-item">
-              <span class="ma-label">MA200 (Institucional)</span>
-              <span class="ma-value" id="ma200">--</span>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Signals -->
-        <div class="signals-section">
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">🎯 Señales Recientes</div>
-          <table class="signals-table">
-            <thead>
-              <tr>
-                <th>Fecha/Hora</th>
-                <th>Tipo</th>
-                <th>Entrada</th>
-                <th>Resultado</th>
-              </tr>
-            </thead>
-            <tbody id="signals-tbody">
-              <tr>
-                <td colspan="4" style="text-align:center;color:var(--text-muted);">Sin señales recientes</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        
-      </div>
-      
-      <!-- Columna derecha -->
-      <div>
-        
-        <!-- Score Maestro -->
-        <div class="score-section">
-          <div class="score-header">
-            <span style="font-size:11px;color:var(--text-muted);">🎯 Score Maestro</span>
-            <span class="score-number" id="score-number">--</span>
-          </div>
-          <div class="score-bar">
-            <div class="score-fill" id="score-fill" style="width:50%"></div>
-          </div>
-          <div class="score-status" id="score-status">Calculando...</div>
-          <div class="score-description" id="score-description">Analizando confluencias de mercado...</div>
-        </div>
-        
-        <!-- Metrics Grid -->
-        <div class="metrics-grid">
-          <div class="metric-card">
-            <div class="metric-label">Fear & Greed</div>
-            <div class="metric-value">
-              <span id="fear-greed">--</span>
-            </div>
-            <div class="metric-sub" id="fg-change"></div>
-          </div>
-          
-          <div class="metric-card">
-            <div class="metric-label">VIX S&P500</div>
-            <div class="metric-value" id="vix-value">--</div>
-            <div class="metric-sub" id="vix-change"></div>
-          </div>
-          
-          <div class="metric-card">
-            <div class="metric-label">BTC Dominance</div>
-            <div class="metric-value" id="btc-dom">--</div>
-            <div class="metric-sub" id="dom-change"></div>
-          </div>
-          
-          <div class="metric-card">
-            <div class="metric-label">Google Trends</div>
-            <div class="metric-value" id="trends-value">--</div>
-            <div class="metric-sub">Score /100</div>
-          </div>
-        </div>
-        
-        <!-- Trading Alert -->
-        <div class="alert-section" id="trading-alert">
-          <div class="alert info">
-            <strong>💡 Consejo de Trading:</strong><br>
-            <span style="font-size:11px;">Esperando datos del mercado para generar recomendación...</span>
-          </div>
-        </div>
-        
-      </div>
-    </div>
-    
-    <!-- Footer -->
-    <div class="terminal-footer">
-      <span>Fino Edition 👒 — Sono Premium Terminal</span><br>
-      <span>Actualizado: <span id="last-update">--:--:--</span></span>
-    </div>
-    
+
+<!-- ════ NAV ════════════════════════════════════════════════ -->
+<nav class="sono-nav">
+  <a href="/" class="nav-brand">
+    SONO <span>PRO v5</span>
+  </a>
+  <div class="nav-links">
+    <a href="/" class="nav-link active">📊 <span class="nav-text">Dashboard</span></a>
+    <a href="/rangos.html" class="nav-link">🎯 <span class="nav-text">Rangos</span></a>
+    <a href="/trades.html" class="nav-link">📝 <span class="nav-text">Trades</span></a>
   </div>
-  
-  <script src="sono-terminal.js"></script>
+  <div class="nav-right">
+    <div class="status-dot load" id="dot"></div>
+    <span id="status-text">Conectando...</span>
+  </div>
+</nav>
+
+<!-- ════ PAGE ════════════════════════════════════════════════ -->
+<div class="page">
+
+  <!-- ASSET + TF SELECTOR -->
+  <div class="flex-between mb-12">
+    <div class="asset-bar" id="asset-bar">
+      <button class="asset-btn active" data-sym="BTCUSDT" data-label="BTC">🟠 BTC</button>
+      <button class="asset-btn" data-sym="ETHUSDT" data-label="ETH">🔵 ETH</button>
+      <button class="asset-btn" data-sym="SOLUSDT" data-label="SOL">🟣 SOL</button>
+      <button class="asset-btn" data-sym="XRPUSDT" data-label="XRP">🟢 XRP</button>
+    </div>
+    <div class="tf-bar" id="tf-bar">
+      <button class="tf-btn" data-tf="1m">1m</button>
+      <button class="tf-btn active" data-tf="3m">3m</button>
+      <button class="tf-btn" data-tf="5m">5m</button>
+      <button class="tf-btn" data-tf="15m">15m</button>
+      <button class="tf-btn" data-tf="1h">1h</button>
+    </div>
+  </div>
+
+  <!-- DECISION HERO -->
+  <div class="decision-card wait" id="decision-card">
+    <div>
+      <div class="decision-badge" id="signal-badge">CARGANDO</div>
+      <div style="font-size:0.7rem;color:var(--txt-2);margin-top:4px" id="signal-sub">Calculando Score Maestro...</div>
+    </div>
+    <div class="decision-meta">
+      <div class="decision-score">Score Maestro</div>
+      <div class="decision-conf" id="score-hero">--</div>
+      <div style="font-size:0.65rem;color:var(--txt-2);margin-top:2px" id="regime-label">--</div>
+    </div>
+  </div>
+
+  <!-- PRECIO HERO + MACRO ROW -->
+  <div class="grid-4 mb-12">
+    <div class="card">
+      <div class="card-title" id="price-asset-label">BTC / USDT</div>
+      <div class="card-value lg skel" id="price-val">--</div>
+      <div class="card-sub" id="change-val">--</div>
+    </div>
+    <div class="card">
+      <div class="card-title">24H HIGH / LOW</div>
+      <div class="card-value sm" id="high-val">--</div>
+      <div class="card-sub" id="low-val">--</div>
+    </div>
+    <div class="card">
+      <div class="card-title">FEAR & GREED</div>
+      <div class="card-value skel" id="fg-val">--</div>
+      <div class="card-sub" id="fg-label">--</div>
+    </div>
+    <div class="card">
+      <div class="card-title">VIX ESTIMADO</div>
+      <div class="card-value skel" id="vix-val">--</div>
+      <div class="card-sub" id="vix-sub">Volatilidad macro</div>
+    </div>
+  </div>
+
+  <!-- SCORE + PILARES + MAS -->
+  <div class="grid-3 mb-12">
+    <!-- Score Maestro radial -->
+    <div class="card">
+      <div class="card-title">SCORE MAESTRO</div>
+      <div class="gauge-wrap">
+        <svg class="gauge-svg" width="160" height="120" viewBox="0 0 160 120">
+          <defs>
+            <linearGradient id="gauge-grad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#ff4d6a"/>
+              <stop offset="50%" stop-color="#f0a500"/>
+              <stop offset="100%" stop-color="#00d085"/>
+            </linearGradient>
+          </defs>
+          <!-- Track -->
+          <path d="M 20 100 A 60 60 0 0 1 140 100" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10" stroke-linecap="round"/>
+          <!-- Arc -->
+          <path id="gauge-arc" d="M 20 100 A 60 60 0 0 1 20 100" fill="none" stroke="url(#gauge-grad)" stroke-width="10" stroke-linecap="round" style="transition:d 0.8s cubic-bezier(0.4,0,0.2,1)"/>
+          <!-- Valor -->
+          <text id="gauge-num" x="80" y="90" text-anchor="middle" class="gauge-text-val">--</text>
+          <text x="80" y="110" text-anchor="middle" class="gauge-text-lbl">/ 100</text>
+        </svg>
+        <!-- Pilar bars -->
+        <div class="pilar-row" style="width:100%">
+          <div class="pilar-item">
+            <div class="pilar-head"><span class="pilar-name">P1 — Cruces MAs</span><span class="pilar-score" id="p1-score">--/35</span></div>
+            <div class="pilar-bar-bg"><div class="pilar-bar-fill" id="p1-bar" style="width:0%"></div></div>
+          </div>
+          <div class="pilar-item">
+            <div class="pilar-head"><span class="pilar-name">P2 — ADX + RSI</span><span class="pilar-score" id="p2-score">--/35</span></div>
+            <div class="pilar-bar-bg"><div class="pilar-bar-fill" id="p2-bar" style="width:0%"></div></div>
+          </div>
+          <div class="pilar-item">
+            <div class="pilar-head"><span class="pilar-name">P3 — Bollinger %B</span><span class="pilar-score" id="p3-score">--/30</span></div>
+            <div class="pilar-bar-bg"><div class="pilar-bar-fill" id="p3-bar" style="width:0%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Medias Móviles -->
+    <div class="card">
+      <div class="card-title">MEDIAS MÓVILES</div>
+      <table class="ma-table">
+        <thead>
+          <tr><th>MA</th><th>Valor</th><th>vs Precio</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="ma-name">MA 6</td>
+            <td class="ma-val" id="ma6-val">--</td>
+            <td class="ma-rel" id="ma6-rel">--</td>
+          </tr>
+          <tr>
+            <td class="ma-name">MA 40</td>
+            <td class="ma-val" id="ma40-val">--</td>
+            <td class="ma-rel" id="ma40-rel">--</td>
+          </tr>
+          <tr>
+            <td class="ma-name">MA 70</td>
+            <td class="ma-val" id="ma70-val">--</td>
+            <td class="ma-rel" id="ma70-rel">--</td>
+          </tr>
+          <tr>
+            <td class="ma-name">MA 200</td>
+            <td class="ma-val" id="ma200-val">--</td>
+            <td class="ma-rel" id="ma200-rel">--</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top:12px;border-top:1px solid var(--border-dim);padding-top:10px">
+        <div class="flex-between" style="margin-bottom:6px">
+          <span class="card-title" style="margin:0">RSI (14)</span>
+          <span style="font-size:0.7rem;color:var(--txt-2)" id="rsi-label">--</span>
+        </div>
+        <div style="font-size:1.4rem;font-weight:700;color:var(--txt-0)" id="rsi-val">--</div>
+        <div class="pilar-bar-bg" style="margin-top:6px">
+          <div class="pilar-bar-fill" id="rsi-bar" style="width:0%;background:var(--wait)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADX + BB + Dominancia -->
+    <div class="card">
+      <div class="card-title">ADX · BOLLINGER · DOMINANCIA</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div class="metric">
+          <div class="metric-lbl">ADX (14)</div>
+          <div class="metric-val" id="adx-val">--</div>
+          <div class="metric-sub" id="adx-label">--</div>
+        </div>
+        <div class="metric">
+          <div class="metric-lbl">+DI / -DI</div>
+          <div class="metric-val" id="di-val">--</div>
+          <div class="metric-sub" id="di-label">--</div>
+        </div>
+        <div class="metric">
+          <div class="metric-lbl">BB %B</div>
+          <div class="metric-val" id="bb-pctb">--</div>
+          <div class="metric-sub" id="bb-label">--</div>
+        </div>
+        <div class="metric">
+          <div class="metric-lbl">BB Width</div>
+          <div class="metric-val" id="bb-width">--</div>
+          <div class="metric-sub">Amplitud banda</div>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid var(--border-dim);padding-top:10px">
+        <div class="card-title">DOMINANCIA</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+          <div class="metric">
+            <div class="metric-lbl">BTC</div>
+            <div class="metric-val green" id="btc-dom">--%</div>
+          </div>
+          <div class="metric">
+            <div class="metric-lbl">ETH</div>
+            <div class="metric-val" id="eth-dom">--%</div>
+          </div>
+          <div class="metric">
+            <div class="metric-lbl">ALTS</div>
+            <div class="metric-val" id="alts-dom">--%</div>
+          </div>
+        </div>
+        <div class="metric" style="margin-top:8px">
+          <div class="metric-lbl">Market Cap Total</div>
+          <div class="metric-val" id="mc-val">--</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div class="card mb-12">
+    <div class="flex-between mb-12">
+      <div class="card-title" style="margin:0">GRÁFICO DE VELAS <span id="chart-tf-label" style="color:var(--green)">3m</span></div>
+      <div class="chart-overlay" style="position:static;display:flex;gap:6px">
+        <span class="chart-legend" style="color:var(--green)">■ MA6</span>
+        <span class="chart-legend" style="color:#4a9eff">■ MA40</span>
+        <span class="chart-legend" style="color:#ff9060">■ MA200</span>
+        <span class="chart-legend" style="color:rgba(255,255,255,0.3)">■ BB</span>
+      </div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="chart-canvas"></canvas>
+    </div>
+  </div>
+
+  <!-- MACRO STATE -->
+  <div class="grid-2 mb-12">
+    <div class="card">
+      <div class="card-title">ESTADO MACRO</div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:var(--txt-0);line-height:1" id="regime-level">--</div>
+          <div style="font-size:0.65rem;color:var(--txt-2);letter-spacing:0.1em">/6</div>
+        </div>
+        <div>
+          <div style="font-size:0.9rem;font-weight:600" id="regime-name">--</div>
+          <div style="font-size:0.65rem;color:var(--txt-2);margin-top:4px" id="regime-desc">--</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:6px" id="regime-bars">
+        <div style="flex:1;height:4px;background:var(--bg-3);border-radius:99px"></div>
+        <div style="flex:1;height:4px;background:var(--bg-3);border-radius:99px"></div>
+        <div style="flex:1;height:4px;background:var(--bg-3);border-radius:99px"></div>
+        <div style="flex:1;height:4px;background:var(--bg-3);border-radius:99px"></div>
+        <div style="flex:1;height:4px;background:var(--bg-3);border-radius:99px"></div>
+        <div style="flex:1;height:4px;background:var(--bg-3);border-radius:99px"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">ACTUALIZACIÓN</div>
+      <div style="font-size:0.75rem;color:var(--txt-2);line-height:2">
+        <div>Precio: <span id="last-price-update" style="color:var(--txt-1)">--</span></div>
+        <div>Score: <span id="last-score-update" style="color:var(--txt-1)">--</span></div>
+        <div>Macro (F&G/DOM): <span id="last-macro-update" style="color:var(--txt-1)">--</span></div>
+        <div>Velas cargadas: <span id="klines-count" style="color:var(--green)">--</span></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- ════ SCRIPTS ═════════════════════════════════════════════ -->
+<script src="/js/engine.js"></script>
+<script src="/js/binance.js"></script>
+<script src="/js/macro.js"></script>
+<script>
+/* ── Helpers ──────────────────────────────────────────────── */
+const $ = id => document.getElementById(id);
+const fmt = (v, d=0) => v === null || isNaN(v) ? '--' : v.toLocaleString('es-ES', {minimumFractionDigits:d, maximumFractionDigits:d});
+const fmtPct = v => v === null ? '--' : (v > 0 ? '+' : '') + v.toFixed(2) + '%';
+const now = () => new Date().toLocaleTimeString('es-ES');
+
+let currentTF = '3m';
+let currentSym = 'BTCUSDT';
+let lastKlines = [];
+
+/* ── Status bar ──────────────────────────────────────────── */
+function setStatus(type, msg) {
+  const dot = $('dot');
+  dot.className = 'status-dot ' + (type === 'ok' ? '' : type);
+  $('status-text').textContent = msg;
+}
+
+/* ── Gauge arc SVG ───────────────────────────────────────── */
+function updateGauge(score) {
+  const cx = 80, cy = 100, r = 60;
+  const startAngle = Math.PI;
+  const endAngle = 0;
+  const angle = startAngle + (score / 100) * (endAngle - startAngle + Math.PI);
+  const x1 = cx + r * Math.cos(startAngle);
+  const y1 = cy + r * Math.sin(startAngle);
+  const x2 = cx + r * Math.cos(angle);
+  const y2 = cy + r * Math.sin(angle);
+  const largeArc = angle - startAngle > Math.PI ? 1 : 0;
+  $('gauge-arc').setAttribute('d', `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`);
+  $('gauge-num').textContent = score;
+}
+
+/* ── Chart Canvas ────────────────────────────────────────── */
+const canvas = $('chart-canvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+  const wrap = canvas.parentElement;
+  canvas.width = wrap.clientWidth * window.devicePixelRatio;
+  canvas.height = wrap.clientHeight * window.devicePixelRatio;
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+}
+
+function drawChart(klines) {
+  if (!klines || klines.length < 10) return;
+  resizeCanvas();
+  const W = canvas.parentElement.clientWidth;
+  const H = canvas.parentElement.clientHeight;
+  ctx.clearRect(0, 0, W, H);
+
+  const n = Math.min(100, klines.length);
+  const slice = klines.slice(-n);
+
+  const closes = slice.map(k => k.c);
+  const highs  = slice.map(k => k.h);
+  const lows   = slice.map(k => k.l);
+
+  const allPrices = [...highs, ...lows];
+  let minP = Math.min(...allPrices);
+  let maxP = Math.max(...allPrices);
+  const pad = (maxP - minP) * 0.08;
+  minP -= pad; maxP += pad;
+
+  const toX = i => (i / (n - 1)) * (W - 20) + 10;
+  const toY = p => H - ((p - minP) / (maxP - minP)) * (H - 20) - 10;
+
+  const candleW = Math.max(2, (W - 20) / n * 0.6);
+
+  // BB
+  const allCloses = klines.map(k => k.c);
+  const bb = SonoEngine.bollinger(allCloses, 20, 2);
+  if (bb) {
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4,4]);
+    slice.forEach((_, i) => {
+      if (i === 0) ctx.moveTo(toX(i), toY(bb.upper));
+      else ctx.lineTo(toX(i), toY(bb.upper));
+    });
+    ctx.stroke();
+    ctx.beginPath();
+    slice.forEach((_, i) => {
+      if (i === 0) ctx.moveTo(toX(i), toY(bb.lower));
+      else ctx.lineTo(toX(i), toY(bb.lower));
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Velas
+  slice.forEach((k, i) => {
+    const x = toX(i);
+    const isGreen = k.c >= k.o;
+    ctx.strokeStyle = isGreen ? '#00d085' : '#ff4d6a';
+    ctx.fillStyle = isGreen ? 'rgba(0,208,133,0.7)' : 'rgba(255,77,106,0.7)';
+    ctx.lineWidth = 1;
+    // Mecha
+    ctx.beginPath();
+    ctx.moveTo(x, toY(k.h));
+    ctx.lineTo(x, toY(k.l));
+    ctx.stroke();
+    // Cuerpo
+    const y1 = toY(Math.max(k.o, k.c));
+    const y2 = toY(Math.min(k.o, k.c));
+    const h = Math.max(1, y2 - y1);
+    ctx.fillRect(x - candleW/2, y1, candleW, h);
+  });
+
+  // MAs
+  const drawMA = (maCloses, n, color) => {
+    const val = SonoEngine.sma(maCloses, n);
+    if (!val) return;
+    // dibujar línea horizontal al valor actual (simple)
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([]);
+    let first = true;
+    slice.forEach((_, i) => {
+      const wCloses = allCloses.slice(0, klines.length - n + i + 1);
+      const v = SonoEngine.sma(wCloses, n);
+      if (!v) return;
+      if (first) { ctx.moveTo(toX(i), toY(v)); first = false; }
+      else ctx.lineTo(toX(i), toY(v));
+    });
+    ctx.stroke();
+  };
+
+  drawMA(allCloses, 6, '#00d4a0');
+  drawMA(allCloses, 40, '#4a9eff');
+  drawMA(allCloses, 200, '#ff9060');
+}
+
+/* ── Update UI from score ─────────────────────────────────── */
+function updateScore(klines) {
+  if (!klines || klines.length < 50) return;
+  const closes = klines.map(k => k.c);
+  const highs  = klines.map(k => k.h);
+  const lows   = klines.map(k => k.l);
+  const price  = closes[closes.length - 1];
+
+  const s = SonoEngine.scoreMaestro(closes, highs, lows);
+
+  // Gauge
+  updateGauge(s.score);
+  $('gauge-num').textContent = s.score;
+  $('score-hero').textContent = s.score + '/100';
+
+  // Signal badge
+  const card = $('decision-card');
+  const badge = $('signal-badge');
+  card.className = 'decision-card ' + s.signal.toLowerCase();
+  badge.textContent = s.signal;
+  $('signal-sub').textContent = s.signal === 'LONG' ? 'Señal alcista — acumular' : s.signal === 'SHORT' ? 'Señal bajista — precaución' : 'Sin señal clara — esperar';
+
+  // Pilares
+  $('p1-score').textContent = s.p1 + '/35';
+  $('p2-score').textContent = s.p2 + '/35';
+  $('p3-score').textContent = s.p3 + '/30';
+  $('p1-bar').style.width = (s.p1 / 35 * 100) + '%';
+  $('p2-bar').style.width = (s.p2 / 35 * 100) + '%';
+  $('p3-bar').style.width = (s.p3 / 30 * 100) + '%';
+
+  // MAs
+  const d = s.detail;
+  const maVals = { ma6: d.ma6, ma40: d.ma40, ma70: d.ma70, ma200: d.ma200 };
+  ['ma6','ma40','ma70','ma200'].forEach(k => {
+    const v = maVals[k];
+    const valEl = $(k + '-val');
+    const relEl = $(k + '-rel');
+    if (!v) { valEl.textContent = '--'; relEl.textContent = '--'; return; }
+    valEl.textContent = fmt(v, price > 1000 ? 0 : 4);
+    const diff = ((price - v) / v * 100);
+    relEl.textContent = (diff > 0 ? '▲' : '▼') + ' ' + Math.abs(diff).toFixed(2) + '%';
+    relEl.className = 'ma-rel ' + (price > v ? 'above' : 'below');
+  });
+
+  // RSI
+  const rsiV = d.rsi;
+  if (rsiV !== null) {
+    $('rsi-val').textContent = rsiV.toFixed(1);
+    $('rsi-label').textContent = SonoEngine.rsiLabel(rsiV);
+    $('rsi-bar').style.width = rsiV + '%';
+    $('rsi-bar').style.background = rsiV > 70 ? 'var(--short)' : rsiV < 30 ? 'var(--long)' : 'var(--wait)';
+  }
+
+  // ADX
+  const adxD = d.adxData;
+  if (adxD) {
+    $('adx-val').textContent = adxD.adx.toFixed(1);
+    $('adx-label').textContent = adxD.adx > 40 ? 'TENDENCIA FUERTE' : adxD.adx > 25 ? 'TENDENCIA' : 'LATERAL';
+    $('adx-val').className = 'metric-val ' + (adxD.adx > 25 ? 'green' : 'yellow');
+    $('di-val').textContent = '+' + adxD.pdi.toFixed(1) + ' / -' + adxD.mdi.toFixed(1);
+    $('di-label').textContent = adxD.pdi > adxD.mdi ? 'PRESIÓN COMPRADORA' : 'PRESIÓN VENDEDORA';
+  }
+
+  // Bollinger
+  const bb = d.bb;
+  if (bb) {
+    $('bb-pctb').textContent = bb.pctB.toFixed(2);
+    $('bb-pctb').className = 'metric-val ' + (bb.pctB > 0.8 ? 'yellow' : bb.pctB > 0.5 ? 'green' : 'metric-val');
+    $('bb-label').textContent = bb.pctB > 0.8 ? 'Resistencia superior' : bb.pctB < 0.2 ? 'Soporte inferior' : 'Zona central';
+    const width = ((bb.upper - bb.lower) / bb.mid * 100).toFixed(2);
+    $('bb-width').textContent = width + '%';
+  }
+
+  $('last-score-update').textContent = now();
+  $('klines-count').textContent = klines.length + ' velas';
+}
+
+/* ── Update price UI ─────────────────────────────────────── */
+function updatePrice(data) {
+  const p = data.price;
+  if (!p) return;
+  const isLarge = p > 1000;
+  $('price-val').textContent = '$' + fmt(p, isLarge ? 0 : 4);
+  $('price-val').classList.remove('skel');
+
+  const ch = data.change24h;
+  const chEl = $('change-val');
+  chEl.textContent = fmtPct(ch) + ' (24h)';
+  chEl.style.color = ch > 0 ? 'var(--long)' : ch < 0 ? 'var(--short)' : 'var(--txt-2)';
+
+  $('high-val').textContent = '$' + fmt(data.high24h, isLarge ? 0 : 4);
+  $('low-val').textContent  = '$' + fmt(data.low24h, isLarge ? 0 : 4);
+  $('last-price-update').textContent = now();
+}
+
+/* ── Update macro UI ─────────────────────────────────────── */
+async function loadMacro() {
+  const { fg, gecko, vix } = await MacroData.fetchAll();
+
+  const fgEl = $('fg-val');
+  fgEl.textContent = fg.value;
+  fgEl.classList.remove('skel');
+  fgEl.style.color = fg.value > 60 ? 'var(--long)' : fg.value < 30 ? 'var(--short)' : 'var(--wait)';
+  $('fg-label').textContent = fg.label;
+
+  const vixEl = $('vix-val');
+  vixEl.textContent = vix.value + (vix.estimated ? '~' : '');
+  vixEl.classList.remove('skel');
+  vixEl.style.color = vix.value > 25 ? 'var(--short)' : vix.value > 15 ? 'var(--wait)' : 'var(--long)';
+  $('vix-sub').textContent = vix.estimated ? 'Estimado (proxy F&G)' : 'VIX real';
+
+  $('btc-dom').textContent  = gecko.btcDom + '%';
+  $('eth-dom').textContent  = gecko.ethDom + '%';
+  $('alts-dom').textContent = gecko.altsDom + '%';
+  $('mc-val').textContent   = MacroData.fmtMC(gecko.totalMC);
+
+  // Regime
+  const score = parseInt($('gauge-num').textContent || '50');
+  const reg = MacroData.regime(score, fg.value);
+  $('regime-level').textContent = reg.level;
+  $('regime-name').textContent  = reg.label;
+  $('regime-label').textContent = reg.label;
+  $('regime-level').style.color = reg.color;
+  $('regime-desc').textContent  = 'F&G: ' + fg.value + ' · VIX: ' + vix.value;
+  // Barra régimen
+  const bars = $('regime-bars').querySelectorAll('div');
+  bars.forEach((b, i) => {
+    b.style.background = i < reg.level ? reg.color : 'var(--bg-3)';
+  });
+
+  $('last-macro-update').textContent = now();
+}
+
+/* ── Asset/TF selectors ──────────────────────────────────── */
+document.querySelectorAll('.asset-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    document.querySelectorAll('.asset-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentSym = btn.dataset.sym;
+    $('price-asset-label').textContent = btn.dataset.label + ' / USDT';
+    $('price-val').classList.add('skel');
+    await BinanceData.changeAsset(currentSym);
+  });
+});
+
+document.querySelectorAll('.tf-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentTF = btn.dataset.tf;
+    $('chart-tf-label').textContent = currentTF;
+    BinanceData.changeTF(currentTF);
+  });
+});
+
+/* ── Init ────────────────────────────────────────────────── */
+BinanceData.init('BTCUSDT', '3m', {
+  onStatus: setStatus,
+  onPrice: updatePrice,
+  onKlines: (tf, klines) => {
+    if (tf === currentTF) {
+      lastKlines = klines;
+      updateScore(klines);
+      drawChart(klines);
+    }
+  }
+});
+
+loadMacro();
+setInterval(loadMacro, 5 * 60 * 1000);
+window.addEventListener('resize', () => drawChart(lastKlines));
+</script>
 </body>
 </html>
