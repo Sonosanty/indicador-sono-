@@ -1,319 +1,229 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sono Pro — Range Intelligence</title>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="/css/sono.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sono Pro — Range Intelligence</title>
+<link rel="icon" href="/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070d1a;--bg2:#0c1525;--bg3:#111c2e;--bg4:#1a2540;--border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.11);--text:#e2eaf8;--muted:#64748b;--dim:#3d5070;--blue:#3b82f6;--green:#22c55e;--red:#ef4444;--amber:#f59e0b;--purple:#a855f7;--cyan:#06b6d4;--font-mono:"JetBrains Mono",monospace;--font-sans:"DM Sans",sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:.65rem 1.5rem;background:rgba(7,13,26,.92);border-bottom:1px solid var(--border);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;gap:12px;flex-wrap:wrap}
+.logo{font-family:var(--font-mono);font-size:15px;font-weight:700;letter-spacing:.05em}
+.logo span{color:var(--blue)}
+.nav{display:flex;gap:2px}
+.nav a{padding:6px 14px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:500;color:var(--muted);transition:.15s}
+.nav a:hover,.nav a.ac{background:var(--bg3);color:var(--text)}
+.shell{max-width:1100px;margin:0 auto;padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:14px}
+.flex{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.price{font-family:var(--font-mono);font-size:1.8rem;font-weight:700;color:var(--text)}
+.price-sub{font-size:.75rem;color:var(--muted);margin-top:2px}
+.ab{display:flex;gap:6px;flex-wrap:wrap}
+.ab button{padding:6px 16px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);cursor:pointer;font-size:13px;font-weight:500;font-family:var(--font-sans);transition:.15s}
+.ab button:hover,.ab button.ac{background:rgba(59,130,246,.15);color:var(--blue);border-color:rgba(59,130,246,.3)}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.card{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:1.25rem}
+.card-center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center}
+.card-title{font-family:var(--font-mono);font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:.12em;font-weight:500;margin-bottom:10px}
+.conf-ring{display:flex;align-items:baseline;gap:2px;font-family:var(--font-mono)}
+.conf-val{font-size:2.8rem;font-weight:700;color:var(--text)}
+.conf-lbl{font-size:.85rem;color:var(--muted)}
+.bias{display:inline-block;padding:3px 12px;border-radius:999px;font-family:var(--font-mono);font-size:.72rem;font-weight:600}
+.bull{background:rgba(34,197,94,.15);color:var(--green)}
+.bear{background:rgba(239,68,68,.15);color:var(--red)}
+.neut{background:rgba(148,163,184,.1);color:var(--muted)}
+.tf-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:8px}
+.tf-mini{padding:.5rem;border-radius:10px;background:var(--bg3);border:1px solid var(--border);text-align:center}
+.tf-mini-tf{font-family:var(--font-mono);font-size:.7rem;color:var(--dim);font-weight:500;margin-bottom:4px}
+.tf-mini-rsi{font-size:.75rem;color:var(--text);margin-bottom:2px}
+.tf-mini-adx{font-size:.65rem;color:var(--muted)}
+.metric{background:var(--bg3);border-radius:10px;padding:.65rem .75rem;border:1px solid var(--border)}
+.metric-lbl{font-family:var(--font-mono);font-size:.6rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px}
+.metric-val{font-family:var(--font-mono);font-size:1.1rem;font-weight:600}
+.metric-sub{font-family:var(--font-mono);font-size:.6rem;color:var(--muted);margin-top:2px}
+.green{color:var(--green)}.red{color:var(--red)}.yellow{color:var(--amber)}
+.pbar{height:6px;border-radius:999px;position:relative;background:linear-gradient(90deg,rgba(239,68,68,.3),var(--bg3) 50%,rgba(34,197,94,.3));margin:6px 0}
+.pneedle{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:var(--blue);border:2px solid rgba(59,130,246,.4);transform:translate(-50%,-50%);transition:left .5s}
+.check{font-size:.75rem;color:var(--muted);line-height:2.2}
+.check-item{display:flex;align-items:center;gap:6px}
+.footer{font-size:11px;color:var(--dim);text-align:center;padding:.5rem 0 1rem;font-family:var(--font-mono)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@media(max-width:768px){.g3,.g2,.tf-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.g3,.g2{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 
-<nav class="sono-nav">
-  <a href="/" class="nav-brand">SONO <span>PRO v5</span></a>
-              <div class="nav-links">
-        <a href="/" class="nav-link">📊 <span class="nav-text">Dashboard</span></a>
-        <a href="/rangos.html" class="nav-link active">🎯 <span class="nav-text">Rangos</span></a>
-        <a href="/metodo.html" class="nav-link">📐 <span class="nav-text">Metodo</span></a>
-        <a href="/trades.html" class="nav-link">📝 <span class="nav-text">Trades</span></a>
-      </div>
-  <div class="nav-right">
-    <div class="status-dot load" id="dot"></div>
-    <span id="status-text">Conectando...</span>
-  </div>
-</nav>
+<div class="topbar">
+ <div class="logo">SONO <span>PRO</span> V6</div>
+ <nav class="nav">
+ <a href="/">Dashboard V6</a>
+ <a href="/rangos.html" class="ac">Rangos</a>
+ <a href="/metodo.html">Método</a>
+ <a href="/trades.html">Trades</a>
+ </nav>
+ <span style="display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;color:var(--muted)">
+ <span style="width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 2s infinite"></span>
+ Range Intelligence
+ </span>
+</div>
 
-<div class="page">
+<div class="shell">
 
-  <!-- Header con precio vivo -->
-  <div class="flex-between mb-12">
-    <div>
-      <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--txt-0)" id="r-price">$--</div>
-      <div style="font-size:0.7rem;color:var(--txt-2)">BTC/USDT · Tiempo Real</div>
-    </div>
-    <div class="asset-bar" id="asset-bar">
-      <button class="asset-btn active" data-sym="BTCUSDT">🟠 BTC</button>
-      <button class="asset-btn" data-sym="ETHUSDT">🔵 ETH</button>
-      <button class="asset-btn" data-sym="SOLUSDT">🟣 SOL</button>
-      <button class="asset-btn" data-sym="XRPUSDT">🟢 XRP</button>
-    </div>
-  </div>
+<div class="flex">
+ <div>
+ <div class="price" id="r-price">$--</div>
+ <div class="price-sub" id="r-sub">BTC/USDT · Tiempo Real</div>
+ </div>
+ <div class="ab">
+ <button class="ac" data-a="BTCUSDT">BTC</button>
+ <button data-a="ETHUSDT">ETH</button>
+ <button data-a="SOLUSDT">SOL</button>
+ <button data-a="XRPUSDT">XRP</button>
+ </div>
+</div>
 
-  <!-- Confluence Score + Resumen -->
-  <div class="grid-3 mb-12">
-    <div class="card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">
-      <div class="card-title">CONFLUENCIA MTF</div>
-      <div class="conf-ring">
-        <div class="conf-val" id="conf-score">--</div>
-        <div class="conf-lbl">/ 100</div>
-      </div>
-      <div class="bias-label neut" id="conf-bias">Calculando...</div>
-      <div style="font-size:0.65rem;color:var(--txt-2);text-align:center;margin-top:4px" id="conf-desc">
-        Suma de alineación en 4 timeframes
-      </div>
-    </div>
+<div class="g3">
+ <div class="card card-center">
+ <div class="card-title">CONFLUENCIA MTF</div>
+ <div class="conf-ring"><span class="conf-val" id="conf-score">--</span><span class="conf-lbl">/100</span></div>
+ <span class="bias neut" id="conf-bias">Calculando...</span>
+ <div style="font-size:.68rem;color:var(--muted);margin-top:4px" id="conf-desc">Suma de alineación en 4 TFs</div>
+ </div>
+ <div class="card">
+ <div class="card-title">RESUMEN TIMEFRAMES</div>
+ <div class="tf-grid">
+ <div class="tf-mini" id="mini-15m"><div class="tf-mini-tf">15M</div><div class="tf-mini-rsi" id="mini-15m-rsi">RSI --</div><div class="tf-mini-adx" id="mini-15m-adx">ADX --</div></div>
+ <div class="tf-mini" id="mini-5m"><div class="tf-mini-tf">5M</div><div class="tf-mini-rsi" id="mini-5m-rsi">RSI --</div><div class="tf-mini-adx" id="mini-5m-adx">ADX --</div></div>
+ <div class="tf-mini" id="mini-3m"><div class="tf-mini-tf">3M</div><div class="tf-mini-rsi" id="mini-3m-rsi">RSI --</div><div class="tf-mini-adx" id="mini-3m-adx">ADX --</div></div>
+ <div class="tf-mini" id="mini-1m"><div class="tf-mini-tf">1M</div><div class="tf-mini-rsi" id="mini-1m-rsi">RSI --</div><div class="tf-mini-adx" id="mini-1m-adx">ADX --</div></div>
+ </div>
+ </div>
+ <div class="card">
+ <div class="card-title">SEÑAL DE ENTRADA</div>
+ <div class="check" id="entry-checklist">
+ <div class="check-item"><span>⬜</span> RSI 15m alcista</div>
+ <div class="check-item"><span>⬜</span> ADX 15m > 25</div>
+ <div class="check-item"><span>⬜</span> RSI 5m alineado</div>
+ <div class="check-item"><span>⬜</span> Precio sobre MA40</div>
+ <div class="check-item"><span>⬜</span> Confluencia > 60</div>
+ </div>
+ <div style="margin-top:8px;font-size:.68rem;color:var(--muted)">Criterios activos: <span style="color:var(--green);font-weight:600" id="entry-count">0/5</span></div>
+ </div>
+</div>
 
-    <div class="card">
-      <div class="card-title">RESUMEN POR TIMEFRAME</div>
-      <div class="tf-grid" id="tf-mini-grid">
-        <div class="tf-mini" id="mini-15m">
-          <div class="tf-mini-tf">15M</div>
-          <div class="tf-mini-rsi" id="mini-15m-rsi">RSI --</div>
-          <div class="tf-mini-adx" id="mini-15m-adx">ADX -- · --</div>
-        </div>
-        <div class="tf-mini" id="mini-5m">
-          <div class="tf-mini-tf">5M</div>
-          <div class="tf-mini-rsi" id="mini-5m-rsi">RSI --</div>
-          <div class="tf-mini-adx" id="mini-5m-adx">ADX -- · --</div>
-        </div>
-        <div class="tf-mini" id="mini-3m">
-          <div class="tf-mini-tf">3M</div>
-          <div class="tf-mini-rsi" id="mini-3m-rsi">RSI --</div>
-          <div class="tf-mini-adx" id="mini-3m-adx">ADX -- · --</div>
-        </div>
-        <div class="tf-mini" id="mini-1m">
-          <div class="tf-mini-tf">1M</div>
-          <div class="tf-mini-rsi" id="mini-1m-rsi">RSI --</div>
-          <div class="tf-mini-adx" id="mini-1m-adx">ADX -- · --</div>
-        </div>
-      </div>
-    </div>
+<div class="g2" id="tf-cards">
+ <div class="card"><div class="flex" style="margin-bottom:10px;gap:6px"><span class="card-title" style="margin:0">⏱ 15 MINUTOS</span><span class="bias neut" id="bias-15m">--</span></div>
+ <div class="g2" style="gap:8px;margin-bottom:10px">
+ <div class="metric"><div class="metric-lbl">RSI</div><div class="metric-val" id="rsi-15m">--</div><div class="metric-sub" id="rsi-15m-lbl">--</div></div>
+ <div class="metric"><div class="metric-lbl">ADX</div><div class="metric-val" id="adx-15m">--</div><div class="metric-sub" id="adx-15m-lbl">--</div></div>
+ <div class="metric"><div class="metric-lbl">MA40</div><div class="metric-val" id="ma40-15m">--</div><div class="metric-sub" id="ma40-15m-lbl">--</div></div>
+ <div class="metric"><div class="metric-lbl">BB %B</div><div class="metric-val" id="bb-15m">--</div><div class="metric-sub" id="bb-15m-lbl">--</div></div>
+ </div>
+ <div style="font-size:.65rem;color:var(--dim);margin-bottom:4px">PRESIÓN ← COMPRA / VENTA →</div>
+ <div class="pbar"><div class="pneedle" id="needle-15m" style="left:50%"></div></div>
+ <div class="flex" style="margin-top:2px;font-size:.6rem;color:var(--dim)"><span>VENTA</span><span>NEUTRAL</span><span>COMPRA</span></div></div>
 
-    <div class="card">
-      <div class="card-title">SEÑAL DE ENTRADA</div>
-      <div style="margin-top:8px">
-        <div style="font-size:0.75rem;color:var(--txt-2);line-height:2.2" id="entry-checklist">
-          <div>⬜ RSI 15m alcista</div>
-          <div>⬜ ADX 15m > 25</div>
-          <div>⬜ RSI 5m alineado</div>
-          <div>⬜ Precio sobre MA40</div>
-          <div>⬜ Confluencia > 60</div>
-        </div>
-        <div style="margin-top:10px;font-size:0.65rem;color:var(--txt-2)">
-          Criterios activos: <span style="color:var(--green);font-weight:600" id="entry-count">0/5</span>
-        </div>
-      </div>
-    </div>
-  </div>
+ <div class="card"><div class="flex" style="margin-bottom:10px;gap:6px"><span class="card-title" style="margin:0">⏱ 5 MINUTOS</span><span class="bias neut" id="bias-5m">--</span></div>
+ <div class="g2" style="gap:8px;margin-bottom:10px">
+ <div class="metric"><div class="metric-lbl">RSI</div><div class="metric-val" id="rsi-5m">--</div><div class="metric-sub" id="rsi-5m-lbl">--</div></div>
+ <div class="metric"><div class="metric-lbl">ADX</div><div class="metric-val" id="adx-5m">--</div><div class="metric-sub" id="adx-5m-lbl">--</div></div>
+ <div class="metric"><div class="metric-lbl">MA40</div><div class="metric-val" id="ma40-5m">--</div><div class="metric-sub" id="ma40-5m-lbl">--</div></div>
+ <div class="metric"><div class="metric-lbl">BB %B</div><div class="metric-val" id="bb-5m">--</div><div class="metric-sub" id="bb-5m-lbl">--</div></div>
+ </div>
+ <div style="font-size:.65rem;color:var(--dim);margin-bottom:4px">PRESIÓN ← COMPRA / VENTA →</div>
+ <div class="pbar"><div class="pneedle" id="needle-5m" style="left:50%"></div></div>
+ <div class="flex" style="margin-top:2px;font-size:.6rem;color:var(--dim)"><span>VENTA</span><span>NEUTRAL</span><span>COMPRA</span></div></div>
 
-  <!-- 4 TF CARDS -->
-  <div class="grid-2 mb-12">
-    <!-- 15m -->
-    <div class="range-card">
-      <div class="flex-between">
-        <div class="range-tf">⏱ 15 MINUTOS</div>
-        <span class="bias-label neut" id="bias-15m">--</span>
-      </div>
-      <div class="grid-2" style="gap:8px;margin-bottom:10px">
-        <div class="metric"><div class="metric-lbl">RSI</div><div class="metric-val" id="rsi-15m">--</div><div class="metric-sub" id="rsi-15m-lbl">--</div></div>
-        <div class="metric"><div class="metric-lbl">ADX</div><div class="metric-val" id="adx-15m">--</div><div class="metric-sub" id="adx-15m-lbl">--</div></div>
-        <div class="metric"><div class="metric-lbl">MA40</div><div class="metric-val" id="ma40-15m">--</div><div class="metric-sub" id="ma40-15m-lbl">--</div></div>
-        <div class="metric"><div class="metric-lbl">BB %B</div><div class="metric-val" id="bb-15m">--</div><div class="metric-sub" id="bb-15m-lbl">--</div></div>
-      </div>
-      <div style="font-size:0.6rem;color:var(--txt-3);margin-bottom:4px">PRESIÓN COMPRADORA ←→ VENDEDORA</div>
-      <div class="pressure-bar">
-        <div class="pressure-needle" id="needle-15m" style="left:50%"></div>
-      </div>
-      <div class="flex-between" style="margin-top:4px;font-size:0.6rem;color:var(--txt-3)">
-        <span>VENDEDORA</span><span>NEUTRA</span><span>COMPRADORA</span>
-      </div>
-    </div>
+ <div class="card"><div class="flex" style="margin-bottom:10px;gap:6px"><span class="card-title" style="margin:0">⏱ 3 MINUTOS</span><span class="bias neut" id="bias-3m">--</span></div>
+ <div class="g2" style="gap:8px;margin-bottom:10px">
+ <div class="metric"><div class="metric-lbl">RSI</div><div class="metric-val" id="rsi-3m">--</div><div class="metric-sub" id="rsi-3m-lbl">--</div></div>
+ <div class="metric"><div class="metric-lbl">ADX</div><div class="metric-val" id="adx-3m">--</div><div class="metric-sub" id="adx-3m-lbl">--</div></div>
+ <div class="metric"><div class="metric-lbl">MA40</div><div class="metric-val" id="ma40-3m">--</div><div class="metric-sub" id="ma40-3m-lbl">--</div></div>
+ <div class="metric"><div class="metric-lbl">BB %B</div><div class="metric-val" id="bb-3m">--</div><div class="metric-sub" id="bb-3m-lbl">--</div></div>
+ </div>
+ <div style="font-size:.65rem;color:var(--dim);margin-bottom:4px">PRESIÓN ← COMPRA / VENTA →</div>
+ <div class="pbar"><div class="pneedle" id="needle-3m" style="left:50%"></div></div>
+ <div class="flex" style="margin-top:2px;font-size:.6rem;color:var(--dim)"><span>VENTA</span><span>NEUTRAL</span><span>COMPRA</span></div></div>
 
-    <!-- 5m -->
-    <div class="range-card">
-      <div class="flex-between">
-        <div class="range-tf">⏱ 5 MINUTOS</div>
-        <span class="bias-label neut" id="bias-5m">--</span>
-      </div>
-      <div class="grid-2" style="gap:8px;margin-bottom:10px">
-        <div class="metric"><div class="metric-lbl">RSI</div><div class="metric-val" id="rsi-5m">--</div><div class="metric-sub" id="rsi-5m-lbl">--</div></div>
-        <div class="metric"><div class="metric-lbl">ADX</div><div class="metric-val" id="adx-5m">--</div><div class="metric-sub" id="adx-5m-lbl">--</div></div>
-        <div class="metric"><div class="metric-lbl">MA40</div><div class="metric-val" id="ma40-5m">--</div><div class="metric-sub" id="ma40-5m-lbl">--</div></div>
-        <div class="metric"><div class="metric-lbl">BB %B</div><div class="metric-val" id="bb-5m">--</div><div class="metric-sub" id="bb-5m-lbl">--</div></div>
-      </div>
-      <div style="font-size:0.6rem;color:var(--txt-3);margin-bottom:4px">PRESIÓN COMPRADORA ←→ VENDEDORA</div>
-      <div class="pressure-bar">
-        <div class="pressure-needle" id="needle-5m" style="left:50%"></div>
-      </div>
-      <div class="flex-between" style="margin-top:4px;font-size:0.6rem;color:var(--txt-3)">
-        <span>VENDEDORA</span><span>NEUTRA</span><span>COMPRADORA</span>
-      </div>
-    </div>
-
-    <!-- 3m -->
-    <div class="range-card">
-      <div class="flex-between">
-        <div class="range-tf">⏱ 3 MINUTOS</div>
-        <span class="bias-label neut" id="bias-3m">--</span>
-      </div>
-      <div class="grid-2" style="gap:8px;margin-bottom:10px">
-        <div class="metric"><div class="metric-lbl">RSI</div><div class="metric-val" id="rsi-3m">--</div><div class="metric-sub" id="rsi-3m-lbl">--</div></div>
-        <div class="metric"><div class="metric-lbl">ADX</div><div class="metric-val" id="adx-3m">--</div><div class="metric-sub" id="adx-3m-lbl">--</div></div>
-        <div class="metric"><div class="metric-lbl">MA40</div><div class="metric-val" id="ma40-3m">--</div><div class="metric-sub" id="ma40-3m-lbl">--</div></div>
-        <div class="metric"><div class="metric-lbl">BB %B</div><div class="metric-val" id="bb-3m">--</div><div class="metric-sub" id="bb-3m-lbl">--</div></div>
-      </div>
-      <div style="font-size:0.6rem;color:var(--txt-3);margin-bottom:4px">PRESIÓN</div>
-      <div class="pressure-bar">
-        <div class="pressure-needle" id="needle-3m" style="left:50%"></div>
-      </div>
-      <div class="flex-between" style="margin-top:4px;font-size:0.6rem;color:var(--txt-3)">
-        <span>VENDEDORA</span><span>NEUTRA</span><span>COMPRADORA</span>
-      </div>
-    </div>
-
-    <!-- 1m -->
-    <div class="range-card">
-      <div class="flex-between">
-        <div class="range-tf">⏱ 1 MINUTO</div>
-        <span class="bias-label neut" id="bias-1m">--</span>
-      </div>
-      <div class="grid-2" style="gap:8px;margin-bottom:10px">
-        <div class="metric"><div class="metric-lbl">RSI</div><div class="metric-val" id="rsi-1m">--</div><div class="metric-sub" id="rsi-1m-lbl">--</div></div>
-        <div class="metric"><div class="metric-lbl">ADX</div><div class="metric-val" id="adx-1m">--</div><div class="metric-sub" id="adx-1m-lbl">--</div></div>
-        <div class="metric"><div class="metric-lbl">MA40</div><div class="metric-val" id="ma40-1m">--</div><div class="metric-sub" id="ma40-1m-lbl">--</div></div>
-        <div class="metric"><div class="metric-lbl">BB %B</div><div class="metric-val" id="bb-1m">--</div><div class="metric-sub" id="bb-1m-lbl">--</div></div>
-      </div>
-      <div style="font-size:0.6rem;color:var(--txt-3);margin-bottom:4px">PRESIÓN</div>
-      <div class="pressure-bar">
-        <div class="pressure-needle" id="needle-1m" style="left:50%"></div>
-      </div>
-      <div class="flex-between" style="margin-top:4px;font-size:0.6rem;color:var(--txt-3)">
-        <span>VENDEDORA</span><span>NEUTRA</span><span>COMPRADORA</span>
-      </div>
-    </div>
-  </div>
+ <div class="card"><div class="flex" style="margin-bottom:10px;gap:6px"><span class="card-title" style="margin:0">⏱ 1 MINUTO</span><span class="bias neut" id="bias-1m">--</span></div>
+ <div class="g2" style="gap:8px;margin-bottom:10px">
+ <div class="metric"><div class="metric-lbl">RSI</div><div class="metric-val" id="rsi-1m">--</div><div class="metric-sub" id="rsi-1m-lbl">--</div></div>
+ <div class="metric"><div class="metric-lbl">ADX</div><div class="metric-val" id="adx-1m">--</div><div class="metric-sub" id="adx-1m-lbl">--</div></div>
+ <div class="metric"><div class="metric-lbl">MA40</div><div class="metric-val" id="ma40-1m">--</div><div class="metric-sub" id="ma40-1m-lbl">--</div></div>
+ <div class="metric"><div class="metric-lbl">BB %B</div><div class="metric-val" id="bb-1m">--</div><div class="metric-sub" id="bb-1m-lbl">--</div></div>
+ </div>
+ <div style="font-size:.65rem;color:var(--dim);margin-bottom:4px">PRESIÓN ← COMPRA / VENTA →</div>
+ <div class="pbar"><div class="pneedle" id="needle-1m" style="left:50%"></div></div>
+ <div class="flex" style="margin-top:2px;font-size:.6rem;color:var(--dim)"><span>VENTA</span><span>NEUTRAL</span><span>COMPRA</span></div></div>
+</div>
 
 </div>
 
+<div class="footer">SONO PRO V6 · Binance · CoinGecko · Alternativa.me · Proxy VIX</div>
+
+<style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}</style>
 <script src="/js/engine.js"></script>
 <script src="/js/binance.js"></script>
 <script>
-const $ = id => document.getElementById(id);
-const fmt = (v, d=2) => v === null || isNaN(v) ? '--' : Number(v).toFixed(d);
+var $=function(id){return document.getElementById(id)};
+var fmt=function(v,d){d=d||2;return v===null||isNaN(v)?'--':Number(v).toFixed(d)};
+function setStatus(t,m){};
 
-function setStatus(t, m) {
-  $('dot').className = 'status-dot ' + (t === 'ok' ? '' : t);
-  $('status-text').textContent = m;
+var TFS=['15m','5m','3m','1m'];
+var klinesData={};
+
+function analyzeTF(tf,klines){
+ if(!klines||klines.length<30)return null;
+ var closes=klines.map(function(k){return k.c});
+ var highs=klines.map(function(k){return k.h});
+ var lows=klines.map(function(k){return k.l});
+ var price=closes[closes.length-1];
+ var rsiV=SonoEngine.rsi(closes);
+ var adxV=SonoEngine.adx(highs,lows,closes);
+ var bb=SonoEngine.bollinger(closes);
+ var ma40=SonoEngine.sma(closes,40);
+ var pressure=SonoEngine.pressurePct(adxV,rsiV);
+ var isBull=(rsiV>50&&adxV&&adxV.pdi>adxV.mdi&&price>(ma40||0));
+ var isBear=(rsiV<50&&adxV&&adxV.mdi>adxV.pdi&&price<(ma40||999999));
+ return{rsiV:rsiV,adxV:adxV,bb:bb,ma40:ma40,pressure:pressure,price:price,isBull:isBull,isBear:isBear};
 }
 
-const TFS = ['15m','5m','3m','1m'];
-const klinesData = {};
-
-function analyzeTF(tf, klines) {
-  if (!klines || klines.length < 30) return null;
-  const closes = klines.map(k => k.c);
-  const highs   = klines.map(k => k.h);
-  const lows    = klines.map(k => k.l);
-  const price   = closes[closes.length - 1];
-
-  const rsiV  = SonoEngine.rsi(closes);
-  const adxV  = SonoEngine.adx(highs, lows, closes);
-  const bb    = SonoEngine.bollinger(closes);
-  const ma40  = SonoEngine.sma(closes, 40);
-  const pressure = SonoEngine.pressurePct(adxV, rsiV);
-
-  const isBull = (rsiV > 50 && adxV && adxV.pdi > adxV.mdi && price > (ma40 || 0));
-  const isBear = (rsiV < 50 && adxV && adxV.mdi > adxV.pdi && price < (ma40 || 999999));
-
-  return { rsiV, adxV, bb, ma40, pressure, price, isBull, isBear };
+function updateTFCard(tf,data){
+ if(!data)return;
+ var rsiV=data.rsiV,adxV=data.adxV,bb=data.bb,ma40=data.ma40,pressure=data.pressure,price=data.price,isBull=data.isBull,isBear=data.isBear;
+ if(rsiV!==null){$(('rsi-'+tf)).textContent=fmt(rsiV,1);$(('rsi-'+tf)).className='metric-val '+(rsiV>60?'green':rsiV<40?'red':'yellow');$(('rsi-'+tf+'-lbl')).textContent=SonoEngine.rsiLabel(rsiV)}
+ if(adxV){$(('adx-'+tf)).textContent=fmt(adxV.adx,1);$(('adx-'+tf)).className='metric-val '+(adxV.adx>25?'green':'yellow');$(('adx-'+tf+'-lbl')).textContent=adxV.adx>25?'Tendencia':'Lateral'}
+ if(ma40){$(('ma40-'+tf)).textContent=fmt(ma40,price>1000?0:4);$(('ma40-'+tf)).className='metric-val '+(price>ma40?'green':'red');$(('ma40-'+tf+'-lbl')).textContent=price>ma40?'▲ Sobre MA40':'▼ Bajo MA40'}
+ if(bb){$(('bb-'+tf)).textContent=bb.pctB.toFixed(2);$(('bb-'+tf+'-lbl')).textContent=bb.pctB>0.8?'Resistencia':bb.pctB<0.2?'Soporte':'Central'}
+ $(('needle-'+tf)).style.left=pressure+'%';
+ var biasEl=$(('bias-'+tf));
+ if(isBull){biasEl.textContent='ALCISTA';biasEl.className='bias bull'}else if(isBear){biasEl.textContent='BAJISTA';biasEl.className='bias bear'}else{biasEl.textContent='NEUTRAL';biasEl.className='bias neut'}
+ if($(('mini-'+tf+'-rsi'))){$(('mini-'+tf+'-rsi')).textContent='RSI '+(rsiV?fmt(rsiV,1):'--');$(('mini-'+tf+'-adx')).textContent='ADX '+(adxV?fmt(adxV.adx,1):'--');var miniEl=$(('mini-'+tf));if(miniEl)miniEl.className='tf-mini '+(isBull||isBear?'aligned':'')}
 }
 
-function updateTFCard(tf, data) {
-  if (!data) return;
-  const { rsiV, adxV, bb, ma40, pressure, price, isBull, isBear } = data;
-  const key = tf.replace('m','');
-
-  if (rsiV !== null) {
-    $('rsi-'+tf).textContent = fmt(rsiV, 1);
-    $('rsi-'+tf).className = 'metric-val ' + (rsiV > 60 ? 'green' : rsiV < 40 ? 'red' : 'yellow');
-    $('rsi-'+tf+'-lbl').textContent = SonoEngine.rsiLabel(rsiV);
-  }
-  if (adxV) {
-    $('adx-'+tf).textContent = fmt(adxV.adx, 1);
-    $('adx-'+tf).className = 'metric-val ' + (adxV.adx > 25 ? 'green' : 'yellow');
-    $('adx-'+tf+'-lbl').textContent = adxV.adx > 25 ? 'Tendencia' : 'Lateral';
-  }
-  if (ma40) {
-    $('ma40-'+tf).textContent = fmt(ma40, price > 1000 ? 0 : 4);
-    $('ma40-'+tf).className = 'metric-val ' + (price > ma40 ? 'green' : 'red');
-    $('ma40-'+tf+'-lbl').textContent = price > ma40 ? '▲ Sobre MA40' : '▼ Bajo MA40';
-  }
-  if (bb) {
-    $('bb-'+tf).textContent = bb.pctB.toFixed(2);
-    $('bb-'+tf+'-lbl').textContent = bb.pctB > 0.8 ? 'Resistencia' : bb.pctB < 0.2 ? 'Soporte' : 'Central';
-  }
-
-  // Aguja de presión
-  $('needle-'+tf).style.left = pressure + '%';
-
-  // Bias
-  const biasEl = $('bias-'+tf);
-  if (isBull) { biasEl.textContent = 'ALCISTA'; biasEl.className = 'bias-label bull'; }
-  else if (isBear) { biasEl.textContent = 'BAJISTA'; biasEl.className = 'bias-label bear'; }
-  else { biasEl.textContent = 'NEUTRAL'; biasEl.className = 'bias-label neut'; }
-
-  // Mini card
-  if ($('mini-'+tf+'-rsi')) {
-    $('mini-'+tf+'-rsi').textContent = 'RSI ' + (rsiV ? fmt(rsiV,1) : '--');
-    $('mini-'+tf+'-adx').textContent = 'ADX ' + (adxV ? fmt(adxV.adx,1) : '--') + ' · ' + (isBull ? '🟢' : isBear ? '🔴' : '⚪');
-    const miniEl = $('mini-'+tf);
-    if (miniEl) miniEl.className = 'tf-mini ' + (isBull || isBear ? 'aligned' : '');
-  }
+function updateConfluence(){
+ var results=[];for(var i=0;i<TFS.length;i++){var d=klinesData[TFS[i]]?analyzeTF(TFS[i],klinesData[TFS[i]]):null;if(d)results.push(d)}
+ if(!results.length)return;
+ var bullCount=0,bearCount=0;for(var i=0;i<results.length;i++){if(results[i].isBull)bullCount++;if(results[i].isBear)bearCount++}
+ var conf=Math.round((Math.max(bullCount,bearCount)/TFS.length)*100);
+ $(('conf-score')).textContent=conf;
+ var biasEl=$(('conf-bias'));
+ if(bullCount>bearCount){biasEl.textContent='CONFLUENCIA ALCISTA';biasEl.className='bias bull'}else if(bearCount>bullCount){biasEl.textContent='CONFLUENCIA BAJISTA';biasEl.className='bias bear'}else{biasEl.textContent='SIN CONFLUENCIA';biasEl.className='bias neut'}
+ $(('conf-desc')).textContent=bullCount+' TFs alcistas · '+bearCount+' TFs bajistas';
+ var r15=results[0]||{};var criteria=[r15.rsiV>50,r15.adxV&&r15.adxV.adx>25,results.filter(function(r){return r.rsiV>50}).length>=2,results.some(function(r){return r.price>r.ma40}),conf>=60];var count=0;for(var i=0;i<criteria.length;i++)if(criteria[i])count++;
+ $(('entry-count')).textContent=count+'/5';
+ var labels=['RSI 15m alcista','ADX 15m > 25','RSI 5m alineado','Precio sobre MA40','Confluencia > 60'];var html='';for(var i=0;i<criteria.length;i++){html+=('<div class="check-item"><span>'+(criteria[i]?'✅':'⬜')+'</span> '+labels[i]+'</div>')};$(('entry-checklist')).innerHTML=html;
 }
 
-function updateConfluence() {
-  const results = TFS.map(tf => klinesData[tf] ? analyzeTF(tf, klinesData[tf]) : null).filter(Boolean);
-  if (!results.length) return;
-
-  const bullCount = results.filter(r => r.isBull).length;
-  const bearCount = results.filter(r => r.isBear).length;
-  const conf = Math.round((Math.max(bullCount, bearCount) / TFS.length) * 100);
-  $('conf-score').textContent = conf;
-
-  const bias = bullCount > bearCount ? 'bull' : bearCount > bullCount ? 'bear' : 'neut';
-  const biasEl = $('conf-bias');
-  if (bias === 'bull') { biasEl.textContent = 'CONFLUENCIA ALCISTA'; biasEl.className = 'bias-label bull'; }
-  else if (bias === 'bear') { biasEl.textContent = 'CONFLUENCIA BAJISTA'; biasEl.className = 'bias-label bear'; }
-  else { biasEl.textContent = 'SIN CONFLUENCIA'; biasEl.className = 'bias-label neut'; }
-  $('conf-desc').textContent = bullCount + ' TFs alcistas · ' + bearCount + ' TFs bajistas';
-
-  // Checklist señal de entrada
-  const r15 = results.find((_, i) => TFS[i] === '15m') || {};
-  const criteria = [
-    r15.rsiV > 50,
-    r15.adxV && r15.adxV.adx > 25,
-    results.filter(r => r.rsiV > 50).length >= 2,
-    results.some(r => r.price > r.ma40),
-    conf >= 60
-  ];
-  const labels = ['RSI 15m alcista', 'ADX 15m > 25', 'RSI 5m alineado', 'Precio sobre MA40', 'Confluencia > 60'];
-  const count = criteria.filter(Boolean).length;
-  $('entry-count').textContent = count + '/5';
-  $('entry-checklist').innerHTML = criteria.map((ok, i) =>
-    `<div>${ok ? '✅' : '⬜'} ${labels[i]}</div>`
-  ).join('');
+function init(){
+ document.querySelectorAll('.ab button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.ab button').forEach(function(x){x.classList.remove('ac')});this.classList.add('ac');var s=this.getAttribute('data-a');BinanceData.changeAsset(s)})});
+ BinanceData.init('BTCUSDT','3m',{onStatus:setStatus,onPrice:function(d){if(d&&d.price)$(('r-price')).textContent='$'+Math.round(d.price).toLocaleString('en-US');$(('r-sub')).textContent=d.symbol+'/USDT · Tiempo Real'},onKlines:function(tf,klines){klinesData[tf]=klines;var data=analyzeTF(tf,klines);if(data)updateTFCard(tf,data);updateConfluence()}});
 }
-
-document.querySelectorAll('.asset-btn').forEach(btn => {
-  btn.addEventListener('click', async () => {
-    document.querySelectorAll('.asset-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    await BinanceData.changeAsset(btn.dataset.sym);
-  });
-});
-
-BinanceData.init('BTCUSDT', '3m', {
-  onStatus: setStatus,
-  onPrice: d => { if (d.price) $('r-price').textContent = '$' + d.price.toLocaleString('es-ES', {minimumFractionDigits:0, maximumFractionDigits:0}); },
-  onKlines: (tf, klines) => {
-    klinesData[tf] = klines;
-    const data = analyzeTF(tf, klines);
-    if (data) updateTFCard(tf, data);
-    updateConfluence();
-  }
-});
+init();
 </script>
 </body>
 </html>
-
-
