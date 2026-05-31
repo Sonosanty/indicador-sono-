@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "description": "Sono Pro - no SPA routing needed",
   "include": ["/*"],
-  "exclude": ["/assets/*", "/css/*", "/js/*"]
+  "exclude": []
 }
