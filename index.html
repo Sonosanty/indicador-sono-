@@ -86,7 +86,7 @@ body{font-family:"Inter",sans-serif;background:#0f172a;color:#f1f5f9;-webkit-fon
 <script>
 (function(){
 var CTF="1m",CA="BTC";
-var ST={price:0,high:0,low:0,ch:0,kl:{},fg:50,vx:0,db:0,de:0,mc:0,er:1.08};
+var ST={price:0,high:0,low:0,ch:0,kl:{},fg:50,vx:0,db:0,de:0,mc:0,er:1.08};window._ST=ST;
 var MA_CACHE={};
 var _dataReady=false;
 var AS={BTC:"BTCUSDT",ETH:"ETHUSDT",SOL:"SOLUSDT",XRP:"XRPUSDT"};
@@ -251,7 +251,7 @@ function fetchUrl(u,t){t=t||8000;var ac=new AbortController;setTimeout(function(
 function fetchAll(){
 var s=AS[CA];MA_CACHE={};
 var _completed=0,_total=0;
-function _done(){_completed++;if(_completed>=_total&&_total>0){_dataReady=true;var sb=$('st-bar');if(sb){sb.className='st-bar ok';sb.innerHTML='<span class="st-dot" style="background:#22c55e"></span> Datos actualizados'}scheduleUpd()}}
+function _done(){_completed++;console.log("fetch",_completed,_total);if(_completed>=_total&&_total>0){_dataReady=true;var sb=$('st-bar');if(sb){sb.className='st-bar ok';sb.innerHTML='<span class="st-dot" style="background:#22c55e"></span> Datos actualizados'}scheduleUpd()}}
 function _err(){_completed++}
 fetchAll._retry=0;
 function _cgFb(){if(fetchAll._cg||ST.price)return;fetchAll._cg=1;fetchUrl('https://api.coingecko.com/api/v3/simple/price?ids='+(CA==='BTC'?'bitcoin':CA==='ETH'?'ethereum':CA==='SOL'?'solana':'ripple')+'&vs_currencies=usd',5000).then(function(gd){if(gd){var k=CA==='BTC'?'bitcoin':CA==='ETH'?'ethereum':CA==='SOL'?'solana':'ripple';if(gd[k]&&gd[k].usd){ST.price=gd[k].usd}}})}
