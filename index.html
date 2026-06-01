@@ -161,7 +161,7 @@ $("rt").innerHTML=
 '<div style="flex:1"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:#94a3b8">P1 MAs</span><span id="p1v">--/35</span></div><div class="bt"><div class="bf" id="p1b" style="background:#3b82f6;width:0%"></div></div>'+
 '<div style="display:flex;justify-content:space-between;font-size:12px;margin:8px 0 4px"><span style="color:#94a3b8">P2 ADX+RSI</span><span id="p2v">--/35</span></div><div class="bt"><div class="bf" id="p2b" style="background:#22c55e;width:0%"></div></div>'+
 '<div style="display:flex;justify-content:space-between;font-size:12px;margin:8px 0 4px"><span style="color:#94a3b8">P3 Bollinger</span><span id="p3v">--/30</span></div><div class="bt"><div class="bf" id="p3b" style="background:#f59e0b;width:0%"></div></div></div></div>'+
-'<div class="sp"></div><div class="rb" id="rb" style="background:#1e293b;width:100%;text-align:center">--- regimen ---</div></div></div>'+
+'<div class="sp"></div><div class="rb" id="rb" style="background:#1e293b;width:100%;text-align:center;opacity:0;transition:opacity .5s,transform .5s;transform:scale(.95)">--- regimen ---</div></div></div>'+
 '<div class="gr g4"><div class="cs"><div class="lb">Fear & Greed</div><div class="vl" id="fgv">--</div><div class="sb" id="fgl">--</div></div>'+
 '<div class="cs"><div class="lb">VIX</div><div class="vl" id="vxv">--</div><div class="sb" id="vxl">--</div></div>'+
 '<div class="cs"><div class="lb">Dom. BTC</div><div class="vl" id="dbv">--</div><div class="sb" id="dbl">--</div></div>'+
@@ -193,7 +193,7 @@ var fg=ST.fg;if(fg){$id("fgv").textContent=fg;var fl2=fl(fg);$id("fgl").textCont
 $id("dbv").textContent=ST.db.toFixed(1)+"%";$id("dbl").textContent=ST.db>58?"BTC domina":ST.db<45?"Altseason":"Equilibrio";
 $id("dev").textContent=ST.de.toFixed(1)+"%";$id("mcv").textContent=fk(ST.mc);
 var msc=ms(ST.fg,ST.vx,ST.db);$id("msc").textContent=msc+"/6";
-$id("msv").textContent=msc>=5?"Alcista fuerte":msc>=4?"Alcista":msc>=3?"Neutral":msc>=2?"Bajista":"Bajista fuerte";
+$id("msv").textContent=msc>=5?"Alcista fuerte":msc>=4?"Alcista":msc>=3?"Neutral":msc>=2?"Bajista":"Bajista fuerte";$id("msv").style.opacity="1";$id("msv").style.transform="scale(1)";
 $id("mtx").textContent="F&G "+fg+" Dom "+ST.db.toFixed(1)+"%";
 var sd=cs(ST.kl[CTF]);if(!sd)return;
 $id("sv").textContent=sd.sc;
@@ -203,7 +203,7 @@ var sl2=sl(sd.sc);$id("sp").textContent=sl2[0];$id("sp").className="pl "+sl2[1];
 $id("p1v").textContent=sd.p1+"/35";$id("p1b").style.width=(sd.p1/35*100)+"%";
 $id("p2v").textContent=sd.p2+"/35";$id("p2b").style.width=(sd.p2/35*100)+"%";
 $id("p3v").textContent=sd.p3+"/30";$id("p3b").style.width=(sd.p3/30*100)+"%";
-var rg2=rg(sd.sc,ST.fg,ST.db);$id("rb").textContent=rg2[0];$id("rb").className="rb "+rg2[3];
+var rg2=rg(sd.sc,ST.fg,ST.db);$id("rb").textContent=rg2[0];$id("rb").className="rb "+rg2[3];$id("rb").style.opacity="1";$id("rb").style.transform="scale(1)";
 $id("seb").textContent=rg2[1];$id("rib2").textContent=rg2[2];
 var mArr=[{v:sd.m6,i:"m6"},{v:sd.m40,i:"m4"},{v:sd.m70,i:"m7"},{v:sd.m2,i:"m2"}];
 for(var mi=0;mi<mArr.length;mi++){var o=mArr[mi];if(o.v){var d2=(sd.p-o.v)/o.v*100;$id(o.i+"v").textContent=fm(o.v);var de=$id(o.i+"d");de.textContent=(d2>=0?"+":"")+d2.toFixed(2)+"%";de.style.color=d2>=0?"#22c55e":"#ef4444"}};
