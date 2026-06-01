@@ -60,6 +60,12 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);-webkit
 .check-item{display:flex;align-items:center;gap:6px}
 .footer{font-size:11px;color:var(--dim);text-align:center;padding:.5rem 0 1rem;font-family:var(--font-mono)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.skeleton{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4) 50%,var(--bg3) 75%);background-size:800px 100%;animation:shimmer 1.5s infinite linear;border-radius:6px;display:inline-block;min-width:48px;min-height:18px;color:transparent!important;pointer-events:none;user-select:none}
+.skeleton-sm{min-width:32px;min-height:14px}
+.skeleton-lg{min-width:80px;min-height:28px}
+.skeleton-circle{border-radius:999px;display:inline-block}
+.skeleton.bias-skel{min-width:70px;min-height:22px;border-radius:999px}
 @media(max-width:768px){.g3,.g2,.tf-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:480px){.g3,.g2{grid-template-columns:1fr}}
 </style>
@@ -216,15 +222,32 @@ function analyzeTF(tf,klines){
  return{rsiV:rsiV,adxV:adxV,bb:bb,ma40:ma40,pressure:pressure,price:price,isBull:isBull,isBear:isBear};
 }
 
+function removeSkeleton(id){
+ var el=$(id);
+ if(el){el.classList.remove('skeleton','skeleton-sm','skeleton-lg','bias-skel')}
+}
+
 function updateTFCard(tf,data){
  if(!data)return;
  var rsiV=data.rsiV,adxV=data.adxV,bb=data.bb,ma40=data.ma40,pressure=data.pressure,price=data.price,isBull=data.isBull,isBear=data.isBear;
- if(rsiV!==null){$('rsi-'+tf).textContent=fmt(rsiV,1);$('rsi-'+tf).className='metric-val '+(rsiV>60?'green':rsiV<40?'red':'yellow');$('rsi-'+tf+'-lbl').textContent=SonoEngine.rsiLabel(rsiV)}
- if(adxV){$('adx-'+tf).textContent=fmt(adxV.adx,1);$('adx-'+tf).className='metric-val '+(adxV.adx>25?'green':'yellow');$('adx-'+tf+'-lbl').textContent=adxV.adx>25?'Tendencia':'Lateral'}
- if(ma40){$('ma40-'+tf).textContent=fmt(ma40,price>1000?0:4);$('ma40-'+tf).className='metric-val '+(price>ma40?'green':'red');$('ma40-'+tf+'-lbl').textContent=price>ma40?'▲ Sobre MA40':'▼ Bajo MA40'}
- if(bb){$('bb-'+tf).textContent=bb.pctB.toFixed(2);$('bb-'+tf+'-lbl').textContent=bb.pctB>0.8?'Resistencia':bb.pctB<0.2?'Soporte':'Central'}
+ if(rsiV!==null){
+  var el=$('rsi-'+tf);if(el){removeSkeleton('rsi-'+tf);el.textContent=fmt(rsiV,1);el.className='metric-val '+(rsiV>60?'green':rsiV<40?'red':'yellow');}
+  $('rsi-'+tf+'-lbl').textContent=SonoEngine.rsiLabel(rsiV);
+ }
+ if(adxV){
+  var el=$('adx-'+tf);if(el){removeSkeleton('adx-'+tf);el.textContent=fmt(adxV.adx,1);el.className='metric-val '+(adxV.adx>25?'green':'yellow');}
+  $('adx-'+tf+'-lbl').textContent=adxV.adx>25?'Tendencia':'Lateral';
+ }
+ if(ma40){
+  var el=$('ma40-'+tf);if(el){removeSkeleton('ma40-'+tf);el.textContent=fmt(ma40,price>1000?0:4);el.className='metric-val '+(price>ma40?'green':'red');}
+  $('ma40-'+tf+'-lbl').textContent=price>ma40?'▲ Sobre MA40':'▼ Bajo MA40';
+ }
+ if(bb){
+  var el=$('bb-'+tf);if(el){removeSkeleton('bb-'+tf);el.textContent=bb.pctB.toFixed(2);$('bb-'+tf+'-lbl').textContent=bb.pctB>0.8?'Resistencia':bb.pctB<0.2?'Soporte':'Central';}
+ }
  $('needle-'+tf).style.left=pressure+'%';
  var biasEl=$('bias-'+tf);
+ if(biasEl){removeSkeleton('bias-'+tf);}
  if(isBull){biasEl.textContent='ALCISTA';biasEl.className='bias bull'}else if(isBear){biasEl.textContent='BAJISTA';biasEl.className='bias bear'}else{biasEl.textContent='NEUTRAL';biasEl.className='bias neut'}
  if($('mini-'+tf+'-rsi')){$('mini-'+tf+'-rsi').textContent='RSI '+(rsiV?fmt(rsiV,1):'--');$('mini-'+tf+'-adx').textContent='ADX '+(adxV?fmt(adxV.adx,1):'--');var miniEl=$('mini-'+tf);if(miniEl)miniEl.className='tf-mini '+(isBull||isBear?'aligned':'')}
 }
@@ -234,8 +257,9 @@ function updateConfluence(){
  if(!results.length)return;
  var bullCount=0,bearCount=0;for(var i=0;i<results.length;i++){if(results[i].isBull)bullCount++;if(results[i].isBear)bearCount++}
  var conf=Math.round((Math.max(bullCount,bearCount)/TFS.length)*100);
- $('conf-score').textContent=conf;
+ var confEl=$('conf-score');if(confEl){removeSkeleton('conf-score');confEl.textContent=conf;}
  var biasEl=$('conf-bias');
+ if(biasEl){removeSkeleton('conf-bias');}
  if(bullCount>bearCount){biasEl.textContent='CONFLUENCIA ALCISTA';biasEl.className='bias bull'}else if(bearCount>bullCount){biasEl.textContent='CONFLUENCIA BAJISTA';biasEl.className='bias bear'}else{biasEl.textContent='SIN CONFLUENCIA';biasEl.className='bias neut'}
  $('conf-desc').textContent=bullCount+' TFs alcistas · '+bearCount+' TFs bajistas';
  var r15=results[0]||{};var criteria=[r15.rsiV>50,r15.adxV&&r15.adxV.adx>25,results.filter(function(r){return r.rsiV>50}).length>=2,results.some(function(r){return r.price>r.ma40}),conf>=60];var count=0;for(var i=0;i<criteria.length;i++)if(criteria[i])count++;
@@ -243,25 +267,26 @@ function updateConfluence(){
  var labels=['RSI 15m alcista','ADX 15m > 25','RSI 5m alineado','Precio sobre MA40','Confluencia > 60'];var html='';for(var i=0;i<criteria.length;i++){html+=('<div class="check-item"><span>'+(criteria[i]?'✅':'⬜')+'</span> '+labels[i]+'</div>')};$('entry-checklist').innerHTML=html;
 }
 
-// ===== DATA LOADING: calls independientes con timeout =====
+// ===== DATA LOADING: secuencial con 200ms delay entre fetches =====
 function load24hr(){
  fetchJson('https://api.binance.com/api/v3/ticker/24hr?symbol='+currentSymbol).then(function(d){
   if(d&&d.lastPrice){
-   $('r-price').textContent='$'+Math.round(+d.lastPrice).toLocaleString('en-US');
-   var symName=d.symbol.replace('USDT','');$('r-sub').textContent=symName+'/USDT · Tiempo Real';
+   var el=$('r-price');if(el){removeSkeleton('r-price');el.textContent='$'+Math.round(+d.lastPrice).toLocaleString('en-US');}
+   var symName=d.symbol.replace('USDT','');var sub=$('r-sub');if(sub)sub.textContent=symName+'/USDT · Tiempo Real';
   }
  }).catch(function(){});
 }
 
-function loadKline(tf){
+function loadKline(tf,onDone){
  fetchJson('https://api.binance.com/api/v3/klines?symbol='+currentSymbol+'&interval='+tf+'&limit=220').then(function(data){
-  if(!data||!data.length)return;
+  if(!data||!data.length){if(onDone)onDone();return}
   var kl=data.map(function(k){return{c:+k[4],h:+k[2],l:+k[3],o:+k[1],t:k[0]}});
   klinesData[tf]=kl;
   var analysis=analyzeTF(tf,kl);
   if(analysis)updateTFCard(tf,analysis);
   updateConfluence();
- }).catch(function(){});
+  if(onDone)onDone();
+ }).catch(function(){if(onDone)onDone()});
 }
 
 function loadAllData(){
@@ -301,6 +326,12 @@ function startRangos(){
    changeAsset(this.getAttribute('data-a'));
   });
  });
+ // Initial skeletons on page load
+ for(var i=0;i<TFS.length;i++)showSkeletons(TFS[i]);
+ var confScore=$('conf-score');if(confScore){confScore.className='skeleton skeleton-lg';confScore.textContent='';}
+ var confBias=$('conf-bias');if(confBias){confBias.className='skeleton bias-skel';confBias.textContent='';}
+ $('conf-desc').textContent='Cargando...';
+ var rPrice=$('r-price');if(rPrice){rPrice.className='skeleton skeleton-lg';rPrice.textContent='';}
  loadAllData();
 }
 if(document.readyState==='loading'){
