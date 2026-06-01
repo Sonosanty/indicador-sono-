@@ -294,7 +294,7 @@ _total=11;
 var _updPending=false;
 function scheduleUpd(){
   if(ST._fetching)return;
-  if(!document.getElementById('pat')){renderRealHTML();}
+  if(!document.getElementById('bp')){renderRealHTML();}
   if(_updPending)return;_updPending=true;
   requestAnimationFrame(function(){_updPending=false;updAll()});
 }
