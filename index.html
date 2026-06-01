@@ -249,17 +249,20 @@ function fetchUrl(u,t){t=t||8000;var ac=new AbortController;setTimeout(function(
 
 // ===== FETCH ALL con secuenciacion + CoinGecko fallback =====
 function fetchAll(){
-var s=AS[CA];
-var _dataSources=0;
-var _totalSources=9;
-MA_CACHE={};
-
-function markReady(){
-  _dataSources++;
-  if(_dataSources>=_totalSources){
-    _dataReady=true;
-    var sb=document.getElementById('st-bar');
-    if(sb){sb.className='st-bar ok';sb.innerHTML='<span class="st-dot" style="background:#22c55e"></span> Datos actualizados'};
+var s=AS[CA];MA_CACHE={};
+var _completed=0,_total=0;
+function _done(){_completed++;if(_completed>=_total&&_total>0){_dataReady=true;var sb=$('st-bar');if(sb){sb.className='st-bar ok';sb.innerHTML='<span class="st-dot" style="background:#22c55e"></span> Datos actualizados'}scheduleUpd()}}
+function _err(){_completed++}
+fetchAll._retry=0;
+function _cgFb(){if(fetchAll._cg||ST.price)return;fetchAll._cg=1;fetchUrl('https://api.coingecko.com/api/v3/simple/price?ids='+(CA==='BTC'?'bitcoin':CA==='ETH'?'ethereum':CA==='SOL'?'solana':'ripple')+'&vs_currencies=usd',5000).then(function(gd){if(gd){var k=CA==='BTC'?'bitcoin':CA==='ETH'?'ethereum':CA==='SOL'?'solana':'ripple';if(gd[k]&&gd[k].usd){ST.price=gd[k].usd}}})}
+function _f24(){_total++;var ac=new AbortController;setTimeout(function(){ac.abort()},8000);fetch('https://api.binance.com/api/v3/ticker/24hr?symbol='+s,{signal:ac.signal}).then(function(r){return r.json()}).then(function(t){ST.price=+t.lastPrice;ST.high=+t.highPrice;ST.low=+t.lowPrice;ST.ch=+t.priceChangePercent}).catch(function(){fetchAll._retry=(fetchAll._retry||0)+1;if(fetchAll._retry<3){setTimeout(_f24,2000);return}else{_cgFb()}}).finally(_done)}
+function _fEr(){_total++;fetchUrl('https://api.binance.com/api/v3/ticker/price?symbol=EURUSDT').then(function(e){ST.er=+e.price||1.08}).catch(function(){ST.er=ST.er||1.08}).finally(_done)}
+function _fFg(){_total++;fetchUrl('https://api.alternative.me/fng/?limit=1').then(function(g){if(g&&g.data&&g.data[0]){ST.fg=+g.data[0].value;saveHist('sono_fg',ST.fg)}}).catch(function(){ST.fg=ST.fg||50}).finally(_done)}
+function _fGl(){_total++;fetchUrl('https://vix-proxy.sonosanty.workers.dev/global').then(function(gl){if(gl&&gl.data){ST.db=gl.data.dominance||0;ST.mc=gl.data.total_market_cap||0;ST.de=gl.data.eth_dominance||0}}).catch(function(){}).finally(_done)}
+var _tq=['1m','3m','5m','15m','1h','3d'];
+function _fk(){if(!_tq.length)return;var tf=_tq.shift();_total++;fetchUrl('https://api.binance.com/api/v3/klines?symbol='+s+'&interval='+tf+'&limit=220').then(function(k){ST.kl[tf]=k}).catch(function(){}).finally(function(){_done();setTimeout(_fk,200)})}
+_f24();_fEr();_fFg();_fGl();setTimeout(_fk,0);
+};
     scheduleUpd();
   }
 }
