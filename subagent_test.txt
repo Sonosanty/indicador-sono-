@@ -1,1 +1,0 @@
-Subagente funciona correctamente. Archivos legibles sin truncamiento.
