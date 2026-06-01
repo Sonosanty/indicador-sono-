@@ -214,7 +214,7 @@ $id("p1v").textContent=sd.p1+"/35";$id("p1b").style.width=(sd.p1/35*100)+"%";
 $id("p2v").textContent=sd.p2+"/35";$id("p2b").style.width=(sd.p2/35*100)+"%";
 $id("p3v").textContent=sd.p3+"/30";$id("p3b").style.width=(sd.p3/30*100)+"%";
 var rg2=rg(sd.sc,ST.fg,ST.db);$id("rb").textContent=rg2[0];$id("rb").className="rb "+rg2[3];$id("rb").style.opacity="1";$id("rb").style.transform="scale(1)";
-$id("seb").textContent=rg2[1];$id("rib2").textContent=rg2[2];var rc=regimeCrypto(fg,ST.db,vxVal);$id("rcr").textContent=rc[0];$id("rcr").className="rb "+rc[1];var rc=regimeCrypto(fg,ST.db,vxVal);$id("rcr").textContent=rc[0];$id("rcr").className="rb "+rc[1];
+$id("seb").textContent=rg2[1];$id("rib2").textContent=rg2[2];var rc=regimeCrypto(fg,ST.db,vxVal);$id("rcr").textContent=rc[0];$id("rcr").className="rb "+rc[1];
 var mArr=[{v:sd.m6,i:"m6"},{v:sd.m40,i:"m4"},{v:sd.m70,i:"m7"},{v:sd.m2,i:"m2"}];
 for(var mi=0;mi<mArr.length;mi++){var o=mArr[mi];if(o.v){var d2=(sd.p-o.v)/o.v*100;$id(o.i+"v").textContent=fm(o.v);var de=$id(o.i+"d");de.textContent=(d2>=0?"+":"")+d2.toFixed(2)+"%";de.style.color=d2>=0?"#22c55e":"#ef4444"}};
 // MA200: show (n/d) if not enough data
@@ -247,7 +247,8 @@ var sis=document.querySelectorAll("#sr .si");for(var si=0;si<Math.min(chk.length
 var vxVal=ST.vx||15;var rsi3d="--";var kl3d=ST.kl["3d"];if(kl3d&&kl3d.length>15){var cl3d=kl3d.map(function(x){return+x[4]});var r3d=rs(cl3d,14);if(r3d!==null)rsi3d=r3d}else if(sd.r!==null){rsi3d=Math.round((sd.r+fg/2+50+(100-vxVal*2>0?100-vxVal*2:0))/4)}
 $id("rmv").textContent=rsi3d;$id("rml").textContent=rsi3d>=60?"Alcista":rsi3d>=45?"Neutral":"Bajista";
 $id("rmv").style.color=rsi3d>=60?"#22c55e":rsi3d>=45?"#f59e0b":"#ef4444";
-undefined"+new Date().toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+renderMiniHist();
+  $id("lu").textContent="updated "+new Date().toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
 }
 
 function fetchUrl(u,t){t=t||8000;var ac=new AbortController;setTimeout(function(){ac.abort()},t);return fetch(u,{signal:ac.signal}).then(function(r){return r.json()})};
@@ -286,7 +287,7 @@ function fetchEr(){
 };
 
 function fetchFg(){
-  fetchUrl("https://api.alternative.me/fng/?limit=1").then(function(g){if(g&&g.data&&g.data[0])ST.fg=+g.data[0].value;saveHist("sono_fg",ST.fg);saveHist("sono_fg",ST.fg)}).catch(function(){ST.fg=ST.fg||50}).finally(markReady);
+  fetchUrl("https://api.alternative.me/fng/?limit=1").then(function(g){if(g&&g.data&&g.data[0])ST.fg=+g.data[0].value;saveHist("sono_fg",ST.fg)}).catch(function(){ST.fg=ST.fg||50}).finally(markReady);
 };
 
 function fetchGl(){
