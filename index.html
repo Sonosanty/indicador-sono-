@@ -123,12 +123,8 @@ function sl(s){if(s>=78)return["Compra fuerte","pgg"];if(s>=62)return["Compra","
 function fl(v){if(v<=20)return["Miedo extremo","pgg"];if(v<=40)return["Miedo","pw"];if(v<=60)return["Neutral","pgg2"];if(v<=80)return["Codicia","pw"];return["Codicia extrema","prr"]};
 function rg(s2,f,d){if(s2>=70&&f<40)return["Acum.agresiva","LONG SWING","Bajo","pgg"];if(s2>=62)return["Tendencia alcista","LONG","Medio","pgg"];if(s2>=50&&d>55)return["Rotacion BTC","LONG BTC","Medio","pb"];if(s2>=42)return["Consolidacion","NEUTRAL","Medio","pgg2"];if(s2>=30)return["Distribucion","SHORT","Alto","pw"];return["Capitulacion","CASH","Muy alto","prr"]};
 function regimeCrypto(fg,dom,vx){if(!fg)return["--","--"];var r="Neutral";var c2="pgg2";if(fg<=25&&dom>58){r="Acumulacion";c2="pgg"}else if(fg<=40&&dom>55&&vx<20){r="Acumulacion temprana";c2="pb"}else if(fg>=75&&vx<15){r="Euforia";c2="prr"}else if(fg>=65&&vx>20){r="Distribucion";c2="pw"}else if(dom<42&&fg<40){r="Rotacion Altcoins";c2="pb"}else if(vx>28){r="Panico";c2="prr"}else if(fg>55&&dom<48&&vx<18){r="Expansion";c2="pgg"}return[r,c2]}
-function regimeCrypto(fg,dom,vx){if(!fg)return["--","--"];var r="Neutral";var c2="pgg2";if(fg<=25&&dom>58){r="Acumulacion";c2="pgg"}else if(fg<=40&&dom>55&&vx<20){r="Acumulacion temprana";c2="pb"}else if(fg>=75&&vx<15){r="Euforia";c2="prr"}else if(fg>=65&&vx>20){r="Distribucion";c2="pw"}else if(dom<42&&fg<40){r="Rotacion Altcoins";c2="pb"}else if(vx>28){r="Panico";c2="prr"}else if(fg>55&&dom<48&&vx<18){r="Expansion";c2="pgg"}return[r,c2]}
 function ms(f,v,d){var s2=0;if(f){s2+=f<20?2:f<40?1:f>80?-1:0}if(v){s2+=v<15?1:v>25?-1:0}s2+=d>58?1:d<45?-1:0;return Math.max(0,Math.min(6,s2+2))};
 function sTF(tf){CTF=tf;document.querySelectorAll(".tfb").forEach(function(b){b.classList.toggle("ac",b.textContent.trim()===tf)});fetchAll()};
-function saveHist(key,val){try{var arr=JSON.parse(localStorage.getItem(key)||"[]");arr.push({v:val,t:Date.now()});if(arr.length>7)arr=arr.slice(-7);localStorage.setItem(key,JSON.stringify(arr))}catch(e){}}
-function getHist(key){try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return[]}}
-function renderMiniHist(){var fgH=getHist("sono_fg");var vxH=getHist("sono_vx");var fgE=$("fg-hist");var vxE=$("vx-hist");if(fgE&&fgH.length){fgE.innerHTML=fgH.map(function(h){var d=new Date(h.t);var cl=h.v<=20?"pgg":h.v<=40?"pw":h.v<=60?"pgg2":h.v<=80?"pw":"prr";return"<span class=\"pl "+cl+"\" style=\"font-size:10px;padding:1px 6px\">"+h.v+"</span>"}).join(" ")}if(vxE&&vxH.length){vxE.innerHTML=vxH.map(function(h){var cl=h.v<18?"pgg":h.v<25?"pgg2":"prr";return"<span class=\"pl "+cl+"\" style=\"font-size:10px;padding:1px 6px\">"+h.v.toFixed(1)+"</span>"}).join(" ")}}
 function saveHist(key,val){try{var arr=JSON.parse(localStorage.getItem(key)||"[]");arr.push({v:val,t:Date.now()});if(arr.length>7)arr=arr.slice(-7);localStorage.setItem(key,JSON.stringify(arr))}catch(e){}}
 function getHist(key){try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return[]}}
 function renderMiniHist(){var fgH=getHist("sono_fg");var vxH=getHist("sono_vx");var fgE=$("fg-hist");var vxE=$("vx-hist");if(fgE&&fgH.length){fgE.innerHTML=fgH.map(function(h){var d=new Date(h.t);var cl=h.v<=20?"pgg":h.v<=40?"pw":h.v<=60?"pgg2":h.v<=80?"pw":"prr";return"<span class=\"pl "+cl+"\" style=\"font-size:10px;padding:1px 6px\">"+h.v+"</span>"}).join(" ")}if(vxE&&vxH.length){vxE.innerHTML=vxH.map(function(h){var cl=h.v<18?"pgg":h.v<25?"pgg2":"prr";return"<span class=\"pl "+cl+"\" style=\"font-size:10px;padding:1px 6px\">"+h.v.toFixed(1)+"</span>"}).join(" ")}}
@@ -185,9 +181,7 @@ $("rt").innerHTML=
 '<div class="cd"><div class="sh"><span class="st">Medias Moviles</span></div>'+
 '<div class="gr g4" style="gap:8px"><div class="cs"><div class="lb">MA6</div><div class="vl skeleton" id="m6v" style="font-size:15px">--</div><div class="sb skeleton" id="m6d">--</div></div><div class="cs"><div class="lb">MA40</div><div class="vl skeleton" id="m4v2" style="font-size:15px">--</div><div class="sb skeleton" id="m4d">--</div></div><div class="cs"><div class="lb">MA70</div><div class="vl skeleton" id="m7v" style="font-size:15px">--</div><div class="sb skeleton" id="m7d">--</div></div><div class="cs"><div class="lb">MA200</div><div class="vl skeleton" id="m2v" style="font-size:15px">--</div><div class="sb skeleton" id="m2d">--</div></div></div></div>'+
 '<div class="gr g2"><div class="cd"><div class="sh"><span class="st">Zonas S/R (MAs)</span></div><div class="srr2"><span><span class="dt dr"></span> R2 (MA70 x1.08)</span><span class="skeleton" id="r2" style="font-weight:600">--</span></div><div class="srr2"><span><span class="dt dr"></span> R1 (MA40 x1.05)</span><span class="skeleton" id="r1" style="font-weight:600">--</span></div><div class="srr2"><span><span class="dt dn"></span> Precio</span><span class="skeleton" id="srp" style="font-weight:600">--</span></div><div class="srr2"><span><span class="dt dg"></span> S1 (MA40 x0.95)</span><span class="skeleton" id="s1" style="font-weight:600">--</span></div><div class="srr2"><span><span class="dt dg"></span> S2 (MA70 x0.92)</span><span class="skeleton" id="s2" style="font-weight:600">--</span></div></div>'+
-'<div class="cd"><div class="sh"><span class="st">Macro Global</span><span class="pl pgg2 skeleton" id="msc">--/6</span></div><div class="rb skeleton" id="msv" style="background:#1e293b;margin-bottom:10px">--</div><div style="font-size:12px;color:#94a3b8;margin-bottom:10px" id="mtx">...</div>
-<div id="rcr" class="rb" style="background:#1e293b;font-size:11px;margin-bottom:8px;width:100%;text-align:center">---</div>
-<div id="rcr" class="rb" style="background:#1e293b;font-size:11px;margin-bottom:8px;width:100%;text-align:center">---</div><div class="gr g2" style="gap:8px"><div class="cs"><div class="lb">Sesgo</div><div class="skeleton" id="seb" style="font-size:13px;font-weight:500">--</div></div><div class="cs"><div class="lb">Riesgo</div><div class="skeleton" id="rib2" style="font-size:13px;font-weight:500">--</div></div></div><div class="sp"></div><div class="gr g2" style="gap:8px"><div class="cs"><div class="lb">Market Cap</div><div class="vl skeleton" id="mcv" style="font-size:15px">--</div></div><div class="cs"><div class="lb">Dom. ETH</div><div class="vl skeleton" id="dev" style="font-size:15px">--</div></div></div></div></div>';
+'<div class="cd"><div class="sh"><span class="st">Macro Global</span><span class="pl pgg2 skeleton" id="msc">--/6</span></div><div class="rb skeleton" id="msv" style="background:#1e293b;margin-bottom:10px">--</div><div style="font-size:12px;color:#94a3b8;margin-bottom:10px" id="mtx">...</div>'+'<div id="rcr" class="rb" style="background:#1e293b;font-size:11px;margin-bottom:8px;width:100%;text-align:center">---</div><div class="gr g2" style="gap:8px"><div class="cs"><div class="lb">Sesgo</div><div class="skeleton" id="seb" style="font-size:13px;font-weight:500">--</div></div><div class="cs"><div class="lb">Riesgo</div><div class="skeleton" id="rib2" style="font-size:13px;font-weight:500">--</div></div></div><div class="sp"></div><div class="gr g2" style="gap:8px"><div class="cs"><div class="lb">Market Cap</div><div class="vl skeleton" id="mcv" style="font-size:15px">--</div></div><div class="cs"><div class="lb">Dom. ETH</div><div class="vl skeleton" id="dev" style="font-size:15px">--</div></div></div></div></div>';
 }
 
 function rmvSkel(){var els=document.querySelectorAll(".skeleton");for(var i=0;i<els.length;i++){els[i].classList.remove("skeleton")}};
@@ -247,78 +241,62 @@ var sis=document.querySelectorAll("#sr .si");for(var si=0;si<Math.min(chk.length
 var vxVal=ST.vx||15;var rsi3d="--";var kl3d=ST.kl["3d"];if(kl3d&&kl3d.length>15){var cl3d=kl3d.map(function(x){return+x[4]});var r3d=rs(cl3d,14);if(r3d!==null)rsi3d=r3d}else if(sd.r!==null){rsi3d=Math.round((sd.r+fg/2+50+(100-vxVal*2>0?100-vxVal*2:0))/4)}
 $id("rmv").textContent=rsi3d;$id("rml").textContent=rsi3d>=60?"Alcista":rsi3d>=45?"Neutral":"Bajista";
 $id("rmv").style.color=rsi3d>=60?"#22c55e":rsi3d>=45?"#f59e0b":"#ef4444";
-renderMiniHist();
-  $id("lu").textContent="updated "+new Date().toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+$id("lu").textContent="updated "+new Date().toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
 }
 
 function fetchUrl(u,t){t=t||8000;var ac=new AbortController;setTimeout(function(){ac.abort()},t);return fetch(u,{signal:ac.signal}).then(function(r){return r.json()})};
 
 // ===== FETCH ALL con secuenciacion + CoinGecko fallback =====
-function fetchAll(){
-var s=AS[CA];
-var _dataSources=0;
-var _totalSources=9;
-MA_CACHE={};
-
-function markReady(){
-  _dataSources++;
-  if(_dataSources>=_totalSources){
-    _dataReady=true;
-    var sb=document.getElementById('st-bar');
-    if(sb){sb.className='st-bar ok';sb.innerHTML='<span class="st-dot" style="background:#22c55e"></span> Datos actualizados'};
-    scheduleUpd();
-  }
-}
-
-function fetch24h(){
-  fetchUrl("https://api.binance.com/api/v3/ticker/24hr?symbol="+s).then(function(t){
-    ST.price=+t.lastPrice;ST.high=+t.highPrice;ST.low=+t.lowPrice;ST.ch=+t.priceChangePercent;
-  }).catch(function(){
-    // CoinGecko fallback
-    var cgId=CA==='BTC'?'bitcoin':CA==='ETH'?'ethereum':CA==='SOL'?'solana':'ripple';
-    fetchUrl("https://api.coingecko.com/api/v3/simple/price?ids="+cgId+"&vs_currencies=usd&include_24hr_change=true").then(function(gd){
-      if(gd&&gd[cgId]){ST.price=gd[cgId].usd;ST.ch=gd[cgId].usd_24h_change||0}
-    }).catch(function(){});
-  }).finally(markReady);
-};
-
-function fetchEr(){
-  fetchUrl("https://api.binance.com/api/v3/ticker/price?symbol=EURUSDT").then(function(e){ST.er=+e.price||1.08}).catch(function(){ST.er=ST.er||1.08}).finally(markReady);
-};
-
 function fetchFg(){
-  fetchUrl("https://api.alternative.me/fng/?limit=1").then(function(g){if(g&&g.data&&g.data[0])ST.fg=+g.data[0].value;saveHist("sono_fg",ST.fg)}).catch(function(){ST.fg=ST.fg||50}).finally(markReady);
-};
+  fetchUrl("https://api.alternative.me/fng/?limit=1").then(function(g){if(g&&g.data&&g.data[0]){ST.fg=+g.data[0].value;saveHist("sono_fg",ST.fg);}}).catch(function(){ST.fg=ST.fg||50});
+}
 
 function fetchGl(){
-  fetchUrl("https://vix-proxy.sonosanty.workers.dev/global").then(function(gl){if(gl&&gl.data){ST.db=gl.data.dominance||0;ST.mc=gl.data.total_market_cap||0;ST.de=gl.data.eth_dominance||0}}).catch(function(){}).finally(markReady);
-};
-
-function fetchKlines(tf){
-  fetchUrl("https://api.binance.com/api/v3/klines?symbol="+s+"&interval="+tf+"&limit=220").then(function(k){ST.kl[tf]=k}).catch(function(){}).finally(markReady);
-};
-
-// Llamadas paralelas: 24h, EUR, FG, Global
-fetch24h();fetchEr();fetchFg();fetchGl();
-// Klines secuenciados con 200ms de delay entre cada TF
-var tfQueue=["1m","3m","5m","15m","1h"];
-var tfIdx=0;
-function loadNextTF(){
-  if(tfIdx>=tfQueue.length)return;
-  fetchKlines(tfQueue[tfIdx]);tfIdx++;
-  setTimeout(loadNextTF,200);
+  fetchUrl("https://vix-proxy.sonosanty.workers.dev/global").then(function(gl){if(gl&&gl.data){ST.db=gl.data.dominance||0;ST.mc=gl.data.total_market_cap||0;ST.de=gl.data.eth_dominance||0}}).catch(function(){});
 }
-setTimeout(loadNextTF,0);
-};
+
+function fetchAll(){
+  var s=AS[CA];
+  MA_CACHE={};
+  if(ST._fetching)return;
+  ST._fetching=true;
+  var ld=document.getElementById("st-bar");
+  if(ld){ld.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> Conectando fuentes de datos...';ld.className="st-bar co";}
+  var _completed=0,_total=0;
+  function done(){
+    _completed++;
+    if(ld)ld.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> ['+_completed+'/'+_total+'] Conectando...';
+    if(_completed>=_total){
+      if(ld){ld.innerHTML='<span class="st-dot" style="background:#22c55e"></span> Datos en vivo';ld.className="st-bar ok";}
+      if(typeof ST.fg!="undefined"&&ST.fg>0){
+        var kl3d=ST.kl["3d"];if(kl3d&&kl3d.length>15){var cl3d=kl3d.map(function(x){return+x[4]});var r3d=rs(cl3d,14);if(r3d!==null)ST.rsi3d=r3d;}
+        updAll(s);
+      }
+      ST._fetching=false;
+    }
+  }
+fetchUrl("https://api.binance.com/api/v3/ticker/24hr?symbol="+s).then(function(t){ST.price=+t.lastPrice;ST.high=+t.highPrice;ST.low=+t.lowPrice;ST.ch=+t.priceChangePercent;}).catch(function(){var cgId=CA==="BTC"?"bitcoin":CA==="ETH"?"ethereum":CA==="SOL"?"solana":"ripple";fetchUrl("https://api.coingecko.com/api/v3/simple/price?ids="+cgId+"&vs_currencies=usd&include_24hr_change=true").then(function(gd){if(gd&&gd[cgId]){ST.price=gd[cgId].usd;ST.ch=gd[cgId].usd_24h_change||0}}).catch(function(){})}).then(function(){done()}).catch(function(){done()});
+fetchUrl("https://api.binance.com/api/v3/ticker/price?symbol=EURUSDT").then(function(e){ST.er=+e.price||1.08}).catch(function(){ST.er=ST.er||1.08}).then(function(){done()}).catch(function(){done()});
+fetchUrl("https://api.alternative.me/fng/?limit=1").then(function(g){if(g&&g.data&&g.data[0]){ST.fg=+g.data[0].value;saveHist("sono_fg",ST.fg);}}).catch(function(){ST.fg=ST.fg||50}).then(function(){done()}).catch(function(){done()});
+fetchUrl("https://vix-proxy.sonosanty.workers.dev/global").then(function(gl){if(gl&&gl.data){ST.db=gl.data.dominance||0;ST.mc=gl.data.total_market_cap||0;ST.de=gl.data.eth_dominance||0}}).catch(function(){}).then(function(){done()}).catch(function(){done()});
+fetchUrl("https://vix-proxy.sonosanty.workers.dev/vix").then(function(d){if(d&&d.vix){ST.vx=d.vix;saveHist("sono_vx",ST.vx);}}).catch(function(){}).then(function(){done()}).catch(function(){done()});
+var tfs=["1m","3m","5m","15m","1h","3d"],tfi=0;
+function nxt(){
+  if(tfi>=tfs.length)return;
+  var tf=tfs[tfi];tfi++;
+  fetchUrl("https://api.binance.com/api/v3/klines?symbol="+s+"&interval="+tf+"&limit=220").then(function(k){ST.kl[tf]=k}).catch(function(){}).then(function(){done()}).catch(function(){done()});
+  if(tfi<tfs.length)setTimeout(nxt,200);
+}
+nxt();
+_total=12;
+}
 
 var _updPending=false;
 function scheduleUpd(){
-  if(_dataReady&&!document.getElementById('pat')){
-    renderRealHTML();
-  }
+  if(ST._fetching)return;
   if(_updPending)return;_updPending=true;
   requestAnimationFrame(function(){_updPending=false;updAll()});
-};
+}
 
 // Init
 renderHTML();
