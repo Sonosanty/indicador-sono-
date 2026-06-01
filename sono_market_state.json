@@ -1,18 +1,21 @@
 {
-  "lastUpdate": "2026-05-30T22:23:00+02:00",
-  "data": {
-    "fearGreed": { "value": 23, "classification": "Extreme Fear", "timestamp": "2026-05-30" },
-    "btcPrice": 73966,
-    "btcDominance": 57.36,
-    "marketCapTotalUsd": 2.58e12,
-    "marketCap24hChange": 1.06,
-    "volume24hChange": -32.55,
-    "btcDominancePrev": 57.36,
-    "fearGreedPrev": 23
-  },
-  "alerts": {
-    "lastFearGreedAlert": null,
-    "lastScoreAlert": null,
-    "lastTradeAlert": null
-  }
+  "timestamp": "2026-06-01T07:56:00Z",
+  "btc_usd": 72832,
+  "btc_score": 51,
+  "btc_score_label": "Neutral",
+  "fear_greed": 29,
+  "vix": 15.95,
+  "dom_btc": 57.2,
+  "market_cap_t": 2.55,
+  "macro_global": "3/6 Neutral",
+  "rsi_1h": 38,
+  "adx_1h": 45,
+  "bb_pctb": 0.33,
+  "sesgo": "LONG",
+  "riesgo": "Medio",
+  "btc_price_change_24h_pct": -1.42,
+  "bot_last_action": "PAPER SELL BTC @ 73655.88",
+  "bot_last_pnl": -0.16,
+  "bot_balance": 99.84,
+  "bot_last_log": "2026-05-31 22:01:28"
 }
