@@ -313,12 +313,7 @@ function changeAsset(s){
 }
 
 function startRangos(){
- if(typeof SonoEngine==='undefined'){
-  setTimeout(startRangos,200);
-  $('conf-score').textContent='--';
-  $('conf-bias').textContent='Cargando...';
-  return;
- }
+ loadAllData();
  document.querySelectorAll('.ab button').forEach(function(b){
   b.addEventListener('click',function(){
    document.querySelectorAll('.ab button').forEach(function(x){x.classList.remove('ac')});
