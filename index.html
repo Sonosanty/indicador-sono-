@@ -86,7 +86,7 @@ body{font-family:"Inter",sans-serif;background:#0f172a;color:#f1f5f9;-webkit-fon
 <script>
 (function(){
 var CTF="1m",CA="BTC";
-var ST={price:0,high:0,low:0,ch:0,kl:{},fg:50,vx:0,db:0,de:0,mc:0,er:1.08};window._ST=ST;
+var ST={price:0,high:0,low:0,ch:0,kl:{},fg:50,vx:0,db:0,de:0,mc:0,er:1.08};
 var MA_CACHE={};
 var _dataReady=false;
 var AS={BTC:"BTCUSDT",ETH:"ETHUSDT",SOL:"SOLUSDT",XRP:"XRPUSDT"};
@@ -123,8 +123,12 @@ function sl(s){if(s>=78)return["Compra fuerte","pgg"];if(s>=62)return["Compra","
 function fl(v){if(v<=20)return["Miedo extremo","pgg"];if(v<=40)return["Miedo","pw"];if(v<=60)return["Neutral","pgg2"];if(v<=80)return["Codicia","pw"];return["Codicia extrema","prr"]};
 function rg(s2,f,d){if(s2>=70&&f<40)return["Acum.agresiva","LONG SWING","Bajo","pgg"];if(s2>=62)return["Tendencia alcista","LONG","Medio","pgg"];if(s2>=50&&d>55)return["Rotacion BTC","LONG BTC","Medio","pb"];if(s2>=42)return["Consolidacion","NEUTRAL","Medio","pgg2"];if(s2>=30)return["Distribucion","SHORT","Alto","pw"];return["Capitulacion","CASH","Muy alto","prr"]};
 function regimeCrypto(fg,dom,vx){if(!fg)return["--","--"];var r="Neutral";var c2="pgg2";if(fg<=25&&dom>58){r="Acumulacion";c2="pgg"}else if(fg<=40&&dom>55&&vx<20){r="Acumulacion temprana";c2="pb"}else if(fg>=75&&vx<15){r="Euforia";c2="prr"}else if(fg>=65&&vx>20){r="Distribucion";c2="pw"}else if(dom<42&&fg<40){r="Rotacion Altcoins";c2="pb"}else if(vx>28){r="Panico";c2="prr"}else if(fg>55&&dom<48&&vx<18){r="Expansion";c2="pgg"}return[r,c2]}
+function regimeCrypto(fg,dom,vx){if(!fg)return["--","--"];var r="Neutral";var c2="pgg2";if(fg<=25&&dom>58){r="Acumulacion";c2="pgg"}else if(fg<=40&&dom>55&&vx<20){r="Acumulacion temprana";c2="pb"}else if(fg>=75&&vx<15){r="Euforia";c2="prr"}else if(fg>=65&&vx>20){r="Distribucion";c2="pw"}else if(dom<42&&fg<40){r="Rotacion Altcoins";c2="pb"}else if(vx>28){r="Panico";c2="prr"}else if(fg>55&&dom<48&&vx<18){r="Expansion";c2="pgg"}return[r,c2]}
 function ms(f,v,d){var s2=0;if(f){s2+=f<20?2:f<40?1:f>80?-1:0}if(v){s2+=v<15?1:v>25?-1:0}s2+=d>58?1:d<45?-1:0;return Math.max(0,Math.min(6,s2+2))};
 function sTF(tf){CTF=tf;document.querySelectorAll(".tfb").forEach(function(b){b.classList.toggle("ac",b.textContent.trim()===tf)});fetchAll()};
+function saveHist(key,val){try{var arr=JSON.parse(localStorage.getItem(key)||"[]");arr.push({v:val,t:Date.now()});if(arr.length>7)arr=arr.slice(-7);localStorage.setItem(key,JSON.stringify(arr))}catch(e){}}
+function getHist(key){try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return[]}}
+function renderMiniHist(){var fgH=getHist("sono_fg");var vxH=getHist("sono_vx");var fgE=$("fg-hist");var vxE=$("vx-hist");if(fgE&&fgH.length){fgE.innerHTML=fgH.map(function(h){var d=new Date(h.t);var cl=h.v<=20?"pgg":h.v<=40?"pw":h.v<=60?"pgg2":h.v<=80?"pw":"prr";return"<span class=\"pl "+cl+"\" style=\"font-size:10px;padding:1px 6px\">"+h.v+"</span>"}).join(" ")}if(vxE&&vxH.length){vxE.innerHTML=vxH.map(function(h){var cl=h.v<18?"pgg":h.v<25?"pgg2":"prr";return"<span class=\"pl "+cl+"\" style=\"font-size:10px;padding:1px 6px\">"+h.v.toFixed(1)+"</span>"}).join(" ")}}
 function saveHist(key,val){try{var arr=JSON.parse(localStorage.getItem(key)||"[]");arr.push({v:val,t:Date.now()});if(arr.length>7)arr=arr.slice(-7);localStorage.setItem(key,JSON.stringify(arr))}catch(e){}}
 function getHist(key){try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return[]}}
 function renderMiniHist(){var fgH=getHist("sono_fg");var vxH=getHist("sono_vx");var fgE=$("fg-hist");var vxE=$("vx-hist");if(fgE&&fgH.length){fgE.innerHTML=fgH.map(function(h){var d=new Date(h.t);var cl=h.v<=20?"pgg":h.v<=40?"pw":h.v<=60?"pgg2":h.v<=80?"pw":"prr";return"<span class=\"pl "+cl+"\" style=\"font-size:10px;padding:1px 6px\">"+h.v+"</span>"}).join(" ")}if(vxE&&vxH.length){vxE.innerHTML=vxH.map(function(h){var cl=h.v<18?"pgg":h.v<25?"pgg2":"prr";return"<span class=\"pl "+cl+"\" style=\"font-size:10px;padding:1px 6px\">"+h.v.toFixed(1)+"</span>"}).join(" ")}}
@@ -182,6 +186,7 @@ $("rt").innerHTML=
 '<div class="gr g4" style="gap:8px"><div class="cs"><div class="lb">MA6</div><div class="vl skeleton" id="m6v" style="font-size:15px">--</div><div class="sb skeleton" id="m6d">--</div></div><div class="cs"><div class="lb">MA40</div><div class="vl skeleton" id="m4v2" style="font-size:15px">--</div><div class="sb skeleton" id="m4d">--</div></div><div class="cs"><div class="lb">MA70</div><div class="vl skeleton" id="m7v" style="font-size:15px">--</div><div class="sb skeleton" id="m7d">--</div></div><div class="cs"><div class="lb">MA200</div><div class="vl skeleton" id="m2v" style="font-size:15px">--</div><div class="sb skeleton" id="m2d">--</div></div></div></div>'+
 '<div class="gr g2"><div class="cd"><div class="sh"><span class="st">Zonas S/R (MAs)</span></div><div class="srr2"><span><span class="dt dr"></span> R2 (MA70 x1.08)</span><span class="skeleton" id="r2" style="font-weight:600">--</span></div><div class="srr2"><span><span class="dt dr"></span> R1 (MA40 x1.05)</span><span class="skeleton" id="r1" style="font-weight:600">--</span></div><div class="srr2"><span><span class="dt dn"></span> Precio</span><span class="skeleton" id="srp" style="font-weight:600">--</span></div><div class="srr2"><span><span class="dt dg"></span> S1 (MA40 x0.95)</span><span class="skeleton" id="s1" style="font-weight:600">--</span></div><div class="srr2"><span><span class="dt dg"></span> S2 (MA70 x0.92)</span><span class="skeleton" id="s2" style="font-weight:600">--</span></div></div>'+
 '<div class="cd"><div class="sh"><span class="st">Macro Global</span><span class="pl pgg2 skeleton" id="msc">--/6</span></div><div class="rb skeleton" id="msv" style="background:#1e293b;margin-bottom:10px">--</div><div style="font-size:12px;color:#94a3b8;margin-bottom:10px" id="mtx">...</div>
+<div id="rcr" class="rb" style="background:#1e293b;font-size:11px;margin-bottom:8px;width:100%;text-align:center">---</div>
 <div id="rcr" class="rb" style="background:#1e293b;font-size:11px;margin-bottom:8px;width:100%;text-align:center">---</div><div class="gr g2" style="gap:8px"><div class="cs"><div class="lb">Sesgo</div><div class="skeleton" id="seb" style="font-size:13px;font-weight:500">--</div></div><div class="cs"><div class="lb">Riesgo</div><div class="skeleton" id="rib2" style="font-size:13px;font-weight:500">--</div></div></div><div class="sp"></div><div class="gr g2" style="gap:8px"><div class="cs"><div class="lb">Market Cap</div><div class="vl skeleton" id="mcv" style="font-size:15px">--</div></div><div class="cs"><div class="lb">Dom. ETH</div><div class="vl skeleton" id="dev" style="font-size:15px">--</div></div></div></div></div>';
 }
 
@@ -209,7 +214,7 @@ $id("p1v").textContent=sd.p1+"/35";$id("p1b").style.width=(sd.p1/35*100)+"%";
 $id("p2v").textContent=sd.p2+"/35";$id("p2b").style.width=(sd.p2/35*100)+"%";
 $id("p3v").textContent=sd.p3+"/30";$id("p3b").style.width=(sd.p3/30*100)+"%";
 var rg2=rg(sd.sc,ST.fg,ST.db);$id("rb").textContent=rg2[0];$id("rb").className="rb "+rg2[3];$id("rb").style.opacity="1";$id("rb").style.transform="scale(1)";
-$id("seb").textContent=rg2[1];$id("rib2").textContent=rg2[2];var rc=regimeCrypto(fg,ST.db,vxVal);$id("rcr").textContent=rc[0];$id("rcr").className="rb "+rc[1];
+$id("seb").textContent=rg2[1];$id("rib2").textContent=rg2[2];var rc=regimeCrypto(fg,ST.db,vxVal);$id("rcr").textContent=rc[0];$id("rcr").className="rb "+rc[1];var rc=regimeCrypto(fg,ST.db,vxVal);$id("rcr").textContent=rc[0];$id("rcr").className="rb "+rc[1];
 var mArr=[{v:sd.m6,i:"m6"},{v:sd.m40,i:"m4"},{v:sd.m70,i:"m7"},{v:sd.m2,i:"m2"}];
 for(var mi=0;mi<mArr.length;mi++){var o=mArr[mi];if(o.v){var d2=(sd.p-o.v)/o.v*100;$id(o.i+"v").textContent=fm(o.v);var de=$id(o.i+"d");de.textContent=(d2>=0?"+":"")+d2.toFixed(2)+"%";de.style.color=d2>=0?"#22c55e":"#ef4444"}};
 // MA200: show (n/d) if not enough data
@@ -242,27 +247,24 @@ var sis=document.querySelectorAll("#sr .si");for(var si=0;si<Math.min(chk.length
 var vxVal=ST.vx||15;var rsi3d="--";var kl3d=ST.kl["3d"];if(kl3d&&kl3d.length>15){var cl3d=kl3d.map(function(x){return+x[4]});var r3d=rs(cl3d,14);if(r3d!==null)rsi3d=r3d}else if(sd.r!==null){rsi3d=Math.round((sd.r+fg/2+50+(100-vxVal*2>0?100-vxVal*2:0))/4)}
 $id("rmv").textContent=rsi3d;$id("rml").textContent=rsi3d>=60?"Alcista":rsi3d>=45?"Neutral":"Bajista";
 $id("rmv").style.color=rsi3d>=60?"#22c55e":rsi3d>=45?"#f59e0b":"#ef4444";
-$id("lu").textContent="updated "+new Date().toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+undefined"+new Date().toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
 }
 
 function fetchUrl(u,t){t=t||8000;var ac=new AbortController;setTimeout(function(){ac.abort()},t);return fetch(u,{signal:ac.signal}).then(function(r){return r.json()})};
 
 // ===== FETCH ALL con secuenciacion + CoinGecko fallback =====
 function fetchAll(){
-var s=AS[CA];MA_CACHE={};
-var _completed=0,_total=0;
-function _done(){_completed++;console.log("fetch",_completed,_total);if(_completed>=_total&&_total>0){_dataReady=true;var sb=$('st-bar');if(sb){sb.className='st-bar ok';sb.innerHTML='<span class="st-dot" style="background:#22c55e"></span> Datos actualizados'}scheduleUpd()}}
-function _err(){_completed++}
-fetchAll._retry=0;
-function _cgFb(){if(fetchAll._cg||ST.price)return;fetchAll._cg=1;fetchUrl('https://api.coingecko.com/api/v3/simple/price?ids='+(CA==='BTC'?'bitcoin':CA==='ETH'?'ethereum':CA==='SOL'?'solana':'ripple')+'&vs_currencies=usd',5000).then(function(gd){if(gd){var k=CA==='BTC'?'bitcoin':CA==='ETH'?'ethereum':CA==='SOL'?'solana':'ripple';if(gd[k]&&gd[k].usd){ST.price=gd[k].usd}}})}
-function _f24(){_total++;var ac=new AbortController;setTimeout(function(){ac.abort()},8000);fetch('https://api.binance.com/api/v3/ticker/24hr?symbol='+s,{signal:ac.signal}).then(function(r){return r.json()}).then(function(t){ST.price=+t.lastPrice;ST.high=+t.highPrice;ST.low=+t.lowPrice;ST.ch=+t.priceChangePercent}).catch(function(){fetchAll._retry=(fetchAll._retry||0)+1;if(fetchAll._retry<3){setTimeout(_f24,2000);return}else{_cgFb()}}).finally(_done)}
-function _fEr(){_total++;fetchUrl('https://api.binance.com/api/v3/ticker/price?symbol=EURUSDT').then(function(e){ST.er=+e.price||1.08}).catch(function(){ST.er=ST.er||1.08}).finally(_done)}
-function _fFg(){_total++;fetchUrl('https://api.alternative.me/fng/?limit=1').then(function(g){if(g&&g.data&&g.data[0]){ST.fg=+g.data[0].value;saveHist('sono_fg',ST.fg)}}).catch(function(){ST.fg=ST.fg||50}).finally(_done)}
-function _fGl(){_total++;fetchUrl('https://vix-proxy.sonosanty.workers.dev/global').then(function(gl){if(gl&&gl.data){ST.db=gl.data.dominance||0;ST.mc=gl.data.total_market_cap||0;ST.de=gl.data.eth_dominance||0}}).catch(function(){}).finally(_done)}
-var _tq=['1m','3m','5m','15m','1h','3d'];
-function _fk(){if(!_tq.length)return;var tf=_tq.shift();_total++;fetchUrl('https://api.binance.com/api/v3/klines?symbol='+s+'&interval='+tf+'&limit=220').then(function(k){ST.kl[tf]=k}).catch(function(){}).finally(function(){_done();setTimeout(_fk,200)})}
-_f24();_fEr();_fFg();_fGl();setTimeout(_fk,0);
-};
+var s=AS[CA];
+var _dataSources=0;
+var _totalSources=9;
+MA_CACHE={};
+
+function markReady(){
+  _dataSources++;
+  if(_dataSources>=_totalSources){
+    _dataReady=true;
+    var sb=document.getElementById('st-bar');
+    if(sb){sb.className='st-bar ok';sb.innerHTML='<span class="st-dot" style="background:#22c55e"></span> Datos actualizados'};
     scheduleUpd();
   }
 }
@@ -284,7 +286,7 @@ function fetchEr(){
 };
 
 function fetchFg(){
-  fetchUrl("https://api.alternative.me/fng/?limit=1").then(function(g){if(g&&g.data&&g.data[0])ST.fg=+g.data[0].value;saveHist("sono_fg",ST.fg)}).catch(function(){ST.fg=ST.fg||50}).finally(markReady);
+  fetchUrl("https://api.alternative.me/fng/?limit=1").then(function(g){if(g&&g.data&&g.data[0])ST.fg=+g.data[0].value;saveHist("sono_fg",ST.fg);saveHist("sono_fg",ST.fg)}).catch(function(){ST.fg=ST.fg||50}).finally(markReady);
 };
 
 function fetchGl(){
