@@ -270,6 +270,7 @@ function fetchAll(){
       if(ld){ld.innerHTML='<span class="st-dot" style="background:#22c55e"></span> Datos en vivo';ld.className="st-bar ok";}
       if(typeof ST.fg!="undefined"&&ST.fg>0){
         var kl3d=ST.kl["3d"];if(kl3d&&kl3d.length>15){var cl3d=kl3d.map(function(x){return+x[4]});var r3d=rs(cl3d,14);if(r3d!==null)ST.rsi3d=r3d;}
+        renderRealHTML();
         updAll(s);
       }
       ST._fetching=false;
