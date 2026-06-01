@@ -1,4 +1,4 @@
-<!-- v6.0.1 20260601102100 -->
+<!-- v6.0.2 202606011400 -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -54,8 +54,8 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);-webkit
 .green{color:var(--green)}.red{color:var(--red)}.yellow{color:var(--amber)}
 .pbar{height:6px;border-radius:999px;position:relative;background:linear-gradient(90deg,rgba(239,68,68,.3),var(--bg3) 50%,rgba(34,197,94,.3));margin:6px 0}
 .pneedle{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:var(--blue);border:2px solid rgba(59,130,246,.4);transform:translate(-50%,-50%);transition:left .5s}
-.pbar-labels{display:flex;justify-content:space-between;margin-top:2px;font-size:.6rem;color:var(--dim)}
-.pbar-labels span{white-space:nowrap}
+.pbar-labels{display:flex;justify-content:space-between;margin-top:2px;font-size:.6rem;color:var(--dim);gap:4px}
+.pbar-labels span{white-space:nowrap;flex-shrink:0;min-width:fit-content}
 .check{font-size:.75rem;color:var(--muted);line-height:2.2}
 .check-item{display:flex;align-items:center;gap:6px}
 .footer{font-size:11px;color:var(--dim);text-align:center;padding:.5rem 0 1rem;font-family:var(--font-mono)}
@@ -266,12 +266,24 @@ function loadKline(tf){
 
 function loadAllData(){
  load24hr();
- TFS.forEach(function(tf){loadKline(tf)});
+ // Klines secuenciados: 200ms entre cada TF para evitar rate-limit de Binance
+ var tfList=['15m','5m','3m','1m'];
+ var idx=0;
+ function loadNext(){
+  if(idx>=tfList.length)return;
+  var tf=tfList[idx];idx++;
+  loadKline(tf);
+  setTimeout(loadNext,200);
+ }
+ loadNext();
 }
 
 function changeAsset(s){
  currentSymbol=s;
  klinesData={};
+ // Mostrar carga mientras se obtienen nuevos datos
+ $('r-price').textContent='$--';
+ $('r-sub').textContent=s.replace('USDT','')+'/USDT · Cargando...';
  loadAllData();
 }
 

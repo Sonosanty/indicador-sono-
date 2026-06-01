@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Método Sono Pro V6 — Estrategia de Trading</title>
+<!-- v6.0.2 202606011400 -->
 <link rel="icon" href="/favicon.svg">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -25,8 +26,7 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);-webkit
 .nav{display:flex;gap:2px}
 .nav a{padding:6px 14px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:500;color:var(--muted);transition:.15s}
 .nav a:hover,.nav a.ac{background:var(--bg3);color:var(--text)}
-.live-badge{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;color:var(--muted)}
-.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.ld{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;vertical-align:middle;margin-right:4px}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 
 .shell{max-width:1300px;margin:0 auto;padding:1.5rem;display:flex;flex-direction:column;gap:18px}
@@ -132,12 +132,15 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);-webkit
 <div class="topbar">
  <div class="logo">SONO <span>PRO</span> V6</div>
  <nav class="nav">
- <a href="/">Dashboard</a>
+ <a href="/">Dashboard V6</a>
  <a href="/rangos">Rangos</a>
  <a href="/metodo" class="ac">Método</a>
  <a href="/trades">Trades</a>
  </nav>
- <div class="live-badge"><span class="live-dot"></span><span id="lastUp">conectando...</span></div>
+ <div style="display:flex;align-items:center;gap:14px">
+ <span style="font-size:11px;color:#64748b"><span class="ld"></span>LIVE</span>
+ <span style="font-size:11px;color:#64748b;font-family:var(--font-mono)" id="lastUp">—</span>
+ </div>
 </div>
 
 <div class="shell">
@@ -317,7 +320,7 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);-webkit
  <div class="alert"><strong>⚠️</strong> Método cuantitativo y mecánico. No garantiza resultados. Herramienta de apoyo, no consejo financiero.</div>
 </div>
 
-<div class="footer">SONO PRO V6 · Binance · CoinGecko · Alternative.me · No es consejo financiero</div>
+<div class="footer">SONO PRO v6.0.2 · Binance · CoinGecko · Alternative.me · No es consejo financiero</div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.1.1/dist/chartjs-chart-financial.min.js"></script>
@@ -327,7 +330,10 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);-webkit
 const $=id=>document.getElementById(id);
 let currentTF='3m';
 let currentCoin='BTC';
+let _fetching=false;
+let _ac=null;
 function changeCoin(c){
+ if(_fetching)return;
  currentCoin=c;
  document.querySelectorAll('.coin-btn').forEach(b=>b.classList.toggle('ac',b.dataset.coin===c));
  // Estilo inline toggle para .ac
@@ -339,12 +345,30 @@ function changeCoin(c){
  loadData();
 }
 let charts={price:null,rsi:null,adx:null,bb:null};
-const fmtP=n=>'$'+Math.round(n).toLocaleString('es-ES');
+const fmtP=n=>n==null?'—':'$'+Math.round(n).toLocaleString('es-ES');
 const fmtK=n=>n>=1e12?'$'+(n/1e12).toFixed(2)+'T':n>=1e9?'$'+(n/1e9).toFixed(1)+'B':'—';
+
+/* ── FETCH HELPER con AbortController ── */
+function fetchJson(url,ms=10000){
+ if(_ac)_ac.abort();
+ _ac=new AbortController();
+ const timer=setTimeout(()=>_ac.abort(),ms);
+ return fetch(url,{signal:_ac.signal}).finally(()=>clearTimeout(timer)).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();});
+}
+function delay(ms){return new Promise(r=>setTimeout(r,ms));}
 
 /* ── CÁLCULOS ── */
 function smaArr(arr,p){const o=new Array(arr.length).fill(null);for(let i=p-1;i<arr.length;i++)o[i]=arr.slice(i-p+1,i+1).reduce((a,b)=>a+b,0)/p;return o;}
-function sma(arr,p){if(arr.length<p)return null;return arr.slice(-p).reduce((a,b)=>a+b,0)/p;}
+
+/* ── MA_CACHE ── */
+const MA_CACHE={};
+function sma(cl,p){
+ const key=currentCoin+'_'+currentTF+'_'+p;
+ if(MA_CACHE[key]&&MA_CACHE[key].clen===cl.length)return MA_CACHE[key].val;
+ const val=cl.length<p?null:cl.slice(-p).reduce((a,b)=>a+b,0)/p;
+ MA_CACHE[key]={val,clen:cl.length};
+ return val;
+}
 
 function rsiArr(cl,p=14){
  const o=new Array(cl.length).fill(null);if(cl.length<=p)return o;
@@ -400,13 +424,13 @@ function computeScore(cl,hi,lo){
  const price=cl[cl.length-1];
  const ma6=sma(cl,6),ma40=sma(cl,40),ma70=sma(cl,70),ma200=sma(cl,200);
  let p1=0;
- if(ma6&&ma70)p1+=ma6>ma70?15:0;
- if(ma40)p1+=price>ma40?10:0;
- if(ma200)p1+=price>ma200?10:0;
+ if(ma6!==null&&ma70!==null)p1+=ma6>ma70?15:0;
+ if(ma40!==null)p1+=price>ma40?10:0;
+ if(ma200!==null)p1+=price>ma200?10:0;
  const rv=rsiLast(cl),av=adxLast(hi,lo,cl);
  let p2=0;
- if(av)p2+=av>25?15:av>18?8:0;
- if(rv)p2+=rv>65?8:rv>55?20:rv>50?14:rv<30?18:rv<45?6:10;
+ if(av!==null)p2+=av>25?15:av>18?8:0;
+ if(rv!==null)p2+=rv>65?8:rv>55?20:rv>50?14:rv<30?18:rv<45?6:10;
  const{pb,bw}=bbLast(cl);
  let p3=0;
  if(pb!==null)p3=pb>0.85?4:pb>0.55?20:pb>0.2?30:pb>0?18:5;
@@ -578,9 +602,10 @@ function changeTF(tf){
 /* ── CARGA DATOS ── */
 let fngGlobal=50,domGlobal=55;
 async function loadData(){
+ if(_fetching)return;
+ _fetching=true;
  try{
- const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=${currentCoin}USDT&interval=${currentTF}&limit=220`);
- const d=await r.json();
+ const d=await fetchJson(`https://api.binance.com/api/v3/klines?symbol=${currentCoin}USDT&interval=${currentTF}&limit=220`);
  const candles=d.map(c=>({t:+c[0],o:+c[1],h:+c[2],l:+c[3],c:+c[4],v:+c[5]}));
  const cl=candles.map(c=>c.c),hi=candles.map(c=>c.h),lo=candles.map(c=>c.l);
  const price=cl[cl.length-1];
@@ -588,15 +613,20 @@ async function loadData(){
  buildCharts(candles);
  const sc=computeScore(cl,hi,lo);
  renderScore(sc,fngGlobal,domGlobal);
+ }catch(e){
+ console.error('loadData error:',e);
+ $('priceChip').textContent='—';
+ }finally{
+ _fetching=false;
  $('lastUp').textContent=new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
- }catch(e){console.error(e);}
+ }
 }
 
 async function loadMacro(){
  try{
  const[fngR,gR]=await Promise.all([
- fetch('https://api.alternative.me/fng/?limit=1').then(r=>r.json()),
- fetch('https://api.coingecko.com/api/v3/global').then(r=>r.json())
+ fetchJson('https://api.alternative.me/fng/?limit=1'),
+ fetchJson('https://api.coingecko.com/api/v3/global')
  ]);
  fngGlobal=+fngR.data[0].value;
  const fl=fngGlobal<=20?'Miedo extremo':fngGlobal<=40?'Miedo':fngGlobal<=60?'Neutral':fngGlobal<=80?'Codicia':'Codicia extrema';
@@ -606,20 +636,27 @@ async function loadMacro(){
  const dl=domGlobal>60?'BTC muy dominante':domGlobal>55?'BTC dominante':domGlobal>45?'Equilibrado':'Altseason';
  $('mDOM').textContent=domGlobal.toFixed(1)+'%';$('mDOMl').textContent=dl;$('mDOMb').style.width=domGlobal+'%';
  $('mMCAP').textContent=fmtK(gR.data.total_market_cap?.usd||0);$('mMCAPl').textContent='Vol: '+fmtK(gR.data.total_volume?.usd||0);
- }catch(e){console.error(e);}
+ }catch(e){
+ console.error('loadMacro error:',e);
+ // valores por defecto
+ $('mFNG').textContent='—';$('mDOM').textContent='—';$('mMCAP').textContent='—';
+ }
 }
 
 async function loadRSIMacro(){
  try{
- const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=${currentCoin}USDT&interval=1h&limit=50`);
- const d=await r.json();const cl=d.map(c=>+c[4]);
+ const d=await fetchJson(`https://api.binance.com/api/v3/klines?symbol=${currentCoin}USDT&interval=1h&limit=50`);
+ const cl=d.map(c=>+c[4]);
  let g=0,l=0;const p=14;
  for(let i=cl.length-p;i<cl.length;i++){const dd=cl[i]-cl[i-1];if(dd>0)g+=dd;else l-=dd;}
  const rv=Math.round(100-(100/(1+(g/p)/((l/p)||.001))));
  const rc=rv>70?'#ef4444':rv<30?'#22c55e':'#06b6d4';
  const rl=rv>70?'Sobrecompra macro':rv<30?'Sobreventa macro':rv>50?'Alcista':'Neutral';
  $('mRSI').textContent=rv;$('mRSI').style.color=rc;$('mRSIl').textContent=rl;$('mRSIb').style.width=rv+'%';$('mRSIb').style.background=rc;
- }catch(e){}
+ }catch(e){
+ console.error('loadRSIMacro error:',e);
+ $('mRSI').textContent='—';
+ }
 }
 
 loadData();
