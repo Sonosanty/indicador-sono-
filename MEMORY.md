@@ -58,12 +58,14 @@ Cada vez que se despliegue a producción, jarvisClaw debe:
 4. Verificar: bundle hash en `<script src>` es el correcto
 5. Verificar: texto en pantalla tiene datos reales (no 'Cargando...')
 
-### ⚙️ Config de build en Cloudflare Pages
-- **Build command**: `cd frontend && npm install && npm run build`
+### ⚙️ Config de build en Cloudflare Pages (resuelto 31 mayo 2026)
+- **Build command**: `mkdir -p indicador_cloudflare && cp index.html sono-terminal.js style.css _headers _routes.json favicon.svg icons.svg indicador_cloudflare/ && cp -r v2 metodo assets scripts indicador_cloudflare/`
 - **Build output**: `indicador_cloudflare`
 - **Production branch**: `main`
-- **Deployments**: Automáticos en cada push
+- **Deployments**: Automáticos en cada push (git push a main)
 - **Build system**: Version 3
+- **⚠️ Problema resuelto**: Había un submodule `addyosmani-skills` (mode 160000) que bloqueaba el build con `fatal: No url found for submodule path 'addyosmani-skills' in .gitmodules`. Se eliminó con `git rm --cached addyosmani-skills` y commit `4145bd5`.
+- **⚠️ Problema resuelto**: La GitHub App de Cloudflare necesitaba reconexión tras force pushes. Santy ingresó código 2FA y se restauró la integración.
 
 ## Protocolo de contingencia de IA y Resiliencia
 - **Directiva de Caídas de Google**: En caso de caída de los servidores de Google (Gemini) o timeouts recurrentes que dejen incomunicado al asistente en su modelo principal, jarvisClaw se conectará automáticamente a Perplexity.ai (mediante el navegador integrado o la habilidad local de Perplexity Search con el perfil Pro persistente) para seguir realizando consultas y respondiendo las peticiones de Santy de forma ininterrumpida.

@@ -78,3 +78,7 @@ _check_pionex*
 # Reports / temporary audit files
 reports/
 _audit_*
+
+_old/
+
+openclaw-backup*.json

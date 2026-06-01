@@ -2,7 +2,7 @@
 # 
 # Este script se conecta a Binance en tiempo real, calcula el Score Maestro
 # exactamente igual que Sono Pro, y simula órdenes en modo paper trading.
-# Para activar trading real: cambiar PAPER_MODE = False y tener fondos en Pionex.
+# Para activar trading real: cambiar PAPER_MODE = True y tener fondos en Pionex.
 # No depende de OpenClaw. Funciona 24/7 en segundo plano.
 #
 # Uso: python sono_bot.py
@@ -10,6 +10,11 @@
 import json, time, hashlib, hmac, requests, threading, logging, sys, os
 from dotenv import load_dotenv
 from datetime import datetime
+
+# ── Asegurar stdout en UTF-8 (evita caracteres rotos en consola Windows) ────
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+# ─────────────────────────────────────────────────────────────────────────────
 
 # ── Score engine unificado (misma lógica que la SPA) ─────
 _BOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -24,16 +29,18 @@ from telegram_alerts import (
 )
 # ────────────────────────────────────────────────────────────
 
-# Forzar encoding UTF-8 para logging a archivo
+# Forzar encoding UTF-8 para logging a archivo (ruta absoluta)
+_LOG_PATH = os.path.join(_BOT_DIR, 'sono_bot.log')
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
     handlers=[
-        logging.FileHandler('sono_bot.log', encoding='utf-8'),
+        logging.FileHandler(_LOG_PATH, encoding='utf-8'),
         logging.StreamHandler(sys.stdout)
     ]
 )
 logger = logging.getLogger(__name__)
+logger.info(f'Log path: {_LOG_PATH}')
 
 # ==================================================-------------
 # CONFIGURACIÓN
@@ -43,6 +50,8 @@ logger = logging.getLogger(__name__)
 # Modo real activo con balances actuales
 PAPER_MODE = True
 PAPER_BALANCE = 100
+# Archivo de estado persistente para paper trading (balance, posiciones, historial)
+_STATE_FILE = os.path.join(_BOT_DIR, 'sono_state.json')
 
 # Modo micro-capital: optimizado para cuentas pequeñas (<$50)
 # Reduce mínimos para que el bot pueda operar con saldos reales
@@ -59,8 +68,8 @@ LIMIT = 220  # Suficiente para MA200 + margen
 # Activos a monitorizar (4 principales eliminados ALT y OSMO)
 ASSETS = ['BTC', 'ETH', 'SOL', 'XRP']
 
-# Archivo de log
-LOG_FILE = 'sono_bot.log'
+# Archivo de log (ruta absoluta)
+LOG_FILE = _LOG_PATH
 
 # ==================================================-------------
 # CREDENCIALES
@@ -247,12 +256,10 @@ class SonoBot:
         self.running = True
         self.paper_mode = PAPER_MODE
         
-        # Paper trading: balances simulados
+        # Paper trading: balances simulados con persistencia
         if self.paper_mode:
-            self.paper_balances = {
-                'USDT': PAPER_BALANCE
-            }
             self.trade_log = []  # historial de trades simulados
+            self._load_paper_state()  # carga estado persistente o inicializa con PAPER_BALANCE
         
         # ═══ CONFIG SWING ═══
         self.config = {
@@ -279,6 +286,65 @@ class SonoBot:
         self._last_alert_time[alert_key] = now
         return True
 
+    # ── Persistencia de estado paper ────────────────────────────────────
+    def _state_path(self):
+        return _STATE_FILE
+
+    def _load_paper_state(self):
+        """Carga estado persistente de paper trading o inicializa con PAPER_BALANCE."""
+        sp = self._state_path()
+        if os.path.exists(sp):
+            try:
+                with open(sp, 'r', encoding='utf-8') as f:
+                    state = json.load(f)
+                self.paper_balances = state.get('balances', {'USDT': PAPER_BALANCE})
+                self.positions = {}
+                for pos in state.get('positions', []):
+                    self.positions[pos['asset']] = {
+                        'side': pos['side'],
+                        'entry': pos['entry'],
+                        'size': pos['size'],
+                    }
+                    if 'highest_price' in pos:
+                        self.positions[pos['asset']]['highest_price'] = pos['highest_price']
+                self.trade_log = state.get('trade_log', [])
+                logger.info(f'Estado paper cargado: USDT={self.paper_balances.get("USDT",0):.2f}, '
+                           f'posiciones={len(self.positions)}')
+                return
+            except Exception as e:
+                logger.warning(f'Error cargando estado paper: {e}. Usando balance inicial.')
+
+        # Inicializar con valores por defecto
+        self.paper_balances = {'USDT': PAPER_BALANCE}
+        self.positions = {}
+        self.trade_log = []
+        logger.info(f'Estado paper inicializado: USDT={PAPER_BALANCE:.2f}')
+
+    def _save_paper_state(self):
+        """Persiste estado actual de paper trading."""
+        if not self.paper_mode:
+            return
+        try:
+            sp = self._state_path()
+            positions_list = []
+            for asset, pos in self.positions.items():
+                p = {'asset': asset, 'side': pos['side'], 'entry': pos['entry'], 'size': pos['size']}
+                if 'highest_price' in pos:
+                    p['highest_price'] = pos['highest_price']
+                positions_list.append(p)
+            state = {
+                'balances': self.paper_balances,
+                'positions': positions_list,
+                'trade_log': self.trade_log[-500:],  # mantener últimos 500 trades
+                'last_update': datetime.now().isoformat(),
+                'version': 1,
+            }
+            with open(sp, 'w', encoding='utf-8') as f:
+                json.dump(state, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            logger.warning(f'Error guardando estado paper: {e}')
+    # ─────────────────────────────────────────────────────────────────────
+
     def log_state(self):
         """Loggea estado actual."""
         logger.info('-' * 50)
@@ -296,7 +362,9 @@ class SonoBot:
                 f'Position: {"NONE" if not pos else pos["side"] + " @ $" + str(round(pos.get("entry",0),2))}'
             )
         logger.info('-' * 50)
-    
+        # Persistir estado después de cada log
+        self._save_paper_state()
+
     def update_balances(self):
         """Actualiza saldos (reales o simulados)."""
         if self.paper_mode:
@@ -353,7 +421,7 @@ class SonoBot:
                                 logger.error(f'Error enviando alerta Telegram: {e}')
                     
                     # Alerta especial para COMPRA_FUERTE o CAPITULACION
-                    if new_signal in ('COMPRA FUERTE', 'CAPITULACION'):
+                    if new_signal in ('COMPRA FUERTE', 'CAPITULACIÓN'):
                         alert_key = f'extreme_{asset}_{new_signal}'
                         if self._should_alert(alert_key) and old_signal != new_signal:
                             try:
@@ -531,7 +599,7 @@ class SonoBot:
                         self.execute_buy(asset, price)
                     else:
                         logger.info(f'{asset}: COMPRA score={score["total"]} - saltado (prioridad mayor activa)')
-                elif signal == 'ACUMULACION' and not pos and active_positions == 0:
+                elif signal == 'ACUMULACIÓN' and not pos and active_positions == 0:
                     if asset in ('XRP', 'ETH'):
                         self.execute_buy(asset, price)
                 
@@ -550,7 +618,7 @@ class SonoBot:
                             continue
                 
                 # ═══ SALIDAS SWING ═══
-                if signal in ('VENTA', 'CAPITULACION', 'DISTRIBUCION') and pos:
+                if signal in ('VENTA', 'CAPITULACIÓN', 'DISTRIBUCIÓN') and pos:
                     self.execute_sell(asset, price)
                         
         except Exception as e:
@@ -609,4 +677,5 @@ if __name__ == '__main__':
     print('Iniciando bot...')
     bot = SonoBot()
     bot.run_forever(interval_seconds=120)
+
 
