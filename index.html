@@ -194,7 +194,7 @@ $id("bp").textContent=fm(p);
 $id("ep").textContent="EUR "+(p/ST.er).toFixed(2);
 var c=ST.ch;var chEl=$id("ch24");chEl.textContent=(c>=0?"+":"")+c.toFixed(2)+"%";chEl.className="pl "+(c>=0?"pgg":"prr");
 $id("h24").textContent=fm(ST.high);$id("l24").textContent=fm(ST.low);
-var fg=ST.fg;if(fg){$id("fgv").textContent=fg;var fl2=fl(fg);$id("fgl").textContent=fl2[0]}
+var fg=ST.fg;if(fg){$id("fgv").textContent=fg;var fl2=fl(fg);$id("fgl").textContent=fl2[0];if(ST.vx){$id("vxv").textContent=ST.vx.toFixed(2);$id("vxl").textContent=ST.vx<18?"Bajo":ST.vx<25?"Moderado":"Alto"}}
 $id("dbv").textContent=ST.db.toFixed(1)+"%";$id("dbl").textContent=ST.db>58?"BTC domina":ST.db<45?"Altseason":"Equilibrio";
 $id("dev").textContent=ST.de.toFixed(1)+"%";$id("mcv").textContent=fk(ST.mc);
 var msc=ms(ST.fg,ST.vx,ST.db);$id("msc").textContent=msc+"/6";
