@@ -287,7 +287,7 @@ function loadKline(tf,onDone){
   if(analysis)updateTFCard(tf,analysis);
   updateConfluence();
   if(onDone)onDone();
- }).catch(function(){if(onDone)onDone()});
+ }).catch(function(){updateConfluence();if(onDone)onDone()});
 }
 
 function loadAllData(){
@@ -314,7 +314,6 @@ function changeAsset(s){
 }
 
 function startRangos(){
- loadAllData();
  document.querySelectorAll('.ab button').forEach(function(b){
   b.addEventListener('click',function(){
    document.querySelectorAll('.ab button').forEach(function(x){x.classList.remove('ac')});
@@ -328,7 +327,6 @@ function startRangos(){
  var confBias=$('conf-bias');if(confBias){confBias.className='skeleton bias-skel';confBias.textContent='';}
  $('conf-desc').textContent='Cargando...';
  var rPrice=$('r-price');if(rPrice){rPrice.className='skeleton skeleton-lg';rPrice.textContent='';}
- loadAllData();
 }
 if(document.readyState==='loading'){
  document.addEventListener('DOMContentLoaded',startRangos);

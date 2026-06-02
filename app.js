@@ -114,7 +114,7 @@ $id("dev").textContent=ST.de.toFixed(1)+"%";$id("mcv").textContent=fk(ST.mc);
 var msc=ms(ST.fg,ST.vx,ST.db);$id("msc").textContent=msc+"/6";
 $id("msv").textContent=msc>=5?"Alcista fuerte":msc>=4?"Alcista":msc>=3?"Neutral":msc>=2?"Bajista":"Bajista fuerte";$id("msv").style.opacity="1";$id("msv").style.transform="scale(1)";
 $id("mtx").textContent="F&G "+fg+" Dom "+ST.db.toFixed(1)+"%";
-var sd=cs(ST.kl[CTF]);if(!sd)return;
+var vxVal=ST.vx||15;var sd=cs(ST.kl[CTF]);if(!sd)return;
 $id("sv").textContent=sd.sc;
 var sa=$id("sa");sa.style.strokeDashoffset=213.6-(213.6*sd.sc/100);
 sa.style.stroke=sd.sc>=62?"#22c55e":sd.sc>=42?"#3b82f6":sd.sc>=30?"#f59e0b":"#ef4444";
@@ -153,7 +153,7 @@ $id("cp").textContent=mtfTotal+"/100";$id("cp").className="pl "+(mtfTotal>=70?"p
 var chk=[sd.r>50,sd.a>25,sd.p>sd.m40,sd.pb>0.5,fg<=20||fg>=80];
 var sis=document.querySelectorAll("#sr .si");for(var si=0;si<Math.min(chk.length,sis.length);si++){sis[si].textContent=chk[si]?"✓":"—";sis[si].className="si "+(chk[si]?"sy":"sn")};
 // RSI Macro 3D
-var vxVal=ST.vx||15;var rsi3d="--";var kl3d=ST.kl["3d"];if(kl3d&&kl3d.length>15){var cl3d=kl3d.map(function(x){return+x[4]});var r3d=rs(cl3d,14);if(r3d!==null)rsi3d=r3d}else if(sd.r!==null){rsi3d=Math.round((sd.r+fg/2+50+(100-vxVal*2>0?100-vxVal*2:0))/4)}
+var rsi3d="--";var kl3d=ST.kl["3d"];if(kl3d&&kl3d.length>15){var cl3d=kl3d.map(function(x){return+x[4]});var r3d=rs(cl3d,14);if(r3d!==null)rsi3d=r3d}else if(sd.r!==null){rsi3d=Math.round((sd.r+fg/2+50+(100-vxVal*2>0?100-vxVal*2:0))/4)}
 $id("rmv").textContent=rsi3d;$id("rml").textContent=rsi3d>=60?"Alcista":rsi3d>=45?"Neutral":"Bajista";
 $id("rmv").style.color=rsi3d>=60?"#22c55e":rsi3d>=45?"#f59e0b":"#ef4444";
 $id("lu").textContent="updated "+new Date().toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
@@ -171,12 +171,14 @@ function fetchAll(){
   MA_CACHE={};
   if(ST._fetching)return;
   ST._fetching=true;
+  var _fetchTimer=setTimeout(function(){ST._fetching=false;_total=0;var ld=document.getElementById("st-bar");if(ld){ld.innerHTML='<span class="st-dot" style="background:#f59e0b"></span> Timeout - reintentando';ld.className="st-bar co";}},15000);
   var ld=document.getElementById("st-bar");
   if(ld){ld.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> Conectando fuentes de datos...';ld.className="st-bar co";}
   var _completed=0,_total=0;
   function done(){
     _completed++;
     if(ld)ld.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> ['+_completed+'/'+_total+'] Conectando...';
+    clearTimeout(_fetchTimer);
     if(_completed>=_total){
       if(ld){ld.innerHTML='<span class="st-dot" style="background:#22c55e"></span> Datos en vivo';ld.className="st-bar ok";}
       if(typeof ST.fg!="undefined"&&ST.fg>0){
@@ -186,6 +188,7 @@ function fetchAll(){
       }
       ST.loading=false;
       ST._fetching=false;
+      clearTimeout(_fetchTimer);
     }
   }
 fetchUrl("https://api.binance.com/api/v3/ticker/24hr?symbol="+s).then(function(t){ST.price=+t.lastPrice;ST.high=+t.highPrice;ST.low=+t.lowPrice;ST.ch=+t.priceChangePercent;}).catch(function(){var cgId=CA==="BTC"?"bitcoin":CA==="ETH"?"ethereum":CA==="SOL"?"solana":"ripple";fetchUrl("https://api.coingecko.com/api/v3/simple/price?ids="+cgId+"&vs_currencies=usd&include_24hr_change=true").then(function(gd){if(gd&&gd[cgId]){ST.price=gd[cgId].usd;ST.ch=gd[cgId].usd_24h_change||0}}).catch(function(){})}).then(function(){done()}).catch(function(){done()});

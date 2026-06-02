@@ -906,6 +906,8 @@
     if (!closes || closes.length < 30) return null;
     var p  = +closes[closes.length - 1];
     var m6 = sma(closes, 6);
+    var m20 = sma(closes, 20);
+    var m50 = sma(closes, 50);
     var m40 = sma(closes, 40);
     var m70 = sma(closes, 70);
     var m200 = sma(closes, 200);
@@ -927,7 +929,7 @@
     if (r !== null) { if (r > 55) p2 += 20; else if (r > 50) p2 += 14; else if (r < 30) p2 += 18; else if (r < 45) p2 += 6; else p2 += 10; }
     var p3 = 0;
     if (pb !== null) { if (pb > 0.8) p3 = 5; else if (pb > 0.5) p3 = 20; else if (pb > 0.2) p3 = 30; else if (pb > 0) p3 = 20; else p3 = 5; }
-    return { score: Math.round(p1 + p2 + p3), p1: p1, p2: p2, p3: p3, r: r, price: p, ma40: m40, ma70: m70, ma200: m200 };
+    return { score: Math.round(p1 + p2 + p3), p1: p1, p2: p2, p3: p3, r: r, price: p, ma20: m20, ma50: m50, ma40: m40, ma70: m70, ma200: m200 };
   }
 
   function getScoreText(s) {
@@ -1004,7 +1006,6 @@
           _dom = d.data.market_cap_percentage ? d.data.market_cap_percentage.btc : null;
           _mc  = d.data.total_market_cap ? d.data.total_market_cap.usd : null;
           renderGlobal();
-          renderAlert();
         }
       });
   }
@@ -1077,12 +1078,10 @@
 
   function renderMA(sc) {
     if (!sc) return;
-    var p = sc.price;
     var ma20 = $('ma20'), ma50 = $('ma50'), ma200 = $('ma200');
-    if (ma20) ma20.textContent = fmtPrice(p * 1.002);
-    if (ma50) ma50.textContent = fmtPrice(p * 0.998);
-    if (ma200) ma200.textContent = p ? fmtPrice(p * 0.975) : '--';
-    /* Estimated MAs based on score direction */
+    if (ma20 && sc.ma20 !== undefined) ma20.textContent = fmtPrice(sc.ma20);
+    if (ma50 && sc.ma50 !== undefined) ma50.textContent = fmtPrice(sc.ma50);
+    if (ma200 && sc.ma200 !== undefined) ma200.textContent = fmtPrice(sc.ma200);
   }
 
   function renderAlert() {
