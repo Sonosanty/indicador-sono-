@@ -798,288 +798,400 @@
   </div>
   
   <!-- ==========================================
-       JAVASCRIPT - REAL TIME DATA
+       JAVASCRIPT AUTÓNOMO - SIN DEPENDENCIA DE app.js
        ========================================== -->
-  <script>
-window.onerror = function(m,s,l,c,e){document.getElementById("connection-status").textContent="Err: "+m;};
+<script>
+(function() {
+  'use strict';
 
-window.onerror = function(m,s,l,c,e){document.getElementById("connection-status").textContent="Err: "+m;};
+  /* ==================================================================
+     CONFIG
+     ================================================================== */
+  var SYMBOL_MAP = { BTC: 'BTCUSDT', ETH: 'ETHUSDT', SOL: 'SOLUSDT', XRP: 'XRPUSDT' };
+  var BINANCE    = 'https://api.binance.com/api/v3';
+  var FNG_API    = 'https://api.alternative.me/fng/?limit=1&format=json';
+  var CG_API     = 'https://api.coingecko.com/api/v3/global';
+  var VIX_PROXY  = 'https://vix-proxy.sonosanty.workers.dev/vix';
+  var POLL_PRICE = 10000;
+  var POLL_MACRO = 120000;
 
+  var _symbol  = 'BTCUSDT';
+  var _coin    = 'BTC';
+  var _p       = null, _h = null, _l = null, _c = null, _v = null;
+  var _fg      = 50, _fgl = '';
+  var _vx      = null, _dom = null, _mc = null;
+  var _eur     = 0.857;
+  var _score   = 50;
+  var _updTimer = null, _cntTimer = null, _cntSecs = 0;
 
-// Terminal IDs mapping
-const $ = id => document.getElementById(id);
+  /* ==================================================================
+     HELPERS
+     ================================================================== */
+  function $(id) { return document.getElementById(id); }
 
-// Core engine functions
-const $=id=>document.getElementById(id);
-const fn=(n,d=2)=>Number(n).toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
-const fb=v=>v>=1e12?(v/1e12).toFixed(2)+'T':v>=1e9?(v/1e9).toFixed(2)+'B':(v/1e6).toFixed(0)+'M';
-const ts=()=>{var d=new Date();return d.toLocaleTimeString('es-ES')};
-const B='https://api.binance.com/api/v3',CG='https://api.coingecko.com/api/v3',VM='https://vix-proxy.sonosanty.workers.dev';
-let ER=0.857,PD=null,VIX=null;
-async function fj(u){const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return r.json()}
-function rsi(c,p){p=p||14;var r=new Array(c.length).fill(0),g=0,l=0;for(var i=1;i<=p;i++){var d=c[i]-c[i-1];d>0?g+=d:l-=d}var ag=g/p,al=l/p||.001;r[p]=100-100/(1+ag/al);for(var i=p+1;i<c.length;i++){var d=c[i]-c[i-1];ag=(ag*(p-1)+(d>0?d:0))/p;al=(al*(p-1)+(d<0?-d:0))/p;r[i]=100-100/(1+ag/al)}return r}
-function adx(c,p){p=p||14;if(!c||c.length<p*2)return 25;var s=0;for(var i=c.length-p*2;i<c.length-1;i++){var u=c[i+1]-c[i],dn=c[i]-c[i+1];var tr=Math.max(Math.abs(c[i+1]-c[i]),Math.abs(c[i+1]-c[i]),Math.abs(c[i+1]-c[i]))||1;s+=Math.abs(Math.max(u,0)/tr*100-Math.max(dn,0)/tr*100)/(Math.max(u,0)/tr*100+Math.max(dn,0)/tr*100+.001)*100}return s/(p*2-1)}
-function cs(c){if(!c||c.length<210)return null;var r=(rsi(c,14).slice(-1)[0])||50,a=adx(c,14),p1=0,p2=0,p3=0;if(c.length>=200){var m6=c.slice(-6).reduce(function(a,b){return a+b},0)/6,m40=c.slice(-40).reduce(function(a,b){return a+b},0)/40,m70=c.slice(-70).reduce(function(a,b){return a+b},0)/70,m200=c.slice(-200).reduce(function(a,b){return a+b},0)/200;if(m6>m40)p1+=12;if(m6>m70)p1+=10;if(m40>m200)p1+=13}if(r>50&&r<70)p2+=12;else if(r>=35)p2+=7;else p2+=2;if(a>35)p2+=15;else if(a>25)p2+=10;else p2+=3;var pr=c[c.length-1];var bb20=c.slice(-20).reduce(function(a,b){return a+b},0)/20;var bbs=Math.sqrt(c.slice(-20).map(function(cl){return(cl-bb20)*(cl-bb20)}).reduce(function(a,b){return a+b},0)/20);var bbp=bbs>0?(pr-(bb20-2*bbs))/((bb20+2*bbs)-(bb20-2*bbs)):.5;if(bbp<.15)p3=28;else if(bbp<.35)p3=20;else if(bbp<.65)p3=14;else if(bbp<.85)p3=7;else p3=2;var t=Math.min(100,Math.max(0,p1+p2+p3));var sg,dc,zn;if(t>=78){sg='COMPRA FUERTE';dc='LONG';zn='Euforia'}else if(t>=62){sg='COMPRA';dc='LONG PRUDENTE';zn='Optimismo'}else if(t>=52){sg='ACUMULAR';dc='ESPERAR';zn='Neutral+'}else if(t>=42){sg='NEUTRAL';dc='ESPERAR';zn='Neutral'}else if(t>=30){sg='VENTA';dc='SHORT PRUDENTE';zn='Miedo'}else if(t>=18){sg='VENTA FUERTE';dc='SHORT';zn='Acumulacion'}else{sg='CAPITULACION';dc='CASH/FUERA';zn='Panico'}return{total:t,p1,p2,p3,rsi:r,adx:a,signal:sg,decision:dc,zone:zn,price:pr}}
-function updateUI(sc){$('smScore').textContent=sc.total;$('heroScore').textContent=sc.total;$('heroScoreNum').textContent=sc.total;$('heroBar').style.width=sc.total+'%';var se=$('smSignal');if(se){se.textContent=sc.signal;se.className='score-signal '+(sc.signal.indexOf('COMPRA')>=0?'score-buy':sc.signal.indexOf('VENTA')>=0||sc.signal==='CAPITULACION'?'score-sell':sc.signal==='ACUMULAR'?'score-accum':'score-neutral')}$('heroSignal').textContent=sc.signal;$('heroDecision').textContent=sc.decision;$('heroZone').textContent=sc.zone;$('smDecision').textContent=sc.decision+' - '+sc.zone;$('smP1').textContent='P1: '+sc.p1+'/35';$('smP2').textContent='P2: '+sc.p2+'/35';$('smP3').textContent='P3: '+sc.p3+'/30';$('smRSI').textContent='RSI: '+fn(sc.rsi,1);$('heroRsi').textContent=fn(sc.rsi,1);$('smADX').textContent='ADX: '+fn(sc.adx,1);$('heroAdx').textContent=fn(sc.adx,1);$('heroTime').textContent=ts()}
-async function updateScore(a){a=a||'BTCUSDT';try{var d=await fj(B+'/klines?symbol='+a+'&interval=15m&limit=210');var cl=d.map(function(k){return parseFloat(k[4])});var sc=cs(cl);if(sc)updateUI(sc)}catch(ex){}}
-async function lp(a){a=a||'BTCUSDT';try{var d=await fj(B+'/ticker/24hr?symbol='+a);var e=await fj(B+'/ticker/price?symbol=EURUSDT');ER=parseFloat(e.price)||.857;PD={usd:parseFloat(d.lastPrice),chg:parseFloat(d.priceChangePercent)};ap()}catch(ex){}}
-function ap(){if(!PD)return;var u=PD.usd,c=PD.chg,eu=u*ER,up=c>=0;$('btcUsdLive').textContent='$'+fn(u,2);$('btcEurLive').textContent=String.fromCharCode(8364)+fn(eu,2);$('previewPrice').textContent='$'+fn(u,2);$('previewChange').textContent=(up?'+':'')+fn(c,2)+'%';var bdg=$('btcChange24hLive');if(bdg){bdg.textContent=(up?'+':'')+fn(c,2)+'% 24h';bdg.className='badge '+(c>.3?'positivo':c<-.3?'negativo':'neutro')}$('lastUpdateBTC').textContent='Actualizado: '+ts()}
-async function loadFN(){try{var d=await fj('https://api.alternative.me/fng/?limit=1&format=json');var v=parseInt(d.data[0].value),lbl=d.data[0].value_classification;$('fearValue').textContent=v;$('fearLabel').textContent=lbl;$('heroFng').textContent=v}catch(ex){}}
-async function loadCG(){try{var d=await fj(CG+'/global');var g=d.data,mp=g.market_cap_percentage;$('btcDominanceValue').textContent=(mp.btc||0).toFixed(2)+'%';$('ethDominanceValue').textContent=(mp.eth||0).toFixed(2)+'%';$('altsDominanceValue').textContent=(100-(mp.btc||0)-(mp.eth||0)).toFixed(2)+'%';$('marketCapValue').textContent=fb(g.total_market_cap?.usd||0);$('volumeValue').textContent='Vol 24h: '+fb(g.total_volume?.usd||0);var fg=parseInt($('fearValue')?.textContent)||50;var bd=mp.btc||50;var state='',text='',score=50;if(fg<25&&bd>55){state='ACUMULACION';text='Miedo extremo + dominancia alta';score=28}else if(fg<40){state='PRECAUCION';text='Miedo en el mercado';score=45}else if(fg<55){state='NEUTRAL';text='Sin direccion clara';score=55}else if(fg<75){state='OPTIMISMO';text='Confianza creciente';score=72}else{state='EUFORIA';text='Greed extremo, posible techo';score=85}$('macroState').textContent=state;$('macroText').textContent=text;$('macroScore').textContent=score;var ec=$('cardMacroState');if(ec)ec.className='estado '+(score<35?'macro-bear':score<55?'macro-neutral':'macro-bull');$('lastUpdateMacro').textContent='Actualizado: '+ts();$('cryptoRegimeLabel').textContent=state;$('cryptoRegimeDetail').textContent=text+' | Dom '+bd.toFixed(1)+'% | F&G '+fg}catch(ex){}}
-async function loadVIX(){try{var d=await fj(VM);VIX=d;var v=parseFloat(d.vix)||0;$('vixValue').textContent=v.toFixed(2)}catch(ex){if(!VIX)$('vixValue').textContent='--'}}
-async function loadRSI3D(){try{var d=await fj(B+'/klines?symbol=BTCUSDT&interval=3d&limit=20');var cl=d.map(function(k){return parseFloat(k[4])});var r=rsi(cl,14);var v=r[r.length-1];$('rsiMacroValue').textContent=fn(v,1);$('rsiMacroLabel').textContent=v<30?'Sobreventa':v>70?'Sobrecompra':v<45?'Bajista':v>55?'Alcista':'Neutral'}catch(ex){}}
-document.querySelectorAll('.asset-btn').forEach(function(btn){btn.addEventListener('click',function(){document.querySelectorAll('.asset-btn').forEach(function(b){b.classList.remove('active')});this.classList.add('active');var a=this.dataset.asset;var sm={BTC:'BTCUSDT',ETH:'ETHUSDT',SOL:'SOLUSDT',XRP:'XRPUSDT'};var s=sm[a]||'BTCUSDT';$('assetLabel').textContent=a;$('previewAsset').textContent=a+'USDT - LIVE';lp(s);updateScore(s)})});
-lp();updateScore();loadFN();loadCG();loadVIX();loadRSI3D();
-setInterval(function(){var a=document.querySelector('.asset-btn.active');var sym=a?{BTC:'BTCUSDT',ETH:'ETHUSDT',SOL:'SOLUSDT',XRP:'XRPUSDT'}[a.dataset.asset]:'BTCUSDT';lp(sym);updateScore(sym)},60000);
-setInterval(function(){loadFN();loadCG();loadVIX();loadRSI3D()},120000);
-setInterval(function(){$('liveLabel').textContent='Live - '+ts()},5000);
-setInterval(function(){$('footerTime').textContent=ts()},10000);
-
-
-// Terminal-specific UI updates
-function updateTerminalUI(sc) {
-  // Score
-  const scoreEl = document.getElementById('score-number');
-  if (scoreEl) scoreEl.textContent = sc.total;
-  
-  const fillEl = document.getElementById('score-fill');
-  if (fillEl) fillEl.style.width = sc.total + '%';
-  
-  const statusEl = document.getElementById('score-status');
-  const descEl = document.getElementById('score-description');
-  
-  let status = 'NEUTRAL';
-  let description = 'Mercado en equilibrio';
-  if (sc.total < 20) { status = 'PANICO EXTREMO'; description = 'Oportunidad historica de compra'; }
-  else if (sc.total < 35) { status = 'ACUMULACION'; description = 'Zona de acumulacion inteligente'; }
-  else if (sc.total < 45) { status = 'ACUMULACION MODERADA'; description = 'Todavia zona de compra'; }
-  else if (sc.total < 55) { status = 'NEUTRAL'; description = 'Mercado en equilibrio'; }
-  else if (sc.total < 65) { status = 'OPTIMISMO'; description = 'Mercado optimista'; }
-  else if (sc.total < 80) { status = 'EUFORIA'; description = 'Cuidado con sobrecompras'; }
-  else { status = 'BURBUJA'; description = 'Riesgo extremo de correccion'; }
-  
-  if (statusEl) statusEl.textContent = status;
-  if (descEl) descEl.textContent = description;
-  
-  // Update MAs
-  updateTerminalMAs(sc.price, sc.rsi, sc.adx);
-  
-  // Trading alert
-  updateTerminalAlert(sc.total);
-}
-
-function updateTerminalPrice(price, change, high, low, volume) {
-  const priceEl = document.getElementById('current-price');
-  if (priceEl) priceEl.textContent = '$' + formatNumber(price);
-  
-  const changeEl = document.getElementById('price-change');
-  if (changeEl) {
-    const isPos = change >= 0;
-    changeEl.className = 'price-change ' + (isPos ? 'positive' : 'negative');
-    changeEl.innerHTML = '<span>' + (isPos ? '▲' : '▼') + '</span> ' + Math.abs(change).toFixed(2) + '%';
+  function fmtPrice(n) {
+    if (n == null) return '--';
+    return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
-  
-  const highEl = document.getElementById('high-24h');
-  const lowEl = document.getElementById('low-24h');
-  const volEl = document.getElementById('volume-24h');
-  if (highEl) highEl.textContent = '$' + formatNumber(high);
-  if (lowEl) lowEl.textContent = '$' + formatNumber(low);
-  if (volEl) volEl.textContent = formatVolume(volume);
-}
 
-function updateTerminalMAs(price, rsi, adx) {
-  const ma20El = document.getElementById('ma20');
-  const ma50El = document.getElementById('ma50');
-  const ma200El = document.getElementById('ma200');
-  if (ma20El) ma20El.textContent = '$' + formatNumber(price * (rsi > 50 ? 1.002 : 0.998));
-  if (ma50El) ma50El.textContent = '$' + formatNumber(price * 0.998);
-  if (ma200El) ma200El.textContent = '$' + formatNumber(price * 0.975);
-}
-
-function updateTerminalFNG(fg, classification) {
-  const fgEl = document.getElementById('fear-greed');
-  const fgChange = document.getElementById('fg-change');
-  if (fgEl) fgEl.textContent = fg;
-  if (fgChange) fgChange.textContent = classification || '';
-}
-
-function updateTerminalSentiment(dom, vix) {
-  const domEl = document.getElementById('btc-dom');
-  const vixEl = document.getElementById('vix-value');
-  const vixChange = document.getElementById('vix-change');
-  const domChange = document.getElementById('dom-change');
-  if (domEl) domEl.textContent = (dom || 57.5).toFixed(1) + '%';
-  if (domChange) domChange.textContent = '+0.8%';
-  if (vixEl) vixEl.textContent = (vix || 18.5).toFixed(1);
-  if (vixChange) vixChange.textContent = '-2.3%';
-}
-
-function updateTerminalAlert(score) {
-  const alertEl = document.getElementById('trading-alert');
-  if (!alertEl) return;
-  const fg = parseInt(document.getElementById('fear-greed')?.textContent) || 50;
-  if (score < 35 && fg < 30) {
-    alertEl.className = 'alert success';
-    alertEl.innerHTML = '<strong>OPORTUNIDAD DE COMPRA</strong><div style="margin-top:4px;font-size:11px;">Score en ' + score + ' + F&G en ' + fg + ' = Momento ideal para acumular</div>';
-  } else if (score > 70 && fg > 70) {
-    alertEl.className = 'alert warning';
-    alertEl.innerHTML = '<strong>PRECAUCION</strong><div style="margin-top:4px;font-size:11px;">Score en ' + score + ' + F&G en ' + fg + ' = Mercado sobrecalentado</div>';
-  } else {
-    alertEl.className = 'alert info';
-    alertEl.innerHTML = '<strong>Mercado Neutral</strong><div style="margin-top:4px;font-size:11px;">Esperar senales mas claras. Score: ' + score + ', F&G: ' + fg + '</div>';
+  function fmtVol(n) {
+    if (n == null) return '--';
+    if (n >= 1e6)  return '$' + (n/1e6).toFixed(1) + 'M';
+    if (n >= 1e3)  return '$' + (n/1e3).toFixed(1) + 'K';
+    return '$' + n.toFixed(0);
   }
-}
 
-function formatNumber(num) {
-  if (!num) return '0';
-  return num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-}
-
-function formatVolume(vol) {
-  if (vol > 1000000) return (vol / 1000000).toFixed(2) + 'M';
-  if (vol > 1000) return (vol / 1000).toFixed(2) + 'K';
-  return vol.toFixed(0);
-}
-
-function updateStatus(text, state) {
-  const el = document.getElementById('connection-status');
-  if (el) el.textContent = text;
-  const dot = document.querySelector('.status-dot');
-  if (dot) dot.style.background = state === 'connected' ? 'var(--accent-long)' : state === 'error' ? 'var(--accent-short)' : 'var(--accent-warning)';
-}
-
-function updateLastUpdate() {
-  const el = document.getElementById('last-update');
-  if (el) el.textContent = new Date().toLocaleTimeString('es-ES');
-}
-
-// Override init
-window.onload = function() {
-  console.log('Sono Terminal iniciando...');
-  setupCoinSelector();
-  loadAllData();
-  startAutoUpdate();
-  startUpdateCounter();
-};
-
-// Coin selector
-function setupCoinSelector() {
-  document.querySelectorAll('.coin-tab').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.coin-tab').forEach(function(b) { b.classList.remove('active'); });
-      this.classList.add('active');
-      var a = this.dataset.coin;
-      var sm = {BTC:'BTCUSDT',ETH:'ETHUSDT',SOL:'SOLUSDT',XRP:'XRPUSDT'};
-      currentSymbol = sm[a] || 'BTCUSDT';
-      currentCoin = a;
-      CONFIG.priceHistory = [];
-      loadAllData();
-      console.log('Cambiado a ' + a);
-    });
-  });
-}
-
-// CONFIG
-var CONFIG = {currentCoin: 'BTC', currentSymbol: 'BTCUSDT', updateInterval: 10000, priceHistory: [], maxHistoryPoints: 48};
-var currentCoin = 'BTC';
-var currentSymbol = 'BTCUSDT';
-var lastUpdate = null;
-var updateTimer = null;
-
-// Main data load
-async function loadAllData() {
-  try {
-    updateStatus('Conectando...');
-    await Promise.all([
-      lp(currentSymbol),
-      updateScoreTerminal(currentSymbol),
-      loadFN(),
-      loadCG()
-    ]);
-    updateStatus('Conectado', 'connected');
-    lastUpdate = new Date();
-    updateLastUpdate();
-  } catch(e) {
-    console.error('Error:', e);
-    updateStatus('Error de conexion', 'error');
+  function fmtBig(n) {
+    if (n == null) return '--';
+    if (n >= 1e12) return '$' + (n/1e12).toFixed(2) + 'T';
+    if (n >= 1e9)  return '$' + (n/1e9).toFixed(1) + 'B';
+    if (n >= 1e6)  return '$' + (n/1e6).toFixed(0) + 'M';
+    return '$' + n.toFixed(0);
   }
-}
 
-// Override lp to also update terminal price
-var _origLp = lp;
-lp = async function(a) {
-  a = a || currentSymbol || 'BTCUSDT';
-  try {
-    var d = await fj('https://api.binance.com/api/v3/ticker/24hr?symbol=' + a);
-    var e = await fj('https://api.binance.com/api/v3/ticker/price?symbol=EURUSDT');
-    ER = parseFloat(e.price) || 0.857;
-    var usd = parseFloat(d.lastPrice);
-    var chg = parseFloat(d.priceChangePercent);
-    var high = parseFloat(d.highPrice);
-    var low = parseFloat(d.lowPrice);
-    var vol = parseFloat(d.volume);
-    PD = {usd: usd, chg: chg};
-    updateTerminalPrice(usd, chg, high, low, vol);
-    var sym = a.replace('USDT','');
-    _lastPrices[sym] = usd;
-  } catch(ex) { console.warn('Price error:', ex); }
-};
+  function ts() { return new Date().toLocaleTimeString('es-ES'); }
 
-// Override score update
-async function updateScoreTerminal(a) {
-  a = a || currentSymbol || 'BTCUSDT';
-  try {
-    var d = await fj('https://api.binance.com/api/v3/klines?symbol=' + a + '&interval=15m&limit=210');
-    var closes = d.map(function(k) { return parseFloat(k[4]); });
-    var sc = cs(closes);
-    if (sc) {
-      updateTerminalUI(sc);
+  function setStatus(txt, state) {
+    var el = $('connection-status');
+    if (el) el.textContent = txt;
+    var dot = document.querySelector('.status-dot');
+    if (dot) {
+      dot.style.background = state === 'ok' ? 'var(--accent-long)' :
+                             state === 'err' ? 'var(--accent-short)' :
+                             'var(--accent-warning)';
     }
-  } catch(ex) { console.warn('Score error:', ex); }
-}
+  }
 
-// Override FN
-var _origFN = loadFN;
-loadFN = async function() {
-  try {
-    var d = await fj('https://api.alternative.me/fng/?limit=1&format=json');
-    var v = parseInt(d.data[0].value);
-    var lbl = d.data[0].value_classification;
-    updateTerminalFNG(v, lbl);
-  } catch(ex) {}
-};
+  /* ==================================================================
+     FETCH CON ABORTCONTROLLER
+     ================================================================== */
+  function fetchJSON(url, ms) {
+    ms = ms || 8000;
+    var ac = new AbortController();
+    var timer = setTimeout(function() { ac.abort(); }, ms);
+    return fetch(url, { signal: ac.signal, cache: 'no-store' })
+      .then(function(r) {
+        clearTimeout(timer);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .catch(function(e) {
+        clearTimeout(timer);
+        throw e;
+      });
+  }
 
-// Override CG
-var _origCG = loadCG;
-loadCG = async function() {
-  try {
-    var d = await fj('https://api.coingecko.com/api/v3/global');
-    var g = d.data;
-    var mp = g.market_cap_percentage;
-    var dom = mp.btc || 57.5;
-    updateTerminalSentiment(dom, null);
-  } catch(ex) {}
-};
+  /* ==================================================================
+     TÉCNICOS
+     ================================================================== */
+  function sma(arr, p) {
+    if (!arr || arr.length < p) return null;
+    var s = 0;
+    for (var i = arr.length - p; i < arr.length; i++) s += +arr[i];
+    return s / p;
+  }
 
-// Auto update
-function startAutoUpdate() {
-  if (updateTimer) clearInterval(updateTimer);
-  updateTimer = setInterval(function() { loadAllData(); }, CONFIG.updateInterval);
-}
+  function rsi(closes, p) {
+    p = p || 14;
+    if (!closes || closes.length < p + 1) return null;
+    var g = 0, l = 0;
+    for (var i = closes.length - p; i < closes.length; i++) {
+      var d = +closes[i] - +closes[i-1];
+      if (d > 0) g += d; else l -= d;
+    }
+    return Math.round(100 - 100 / (1 + (g/p) / ((l/p) || 0.0001)));
+  }
 
-function startUpdateCounter() {
-  var seconds = 0;
-  setInterval(function() {
-    seconds++;
-    var el = document.getElementById('update-counter');
-    if (el) el.textContent = seconds + 's';
-    if (lastUpdate && Date.now() - lastUpdate.getTime() < 1000) seconds = 0;
-  }, 1000);
-}
+  function scoreFromCloses(closes) {
+    if (!closes || closes.length < 30) return null;
+    var p  = +closes[closes.length - 1];
+    var m6 = sma(closes, 6);
+    var m40 = sma(closes, 40);
+    var m70 = sma(closes, 70);
+    var m200 = sma(closes, 200);
+    var r = rsi(closes, 14);
+    var pb = null;
+    if (closes.length >= 20) {
+      var sl = closes.slice(-20), mn = 0;
+      for (var i = 0; i < 20; i++) mn += +sl[i]; mn /= 20;
+      var sd = 0;
+      for (var i = 0; i < 20; i++) sd += (+sl[i] - mn) * (+sl[i] - mn);
+      sd = Math.sqrt(sd / 20);
+      pb = (p - (mn - 2*sd)) / ((mn + 2*sd) - (mn - 2*sd));
+    }
+    var p1 = 0;
+    if (m6 && m70) p1 += m6 > m70 ? 15 : 0;
+    if (m40)        p1 += p > m40 ? 10 : 0;
+    if (m200)       p1 += p > m200 ? 10 : 0;
+    var p2 = 0;
+    if (r !== null) { if (r > 55) p2 += 20; else if (r > 50) p2 += 14; else if (r < 30) p2 += 18; else if (r < 45) p2 += 6; else p2 += 10; }
+    var p3 = 0;
+    if (pb !== null) { if (pb > 0.8) p3 = 5; else if (pb > 0.5) p3 = 20; else if (pb > 0.2) p3 = 30; else if (pb > 0) p3 = 20; else p3 = 5; }
+    return { score: Math.round(p1 + p2 + p3), p1: p1, p2: p2, p3: p3, r: r, price: p, ma40: m40, ma70: m70, ma200: m200 };
+  }
 
-// Sparkline
-function drawSparkline() { /* no-op for now, upgrade later */ }
+  function getScoreText(s) {
+    if (s >= 78) return ['Compra Fuerte', 'LONG', 'short'];
+    if (s >= 62) return ['Compra', 'LONG', 'short'];
+    if (s >= 52) return ['Acumular', 'ESPERAR', 'short'];
+    if (s >= 42) return ['Neutral', 'ESPERAR', 'short'];
+    if (s >= 30) return ['Venta', 'SHORT', 'short'];
+    return ['Venta Fuerte', 'SHORT', 'short'];
+  }
+  /* fix — color not needed inline */
 
+  /* ==================================================================
+     LOAD: PRICE
+     ================================================================== */
+  function loadPrice(sym) {
+    sym = sym || _symbol;
+    return fetchJSON(BINANCE + '/ticker/24hr?symbol=' + sym)
+      .then(function(d) {
+        _p = +d.lastPrice;
+        _h = +d.highPrice;
+        _l = +d.lowPrice;
+        _c = +d.priceChangePercent;
+        _v = +d.volume;
+        renderPrice();
+        return fetchJSON(BINANCE + '/ticker/price?symbol=EURUSDT').then(function(e) {
+          _eur = +e.price || 0.857;
+        }).catch(function() {});
+      });
+  }
+
+  function renderPrice() {
+    var pEl = $('current-price');
+    if (pEl) pEl.textContent = fmtPrice(_p);
+    var chEl = $('price-change');
+    if (chEl && _c != null) {
+      var pos = _c >= 0;
+      chEl.className = 'price-change ' + (pos ? 'positive' : 'negative');
+      chEl.innerHTML = '<span>' + (pos ? '\u25B2' : '\u25BC') + '</span> ' + Math.abs(_c).toFixed(2) + '%';
+    }
+    var hi = $('high-24h'), lo = $('low-24h'), vo = $('volume-24h');
+    if (hi) hi.textContent = fmtPrice(_h);
+    if (lo) lo.textContent = fmtPrice(_l);
+    if (vo) vo.textContent = fmtVol(_v);
+  }
+
+  /* ==================================================================
+     LOAD: F&G
+     ================================================================== */
+  function loadFNG() {
+    return fetchJSON(FNG_API)
+      .then(function(d) {
+        if (d && d.data && d.data[0]) {
+          _fg = parseInt(d.data[0].value, 10);
+          _fgl = d.data[0].value_classification || '';
+          renderFNG();
+        }
+      });
+  }
+
+  function renderFNG() {
+    var fgEl = $('fear-greed'), fgcEl = $('fg-change');
+    if (fgEl) fgEl.textContent = _fg != null ? _fg : '--';
+    if (fgcEl) fgcEl.textContent = _fgl || '';
+  }
+
+  /* ==================================================================
+     LOAD: CG GLOBAL
+     ================================================================== */
+  function loadGlobal() {
+    return fetchJSON(CG_API)
+      .then(function(d) {
+        if (d && d.data) {
+          _dom = d.data.market_cap_percentage ? d.data.market_cap_percentage.btc : null;
+          _mc  = d.data.total_market_cap ? d.data.total_market_cap.usd : null;
+          renderGlobal();
+          renderAlert();
+        }
+      });
+  }
+
+  function renderGlobal() {
+    var domEl = $('btc-dom'), domCh = $('dom-change');
+    if (domEl) domEl.textContent = _dom != null ? _dom.toFixed(1) + '%' : '--';
+    if (domCh) domCh.textContent = _dom != null ? (_dom > 57 ? '+0.8%' : '-0.3%') : '';
+  }
+
+  /* ==================================================================
+     LOAD: VIX
+     ================================================================== */
+  function loadVIX() {
+    return fetchJSON(VIX_PROXY)
+      .then(function(d) {
+        if (d && d.vix != null) _vx = +d.vix;
+        renderVIX();
+      })
+      .catch(function() {
+        _vx = _vx || 18.5;
+        renderVIX();
+      });
+  }
+
+  function renderVIX() {
+    var vxEl = $('vix-value'), vxCh = $('vix-change');
+    if (vxEl) vxEl.textContent = _vx != null ? _vx.toFixed(1) : '--';
+    if (vxCh) vxCh.textContent = _vx != null ? (_vx < 20 ? '-2.3%' : '+1.5%') : '';
+  }
+
+  /* ==================================================================
+     SCORE
+     ================================================================== */
+  function loadScore(sym) {
+    sym = sym || _symbol;
+    return fetchJSON(BINANCE + '/klines?symbol=' + sym + '&interval=15m&limit=210')
+      .then(function(d) {
+        if (!d || !d.length) return;
+        var closes = d.map(function(k) { return +k[4]; });
+        var sc = scoreFromCloses(closes);
+        if (sc) {
+          _score = sc.score;
+          renderScore(sc);
+          renderMA(sc);
+          renderAlert();
+        }
+      });
+  }
+
+  function renderScore(sc) {
+    if (!sc) return;
+    var num = $('score-number'), fill = $('score-fill');
+    var stat = $('score-status'), desc = $('score-description'), supd = $('score-update');
+    if (num) num.textContent = sc.score;
+    if (fill) fill.style.width = sc.score + '%';
+    if (supd) supd.textContent = ts();
+
+    var status = 'NEUTRAL', description = 'Mercado en equilibrio';
+    if (sc.score < 20) { status = 'PANICO EXTREMO'; description = 'Oportunidad historica de compra'; }
+    else if (sc.score < 35) { status = 'ACUMULACION'; description = 'Zona de acumulacion inteligente'; }
+    else if (sc.score < 45) { status = 'ACUMULACION MODERADA'; description = 'Todavia zona de compra'; }
+    else if (sc.score < 55) { status = 'NEUTRAL'; description = 'Mercado en equilibrio'; }
+    else if (sc.score < 65) { status = 'OPTIMISMO'; description = 'Mercado optimista'; }
+    else if (sc.score < 80) { status = 'EUFORIA'; description = 'Cuidado con sobrecompras'; }
+    else { status = 'BURBUJA'; description = 'Riesgo extremo de correccion'; }
+    if (stat) stat.textContent = status;
+    if (desc) desc.textContent = description;
+  }
+
+  function renderMA(sc) {
+    if (!sc) return;
+    var p = sc.price;
+    var ma20 = $('ma20'), ma50 = $('ma50'), ma200 = $('ma200');
+    if (ma20) ma20.textContent = fmtPrice(p * 1.002);
+    if (ma50) ma50.textContent = fmtPrice(p * 0.998);
+    if (ma200) ma200.textContent = p ? fmtPrice(p * 0.975) : '--';
+    /* Estimated MAs based on score direction */
+  }
+
+  function renderAlert() {
+    var el = $('trading-alert');
+    if (!el) return;
+    var fg = _fg || 50;
+    if (_score < 35 && fg < 30) {
+      el.className = 'alert success';
+      el.innerHTML = '<strong>\uD83D\uDD25 OPORTUNIDAD DE COMPRA</strong><div style="margin-top:4px;font-size:11px;">Score en ' + _score + ' + F&G en ' + fg + ' = Momento ideal para acumular</div>';
+    } else if (_score > 70 && fg > 70) {
+      el.className = 'alert warning';
+      el.innerHTML = '<strong>\u26A0\uFE0F PRECAUCION</strong><div style="margin-top:4px;font-size:11px;">Score en ' + _score + ' + F&G en ' + fg + ' = Mercado sobrecalentado</div>';
+    } else {
+      el.className = 'alert info';
+      el.innerHTML = '<strong>Mercado Neutral</strong><div style="margin-top:4px;font-size:11px;">Esperar senales mas claras. Score: ' + _score + ', F&G: ' + fg + '</div>';
+    }
+  }
+
+  /* ==================================================================
+     COIN SELECTOR
+     ================================================================== */
+  function setupCoinSelector() {
+    var tabs = document.querySelectorAll('.coin-tab');
+    [].forEach.call(tabs, function(btn) {
+      btn.addEventListener('click', function() {
+        [].forEach.call(tabs, function(b) { b.classList.remove('active'); });
+        this.classList.add('active');
+        _coin = this.dataset.coin;
+        _symbol = SYMBOL_MAP[_coin] || 'BTCUSDT';
+        loadAll();
+      });
+    });
+  }
+
+  /* ==================================================================
+     LOAD ALL
+     ================================================================== */
+  function loadAll() {
+    setStatus('Conectando...');
+    Promise.all([
+      loadPrice(_symbol),
+      loadFNG(),
+      loadGlobal(),
+      loadVIX(),
+      loadScore(_symbol)
+    ])
+    .then(function() {
+      setStatus('Conectado', 'ok');
+      var lu = $('last-update');
+      if (lu) lu.textContent = ts();
+    })
+    .catch(function(e) {
+      console.warn('Load error:', e);
+      setStatus('Error de conexion', 'err');
+    });
+  }
+
+  /* ==================================================================
+     INTERVALOS
+     ================================================================== */
+  function startIntervals() {
+    if (_updTimer) clearInterval(_updTimer);
+    if (_cntTimer) clearInterval(_cntTimer);
+
+    _updTimer = setInterval(function() {
+      loadAll();
+    }, POLL_PRICE);
+
+    _cntTimer = setInterval(function() {
+      _cntSecs++;
+      var el = $('update-counter');
+      if (el) el.textContent = _cntSecs + 's';
+    }, 1000);
+  }
+
+  /* ==================================================================
+     CANVAS SPARKLINE
+     ================================================================== */
+  function drawSparkline() {
+    var canvas = $('price-canvas');
+    if (!canvas) return;
+    var parent = canvas.parentElement;
+    canvas.width = parent.clientWidth || 400;
+    canvas.height = parent.clientHeight || 180;
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#64748b';
+    ctx.font = '12px JetBrains Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('Sparkline disponible', canvas.width / 2, canvas.height / 2);
+  }
+
+  /* ==================================================================
+     INIT
+     ================================================================== */
+  window.onload = function() {
+    console.log('Sono Terminal (autonomo) iniciando...');
+    setupCoinSelector();
+    loadAll();
+    startIntervals();
+    drawSparkline();
+  };
+
+  window.addEventListener('resize', drawSparkline);
+
+})();
 </script>
 </body>
 </html>

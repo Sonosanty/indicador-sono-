@@ -43,7 +43,7 @@ function sTF(tf){CTF=tf;document.querySelectorAll(".tfb").forEach(function(b){b.
 function saveHist(key,val){try{var arr=JSON.parse(localStorage.getItem(key)||"[]");arr.push({v:val,t:Date.now()});if(arr.length>7)arr=arr.slice(-7);localStorage.setItem(key,JSON.stringify(arr))}catch(e){}}
 function getHist(key){try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return[]}}
 function renderMiniHist(){var fgH=getHist("sono_fg");var vxH=getHist("sono_vx");var fgE=$("fg-hist");var vxE=$("vx-hist");if(fgE&&fgH.length){fgE.innerHTML=fgH.map(function(h){var d=new Date(h.t);var cl=h.v<=20?"pgg":h.v<=40?"pw":h.v<=60?"pgg2":h.v<=80?"pw":"prr";return"<span class=\"pl "+cl+"\" style=\"font-size:10px;padding:1px 6px\">"+h.v+"</span>"}).join(" ")}if(vxE&&vxH.length){vxE.innerHTML=vxH.map(function(h){var cl=h.v<18?"pgg":h.v<25?"pgg2":"prr";return"<span class=\"pl "+cl+"\" style=\"font-size:10px;padding:1px 6px\">"+h.v.toFixed(1)+"</span>"}).join(" ")}}
-function vxFetch(){return new Promise(function(r){var ac=new AbortController;setTimeout(function(){ac.abort()},8000);fetch("https://vix-proxy.sonosanty.workers.dev/vix",{signal:ac.signal}).then(function(r2){return r2.json()}).then(function(d){if(d&&d.vix){ST.vx=d.vix;$( "vxv" ).textContent=d.vix.toFixed(2);$( "vxl" ).textContent="VIX REAL";if($("sv"))updAll()}}).catch(function(){ST.vx=ST.vx||15;$( "vxl" ).textContent="VIX estimado";if($("sv"))updAll()}).finally(function(){r()})})};
+
 
 // ===== SKELETON LOADER =====
 function renderHTML(){
@@ -166,10 +166,6 @@ function fetchFg(){
   fetchUrl("https://api.alternative.me/fng/?limit=1").then(function(g){if(g&&g.data&&g.data[0]){ST.fg=+g.data[0].value;saveHist("sono_fg",ST.fg);}}).catch(function(){ST.fg=ST.fg||50});
 }
 
-function fetchGl(){
-  fetchUrl("https://vix-proxy.sonosanty.workers.dev/global").then(function(gl){if(gl&&gl.data){ST.db=gl.data.dominance||0;ST.mc=gl.data.total_market_cap||0;ST.de=gl.data.eth_dominance||0}}).catch(function(){});
-}
-
 function fetchAll(){
   var s=AS[CA];
   MA_CACHE={};
@@ -188,6 +184,7 @@ function fetchAll(){
         renderRealHTML();
         updAll(s);
       }
+      ST.loading=false;
       ST._fetching=false;
     }
   }
@@ -216,10 +213,10 @@ function scheduleUpd(){
 }
 
 // Init
+ST.loading=true;
 renderHTML();
 document.querySelectorAll(".ab button").forEach(function(b){b.addEventListener("click",function(){CA=this.getAttribute("data-a");document.querySelectorAll(".ab button").forEach(function(x){x.classList.remove("ac")});this.classList.add("ac");_dataReady=false;var sb=document.getElementById('st-bar');if(sb){sb.className='st-bar co';sb.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> Conectando fuentes de datos...'};renderHTML();fetchAll()})});
 fetchAll();setInterval(fetchAll,30000);
-vxFetch();setInterval(vxFetch,120000);
 })();
 
 

@@ -34,7 +34,7 @@ self.addEventListener('fetch', (e) => {
   }
 
   // External APIs: network first, cache fallback
-  if (url.hostname !== 'indicador-sono.pages.dev') {
+  if (url.hostname !== self.location.hostname) {
     e.respondWith(
       fetch(e.request).catch(() => caches.match(e.request))
     )
