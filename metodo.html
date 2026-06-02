@@ -351,10 +351,9 @@ const fmtK=n=>n>=1e12?'$'+(n/1e12).toFixed(2)+'T':n>=1e9?'$'+(n/1e9).toFixed(1)+
 
 /* ── FETCH HELPER con AbortController ── */
 function fetchJson(url,ms=10000){
- if(_ac)_ac.abort();
- _ac=new AbortController();
- const timer=setTimeout(()=>_ac.abort(),ms);
- return fetch(url,{signal:_ac.signal}).finally(()=>clearTimeout(timer)).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();});
+ const ac=new AbortController();
+ const timer=setTimeout(()=>ac.abort(),ms);
+ return fetch(url,{signal:ac.signal}).finally(()=>clearTimeout(timer)).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();});
 }
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}
 
