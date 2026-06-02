@@ -8,6 +8,7 @@ cp index.html indicador_cloudflare/index.html
 cp rangos.html indicador_cloudflare/rangos.html
 cp trades.html indicador_cloudflare/trades.html
 cp metodo.html indicador_cloudflare/metodo/index.html
+cp metodo.html indicador_cloudflare/metodo.html
 cp dashboard.html indicador_cloudflare/dashboard.html
 
 # Copy JS and assets
