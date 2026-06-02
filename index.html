@@ -1,11 +1,12 @@
 <!DOCTYPE html><html lang="es"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Sono Pro - Dashboard V6</title>
-<!-- v6.0.3 202606011441 -->
+<!-- v6.0.4 202606020847 - fix: CoinGecko global directo, fallback Worker VIX -->
 <link rel="icon" href="/favicon.svg">
 <link rel="preconnect" href="https://stream.binance.com">
 <link rel="preconnect" href="https://api.binance.com">
 <link rel="preconnect" href="https://api.alternative.me">
+<link rel="preconnect" href="https://api.coingecko.com">
 <link rel="preconnect" href="https://vix-proxy.sonosanty.workers.dev">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -279,7 +280,7 @@ function fetchAll(){
 fetchUrl("https://api.binance.com/api/v3/ticker/24hr?symbol="+s).then(function(t){ST.price=+t.lastPrice;ST.high=+t.highPrice;ST.low=+t.lowPrice;ST.ch=+t.priceChangePercent;}).catch(function(){var cgId=CA==="BTC"?"bitcoin":CA==="ETH"?"ethereum":CA==="SOL"?"solana":"ripple";fetchUrl("https://api.coingecko.com/api/v3/simple/price?ids="+cgId+"&vs_currencies=usd&include_24hr_change=true").then(function(gd){if(gd&&gd[cgId]){ST.price=gd[cgId].usd;ST.ch=gd[cgId].usd_24h_change||0}}).catch(function(){})}).then(function(){done()}).catch(function(){done()});
 fetchUrl("https://api.binance.com/api/v3/ticker/price?symbol=EURUSDT").then(function(e){ST.er=+e.price||1.08}).catch(function(){ST.er=ST.er||1.08}).then(function(){done()}).catch(function(){done()});
 fetchUrl("https://api.alternative.me/fng/?limit=1").then(function(g){if(g&&g.data&&g.data[0]){ST.fg=+g.data[0].value;saveHist("sono_fg",ST.fg);}}).catch(function(){ST.fg=ST.fg||50}).then(function(){done()}).catch(function(){done()});
-fetchUrl("https://vix-proxy.sonosanty.workers.dev/global").then(function(gl){if(gl&&gl.data){ST.db=gl.data.dominance||0;ST.mc=gl.data.total_market_cap||0;ST.de=gl.data.eth_dominance||0}}).catch(function(){}).then(function(){done()}).catch(function(){done()});
+fetchUrl("https://api.coingecko.com/api/v3/global").then(function(gd){if(gd&&gd.data){ST.db=gd.data.market_cap_percentage.btc||0;ST.mc=gd.data.total_market_cap.usd||0;ST.de=gd.data.market_cap_percentage.eth||0}}).catch(function(){fetchUrl("https://vix-proxy.sonosanty.workers.dev/global").then(function(gl){if(gl&&gl.data&&gl.data.total_market_cap>0){ST.db=gl.data.dominance||0;ST.mc=gl.data.total_market_cap||0;ST.de=gl.data.eth_dominance||0}}).catch(function(){})}).then(function(){done()}).catch(function(){done()});
 fetchUrl("https://vix-proxy.sonosanty.workers.dev/vix").then(function(d){if(d&&d.vix){ST.vx=d.vix;saveHist("sono_vx",ST.vx);}}).catch(function(){}).then(function(){done()}).catch(function(){done()});
 var tfs=["1m","3m","5m","15m","1h","3d"],tfi=0;
 function nxt(){
@@ -309,3 +310,4 @@ vxFetch();setInterval(vxFetch,120000);
 
 </script>
 </body></html>
+
