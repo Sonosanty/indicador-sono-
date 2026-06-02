@@ -1,0 +1,18 @@
+{
+  "name": "Sono Pro - Trading Dashboard",
+  "short_name": "Sono Pro",
+  "description": "Análisis cuantitativo BTC/ETH/SOL/XRP con Score Maestro",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "trading", "cryptocurrency"]
+}

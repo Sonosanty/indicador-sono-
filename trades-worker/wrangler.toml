@@ -1,0 +1,8 @@
+name = "sono-trades"
+main = "src/worker.js"
+compatibility_date = "2026-06-01"
+
+[[kv_namespaces]]
+binding = "TRADES_KV"
+id = "faaaf6ada96544329ab9ea6f9340c2c4"
+preview_id = "7df382b7958a45c99d73c725049f5981"
