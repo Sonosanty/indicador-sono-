@@ -195,7 +195,7 @@ fetchUrl("https://api.binance.com/api/v3/ticker/24hr?symbol="+s).then(function(t
 fetchUrl("https://api.binance.com/api/v3/ticker/price?symbol=EURUSDT").then(function(e){ST.er=+e.price||1.08}).catch(function(){ST.er=ST.er||1.08}).then(function(){done()}).catch(function(){done()});
 fetchUrl("https://api.alternative.me/fng/?limit=1").then(function(g){if(g&&g.data&&g.data[0]){ST.fg=+g.data[0].value;saveHist("sono_fg",ST.fg);}}).catch(function(){ST.fg=ST.fg||50}).then(function(){done()}).catch(function(){done()});
 fetchUrl("https://api.coingecko.com/api/v3/global").then(function(gd){if(gd&&gd.data){ST.db=gd.data.market_cap_percentage.btc||0;ST.mc=gd.data.total_market_cap.usd||0;ST.de=gd.data.market_cap_percentage.eth||0}}).catch(function(){fetchUrl("https://vix-proxy.sonosanty.workers.dev/global").then(function(gl){if(gl&&gl.data&&gl.data.total_market_cap>0){ST.db=gl.data.dominance||0;ST.mc=gl.data.total_market_cap||0;ST.de=gl.data.eth_dominance||0}}).catch(function(){})}).then(function(){done()}).catch(function(){done()});
-fetchUrl("https://vix-proxy.sonosanty.workers.dev/vix").then(function(d){if(d&&d.vix){ST.vx=d.vix;saveHist("sono_vx",ST.vx);}}).catch(function(){}).then(function(){done()}).catch(function(){done()});
+fetchUrl("https://vix-proxy.sonosanty.workers.dev/vix").then(function(d){if(d&&d.vix){ST.vx=d.vix;saveHist("sono_vx",ST.vx);$( "vxv" ).textContent=d.vix.toFixed(2);$( "vxl" ).textContent="VIX REAL";}}).catch(function(){ST.vx=ST.vx||15;$( "vxl" ).textContent="VIX estimado";}).then(function(){done()}).catch(function(){done()});
 var tfs=["1m","3m","5m","15m","1h","3d"],tfi=0;
 function nxt(){
   if(tfi>=tfs.length)return;
