@@ -1,2 +1,2 @@
 # Sono Pro — Redirects
-/dashboard  /dashboard.html  200
+# /dashboard  /dashboard.html  200  # disabled: causes redirect loop with old deploy
