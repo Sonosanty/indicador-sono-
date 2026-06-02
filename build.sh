@@ -10,6 +10,7 @@ cp trades.html indicador_cloudflare/trades.html
 cp metodo.html indicador_cloudflare/metodo/index.html
 cp metodo.html indicador_cloudflare/metodo.html
 cp dashboard.html indicador_cloudflare/dashboard.html
+cp pagina.html indicador_cloudflare/pagina.html
 
 # Copy JS and assets
 cp app.js indicador_cloudflare/app.js
