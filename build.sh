@@ -1,7 +1,7 @@
 #!/bin/bash
-# Build script for Cloudflare Pages - Sono PRO v6.2.2
+# Build script for Cloudflare Pages - Sono PRO v6.3.0
 # Self-hosted assets: chart.js, luxon, adapters (no CDN)
-# Este script es el UNICO build command - ejecutar con: bash build.sh
+# Este script es el UNICO build command - se ejecuta desde git push
 echo "=== Sono PRO v6.2.2 build ==="
 mkdir -p indicador_cloudflare/assets/vendor
 
