@@ -35,3 +35,4 @@ cp manifest.json indicador_cloudflare/manifest.json 2>/dev/null || true
 echo "=== Build complete ==="
 ls -la indicador_cloudflare/
 ls -laR indicador_cloudflare/assets/ 2>/dev/null
+

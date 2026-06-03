@@ -1,24 +1,34 @@
 # Último Análisis Sono Trading Signals
-**Fecha:** 2026-05-30 23:25
+**Fecha:** 2026-06-03 10:10
 
 ## Estado Actual
-- **BTC:** Score 67 (COMPRA) — LONG @ ~$73,946 / $74,024 | Price: $73,993 | Bal: 20 USDT | ~+0.01R | Position: OPEN
-- **ETH:** Score 60 (ACUMULACIÓN) — saltado
-- **SOL:** Score 60 (ACUMULACIÓN) — saltado
-- **XRP:** Score 67 (COMPRA) — saltado
+- **BTC:** Score **51 (NEUTRAL)** — Price: $67,145 | RSI(14): 33 Bajista | ADX(14): 47 Fuerte
+- **Score Maestro:** Neutral | P1=10/35 P2=21/35 P3=20/30 → Rotación
 
 ## Macro
-- SPA no disponible por carga dinámica
-- Fear & Greed: (no disponible en esta ronda)
-- Datos anteriores: Extreme Fear 23
+- **Fear & Greed:** 11 — MIEDO EXTREMO 🟢
+- **VIX:** 16.08 — Bajo
+- **Market Cap:** $2.40T
+- **Dominancia BTC:** 55.9% — Equilibrio
+- **RSI 3D:** 29 — Bajista
+- **Sesgo Sono:** LONG SWING — Riesgo Medio
+- **Macro Global:** 4/6 Alcista
 
-## Trade Activo
-- BTC LONG @ $73,945.77 (primer lote) y $74,023.88 (segundo lote)
-- Price actual: ~$73,993 — prácticamente en break-even
-- R: ~0.00R aprox
+## Señales MTF BTC
+| Timeframe | Señal |
+|-----------|-------|
+| 1m | 51 Neutral |
+| 3m | 80 Compra fuerte |
+| 5m | 83 Compra fuerte |
+| 15m | 80 Compra fuerte |
+| **Confluencia** | **93/100 Alcista** |
 
-## Cambios vs Análisis Anterior (17:51)
-- **BTC: 77→67 (-10 pts)** — bajada significativa, aún en COMPRA
-- **ETH: 77→60 (-17 pts)** — de COMPRA a ACUMULACIÓN
-- **SOL: 72→60 (-12 pts)** — de COMPRA a ACUMULACIÓN
-- XRP: 62→67 (+5 pts) — estable
+## Cambios desde las 08:22
+- **Score Maestro: 90→51 (-39 pts)** 🔴 — COMPRA FUERTE → NEUTRAL
+- **RSI(14): 59→33** — de alcista a bajista
+- **P1 MAs: 35/35→10/25** — colapso de señales MA
+- **P2 ADX+RSI: 35/35→21/35**
+- **Confluencia MTF: 81→93 (+12 pts)** — paradoja, sube pese a score bajista
+- **BB %B: ~0.5 → 0.17** — ahora en sobreventa
+- **VIX: 15.77→16.08** — estable
+- **Bot Sono:** sin actividad desde 27-mayo (error de formato)

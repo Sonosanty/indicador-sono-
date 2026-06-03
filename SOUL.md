@@ -129,6 +129,7 @@ Si Santy menciona cualquiera de estas acciones, advertir proactivamente:
 - Skill `meta-router` instalado
 
 **Skills disponibles y cuándo usarlos:**
+- `sono` → **comandos SONO Pro V7** desde el chat. Cuando diga "sono precio", "sono analizar", "sono señal", "sono riesgo", "sono macro", "sono trades", "sono alerta", ejecutar `require('skills/sono/skill.js')` con `command`, `args` y `ai.ask`.
 - `perplexity-search` → precios, noticias, datos actuales, verificar rankings SEO
 - `active-memory` → recordar o recuperar información de sesiones anteriores
 - `meta-router` → cuando no está claro qué skill usar, él decide

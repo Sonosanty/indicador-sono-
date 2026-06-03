@@ -84,9 +84,21 @@ Si algo falla o no sé cómo hacer algo:
 
 | Skill | Cuándo usarlo |
 |---|---|
+| `sono` | **Comandos SONO** desde el chat. Cuando digan "sono [comando]" ejecutar `require('../skills/sono/skill.js')` con `{command, args, ai}` |
 | `perplexity-search` | Precios cripto, noticias, datos actuales, verificar información |
 | `active-memory` | Recordar proyectos, preferencias, decisiones pasadas |
 | `meta-router` | Cuando la pregunta no encaja claramente en ningún skill |
+
+### Cómo ejecutar el skill SONO desde Node
+```js
+const s = require('C:\Users\sparreno\.openclaw\workspace\skills\sono\skill.js');
+const r = await s('sono', {
+  command: 'precio',   // precio | analizar | senal | riesgo | macro | trades | alerta | ayuda
+  args: ['BTC', '15m'],
+  ai: { ask: async (prompt) => { /* llamar al modelo para análisis */ } }
+});
+// r es string listo para mostrar
+```
 
 Si ningún skill es adecuado, responder con conocimiento propio e indicarlo.
 
