@@ -4,6 +4,9 @@ var CTF="1m",CA="BTC";
 var ST={price:0,high:0,low:0,ch:0,kl:{},fg:50,vx:0,db:0,de:0,mc:0,er:1.08};
 var MA_CACHE={};
 var _dataReady=false;
+var SWR={fg:0,cg:0,vx:0,eur:0}; // timestamps de ultimo refresh exitoso
+var SWR_TTL={fg:300000,cg:180000,vx:120000,eur:900000}; // 5min, 3min, 2min, 15min
+function swrOk(k){return SWR[k]&&Date.now()-SWR[k]<SWR_TTL[k];}
 var AS={BTC:"BTCUSDT",ETH:"ETHUSDT",SOL:"SOLUSDT",XRP:"XRPUSDT"};
 function $(i){return document.getElementById(i)};
 function fk(n){return n>=1e12?"$"+(n/1e12).toFixed(2)+"T":n>=1e9?"$"+(n/1e9).toFixed(1)+"B":n>=1e6?"$"+(n/1e6).toFixed(0)+"M":"$"+n.toFixed(0)};
@@ -31,7 +34,7 @@ function cs(c){
   if(a)p2+=a>25?15:a>20?8:0;
   if(r)p2+=r>55?20:r>50?14:r<30?18:r<45?6:10;
   var b=bb(cl).pb,p3=0;
-  if(b!==null)p3=b>0.8?5:b>0.5?20:b>0.2?30:b>0?20:5;
+    if(b!==null)p3=b>0.8||b<0?5:b>0.5?10:b>0.2?25:b>0?20:5;
   return{sc:Math.round(p1+p2+p3),p1,p2,p3,m6,m40,m70,m2,p,r,a,pb:b,tLen:tLen,ma200Avail:m2!==null};
 };
 function sl(s){if(s>=78)return["Compra fuerte","pgg"];if(s>=62)return["Compra","pgg"];if(s>=52)return["Acumular","pb"];if(s>=42)return["Neutral","pgg2"];if(s>=30)return["Venta","pw"];return["Venta fuerte","prr"]};
@@ -114,7 +117,22 @@ $id("dev").textContent=ST.de.toFixed(1)+"%";$id("mcv").textContent=fk(ST.mc);
 var msc=ms(ST.fg,ST.vx,ST.db);$id("msc").textContent=msc+"/6";
 $id("msv").textContent=msc>=5?"Alcista fuerte":msc>=4?"Alcista":msc>=3?"Neutral":msc>=2?"Bajista":"Bajista fuerte";$id("msv").style.opacity="1";$id("msv").style.transform="scale(1)";
 $id("mtx").textContent="F&G "+fg+" Dom "+ST.db.toFixed(1)+"%";
-var vxVal=ST.vx||15;var sd=cs(ST.kl[CTF]);if(!sd)return;
+var vxVal=ST.vx||15;
+var sd;
+if(ST._fromWorker&&ST._workerScore){
+  // Data came from worker — transform to local format
+  var ws=ST._workerScore;
+  sd={
+    sc: ws.total, p1: ws.p1, p2: ws.p2, p3: ws.p3,
+    r: ws.rsi, a: ws.adx, pb: ws.pb,
+    m6: ws.ma6, m40: ws.ma40, m70: ws.ma70, m2: ws.ma200,
+    p: ws.price,
+    ma200Avail: ws.ma200!==null
+  };
+}else{
+  sd=cs(ST.kl[CTF]);
+}
+if(!sd)return;
 $id("sv").textContent=sd.sc;
 var sa=$id("sa");sa.style.strokeDashoffset=213.6-(213.6*sd.sc/100);
 sa.style.stroke=sd.sc>=62?"#22c55e":sd.sc>=42?"#3b82f6":sd.sc>=30?"#f59e0b":"#ef4444";
@@ -145,10 +163,16 @@ $id("r1").textContent=sd.m40?fm(sd.m40*1.05):"--";$id("r2").textContent=sd.m70?f
 $id("s1").textContent=sd.m40?fm(sd.m40*0.95):"--";$id("s2").textContent=sd.m70?fm(sd.m70*0.92):"--";
 $id("srp").textContent=fm(sd.p);
 // MTF
-if(ST.kl["1m"]&&ST.kl["3m"]&&ST.kl["5m"]&&ST.kl["15m"]){try{
-var tfs=[ST.kl["1m"],ST.kl["3m"],ST.kl["5m"],ST.kl["15m"]],mtfTotal=0,tIds=["1","3","5","15"];
-for(var ti=0;ti<tfs.length;ti++){var sdi=cs(tfs[ti]);if(!sdi)continue;var ts=sdi.sc>=62?25:sdi.sc>=50?18:sdi.sc>=42?12:sdi.sc>=30?6:2;mtfTotal+=ts;$id("mr"+tIds[ti]).textContent=sdi.sc;var ml=$id("ma"+tIds[ti]);ml.textContent=sl(sdi.sc)[0];ml.style.color=sdi.sc>=62?"#22c55e":sdi.sc>=42?"#3b82f6":sdi.sc>=30?"#f59e0b":"#ef4444"};
-$id("cp").textContent=mtfTotal+"/100";$id("cp").className="pl "+(mtfTotal>=70?"pgg":mtfTotal>=50?"pb":mtfTotal>=30?"pw":"prr")}catch(e){}};
+if(ST._fromWorker&&ST._workerScore){
+  // Worker only has current TF score — show single value as approximate MTF
+  var scRad=sd.sc;
+  var approxMTF=scRad>=70?100:scRad>=62?75:scRad>=52?55:scRad>=42?45:scRad>=30?25:10;
+  $id('cp').textContent=approxMTF+'/100';
+  $id('cp').className='pl '+(approxMTF>=70?'pgg':approxMTF>=50?'pb':approxMTF>=30?'pw':'prr');
+}else if(ST.kl['1m']&&ST.kl['3m']&&ST.kl['5m']&&ST.kl['15m']){try{
+var tfs=[ST.kl['1m'],ST.kl['3m'],ST.kl['5m'],ST.kl['15m']],mtfTotal=0,tIds=['1','3','5','15'];
+for(var ti=0;ti<tfs.length;ti++){var sdi=cs(tfs[ti]);if(!sdi)continue;var ts=sdi.sc>=62?25:sdi.sc>=50?18:sdi.sc>=42?12:sdi.sc>=30?6:2;mtfTotal+=ts;$id('mr'+tIds[ti]).textContent=sdi.sc;var ml=$id('ma'+tIds[ti]);ml.textContent=sl(sdi.sc)[0];ml.style.color=sdi.sc>=62?'#22c55e':sdi.sc>=42?'#3b82f6':sdi.sc>=30?'#f59e0b':'#ef4444'};
+$id('cp').textContent=mtfTotal+'/100';$id('cp').className='pl '+(mtfTotal>=70?'pgg':mtfTotal>=50?'pb':mtfTotal>=30?'pw':'prr')}catch(e){}};
 // Senales
 var chk=[sd.r>50,sd.a>25,sd.p>sd.m40,sd.pb>0.5,fg<=20||fg>=80];
 var sis=document.querySelectorAll("#sr .si");for(var si=0;si<Math.min(chk.length,sis.length);si++){sis[si].textContent=chk[si]?"✓":"—";sis[si].className="si "+(chk[si]?"sy":"sn")};
@@ -173,38 +197,98 @@ function fetchAll(){
   ST._fetching=true;
   var _fetchTimer=setTimeout(function(){ST._fetching=false;_total=0;var ld=document.getElementById("st-bar");if(ld){ld.innerHTML='<span class="st-dot" style="background:#f59e0b"></span> Timeout - reintentando';ld.className="st-bar co";}},15000);
   var ld=document.getElementById("st-bar");
-  if(ld){ld.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> Conectando fuentes de datos...';ld.className="st-bar co";}
+  if(ld){ld.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> Conectando...';ld.className="st-bar co";}
   var _completed=0,_total=0;
+  var _allDone=false;
+
+  // ===== INTENTO PRINCIPAL: Worker sono-bot =====
+  function tryWorker(){
+    if(ld)ld.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> Consultando sono-bot worker...';
+    fetchUrl('https://sono-bot.sonosanty.workers.dev/api/status', 8000)
+    .then(function(wd){
+      if(wd&&wd.scores&&wd.macro){
+        // Worker responded with scores — populate ST from it
+        var sc=wd.scores[CA];
+        if(sc&&sc.price){
+          ST.price=sc.price;
+          ST.high=sc.high_24h||ST.high;
+          ST.low=sc.low_24h||ST.low;
+          ST.ch=sc.change_24h||0;
+          // Save raw score for updAll to use directly
+          ST._fromWorker=true;
+          ST._workerScore=sc;
+        }
+        var m=wd.macro||{};
+        if(m.fng){ST.fg=+m.fng;saveHist('sono_fg',ST.fg);}
+        if(m.vix){ST.vx=+m.vix;saveHist('sono_vx',ST.vx);}
+        if(m.dominance)ST.db=+m.dominance;
+        if(m.mcap)ST.mc=+m.mcap;
+        if(m.eth_dominance)ST.de=+m.eth_dominance;
+        if(m.eur)ST.er=+m.eur;
+
+        if(ld){ld.innerHTML='<span class="st-dot" style="background:#22c55e"></span> Worker sono-bot';ld.className='st-bar ok';}
+        _completed=_total;
+        _allDone=true;
+        clearTimeout(_fetchTimer);
+        renderRealHTML();
+        updAll();
+        ST.loading=false;
+        ST._fetching=false;
+        return;
+      }
+      // Worker responded but no useful data — fall through to local
+      startLocal();
+    })
+    .catch(function(){
+      // Worker unavailable — fall through to local
+      startLocal();
+    });
+  }
+
+  // ===== FALLBACK: Cálculo local directo =====
+  function startLocal(){
+    if(_allDone)return;
+    if(ld)ld.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> Worker offline — fuentes directas...';ld.className='st-bar co';
+
   function done(){
+    if(_allDone)return;
     _completed++;
     if(ld)ld.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> ['+_completed+'/'+_total+'] Conectando...';
     clearTimeout(_fetchTimer);
     if(_completed>=_total){
-      if(ld){ld.innerHTML='<span class="st-dot" style="background:#22c55e"></span> Datos en vivo';ld.className="st-bar ok";}
+      if(ld){ld.innerHTML='<span class="st-dot" style="background:#22c55e"></span> Datos en vivo';ld.className='st-bar ok';}
       if(typeof ST.fg!="undefined"&&ST.fg>0){
-        var kl3d=ST.kl["3d"];if(kl3d&&kl3d.length>15){var cl3d=kl3d.map(function(x){return+x[4]});var r3d=rs(cl3d,14);if(r3d!==null)ST.rsi3d=r3d;}
+        var kl3d=ST.kl['3d'];if(kl3d&&kl3d.length>15){var cl3d=kl3d.map(function(x){return+x[4]});var r3d=rs(cl3d,14);if(r3d!==null)ST.rsi3d=r3d;}
         renderRealHTML();
         updAll(s);
       }
       ST.loading=false;
       ST._fetching=false;
       clearTimeout(_fetchTimer);
+      _allDone=true;
     }
   }
-fetchUrl("https://api.binance.com/api/v3/ticker/24hr?symbol="+s).then(function(t){ST.price=+t.lastPrice;ST.high=+t.highPrice;ST.low=+t.lowPrice;ST.ch=+t.priceChangePercent;}).catch(function(){var cgId=CA==="BTC"?"bitcoin":CA==="ETH"?"ethereum":CA==="SOL"?"solana":"ripple";fetchUrl("https://api.coingecko.com/api/v3/simple/price?ids="+cgId+"&vs_currencies=usd&include_24hr_change=true").then(function(gd){if(gd&&gd[cgId]){ST.price=gd[cgId].usd;ST.ch=gd[cgId].usd_24h_change||0}}).catch(function(){})}).then(function(){done()}).catch(function(){done()});
-fetchUrl("https://api.binance.com/api/v3/ticker/price?symbol=EURUSDT").then(function(e){ST.er=+e.price||1.08}).catch(function(){ST.er=ST.er||1.08}).then(function(){done()}).catch(function(){done()});
-fetchUrl("https://api.alternative.me/fng/?limit=1").then(function(g){if(g&&g.data&&g.data[0]){ST.fg=+g.data[0].value;saveHist("sono_fg",ST.fg);}}).catch(function(){ST.fg=ST.fg||50}).then(function(){done()}).catch(function(){done()});
-fetchUrl("https://api.coingecko.com/api/v3/global").then(function(gd){if(gd&&gd.data){ST.db=gd.data.market_cap_percentage.btc||0;ST.mc=gd.data.total_market_cap.usd||0;ST.de=gd.data.market_cap_percentage.eth||0}}).catch(function(){fetchUrl("https://vix-proxy.sonosanty.workers.dev/global").then(function(gl){if(gl&&gl.data&&gl.data.total_market_cap>0){ST.db=gl.data.dominance||0;ST.mc=gl.data.total_market_cap||0;ST.de=gl.data.eth_dominance||0}}).catch(function(){})}).then(function(){done()}).catch(function(){done()});
-fetchUrl("https://vix-proxy.sonosanty.workers.dev/vix").then(function(d){if(d&&d.vix){ST.vx=d.vix;saveHist("sono_vx",ST.vx);$( "vxv" ).textContent=d.vix.toFixed(2);$( "vxl" ).textContent="VIX REAL";}}).catch(function(){ST.vx=ST.vx||15;$( "vxl" ).textContent="VIX estimado";}).then(function(){done()}).catch(function(){done()});
-var tfs=["1m","3m","5m","15m","1h","3d"],tfi=0;
-function nxt(){
-  if(tfi>=tfs.length)return;
-  var tf=tfs[tfi];tfi++;
-  fetchUrl("https://api.binance.com/api/v3/klines?symbol="+s+"&interval="+tf+"&limit=220").then(function(k){ST.kl[tf]=k}).catch(function(){}).then(function(){done()}).catch(function(){done()});
-  if(tfi<tfs.length)setTimeout(nxt,200);
-}
-nxt();
-_total=11;
+  var tasks=[
+    {name:'ticker',run:function(){return fetchUrl('https://api.binance.com/api/v3/ticker/24hr?symbol='+s).then(function(t){ST.price=+t.lastPrice;ST.high=+t.highPrice;ST.low=+t.lowPrice;ST.ch=+t.priceChangePercent;}).catch(function(){var cgId=CA==='BTC'?'bitcoin':CA==='ETH'?'ethereum':CA==='SOL'?'solana':'ripple';return fetchUrl('https://api.coingecko.com/api/v3/simple/price?ids='+cgId+'&vs_currencies=usd&include_24hr_change=true').then(function(gd){if(gd&&gd[cgId]){ST.price=gd[cgId].usd;ST.ch=gd[cgId].usd_24h_change||0}}).catch(function(){})});}},
+    {name:'fg',skip:function(){return swrOk('fg');},run:function(){return fetchUrl('https://api.alternative.me/fng/?limit=1').then(function(g){if(g&&g.data&&g.data[0]){ST.fg=+g.data[0].value;saveHist('sono_fg',ST.fg);SWR.fg=Date.now();}}).catch(function(){ST.fg=ST.fg||50});}},
+    {name:'cg',skip:function(){return swrOk('cg');},run:function(){return fetchUrl('https://api.coingecko.com/api/v3/global').then(function(gd){if(gd&&gd.data){ST.db=gd.data.market_cap_percentage.btc||0;ST.mc=gd.data.total_market_cap.usd||0;ST.de=gd.data.market_cap_percentage.eth||0;SWR.cg=Date.now();}}).catch(function(){return fetchUrl('https://vix-proxy.sonosanty.workers.dev/global').then(function(gl){if(gl&&gl.data&&gl.data.total_market_cap>0){ST.db=gl.data.dominance||0;ST.mc=gl.data.total_market_cap||0;ST.de=gl.data.eth_dominance||0;SWR.cg=Date.now();}}).catch(function(){})});}},
+    {name:'vx',skip:function(){return swrOk('vx');},run:function(){return fetchUrl('https://vix-proxy.sonosanty.workers.dev/vix').then(function(d){if(d&&d.vix){ST.vx=d.vix;saveHist('sono_vx',ST.vx);$('vxv').textContent=d.vix.toFixed(2);$('vxl').textContent='VIX REAL';SWR.vx=Date.now();}}).catch(function(){ST.vx=ST.vx||15;$('vxl').textContent='VIX estimado';});}},
+    {name:'eur',skip:function(){return swrOk('eur');},run:function(){return fetchUrl('https://api.binance.com/api/v3/ticker/price?symbol=EURUSDT').then(function(e){ST.er=+e.price||1.08;SWR.eur=Date.now();}).catch(function(){ST.er=ST.er||1.08});}}
+  ];
+  tasks.forEach(function(t){if(t.skip&&t.skip()){done();return;}t.run().then(function(){done()}).catch(function(){done()});});
+  var tfs=['1m','3m','5m','15m','1h','3d'],tfi=0;
+  function nxt(){
+    if(tfi>=tfs.length)return;
+    var tf=tfs[tfi];tfi++;
+    fetchUrl('https://api.binance.com/api/v3/klines?symbol='+s+'&interval='+tf+'&limit=220').then(function(k){ST.kl[tf]=k}).catch(function(){}).then(function(){done()}).catch(function(){done()});
+    if(tfi<tfs.length)setTimeout(nxt,200);
+  }
+  nxt();
+  _total=tasks.length+tfs.length;
+  } // end startLocal
+
+  // Kick off: try worker first, fallback to local
+  tryWorker();
 }
 
 var _updPending=false;
@@ -219,7 +303,7 @@ function scheduleUpd(){
 ST.loading=true;
 renderHTML();
 document.querySelectorAll(".ab button").forEach(function(b){b.addEventListener("click",function(){CA=this.getAttribute("data-a");document.querySelectorAll(".ab button").forEach(function(x){x.classList.remove("ac")});this.classList.add("ac");_dataReady=false;var sb=document.getElementById('st-bar');if(sb){sb.className='st-bar co';sb.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> Conectando fuentes de datos...'};renderHTML();fetchAll()})});
-fetchAll();setInterval(fetchAll,30000);
+fetchAll();setInterval(function(){if(!ST._fetching)fetchAll();},30000);
 })();
 
 

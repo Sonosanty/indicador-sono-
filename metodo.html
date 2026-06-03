@@ -626,7 +626,7 @@ async function loadMacro(){
  try{
  const[fngR,gR]=await Promise.all([
  fetchJson('https://api.alternative.me/fng/?limit=1'),
- fetchJson('https://api.coingecko.com/api/v3/global')
+ fetchJson('https://vix-proxy.sonosanty.workers.dev/global')
  ]);
  fngGlobal=+fngR.data[0].value;
  const fl=fngGlobal<=20?'Miedo extremo':fngGlobal<=40?'Miedo':fngGlobal<=60?'Neutral':fngGlobal<=80?'Codicia':'Codicia extrema';
@@ -659,9 +659,39 @@ async function loadRSIMacro(){
  }
 }
 
-loadData();
-loadMacro();
-loadRSIMacro();
+// Intentar cargar desde el worker primero
+(async function(){
+ try{
+  const r=await fetch('https://sono-bot.sonosanty.workers.dev/api/status');
+  if(r.ok){
+   const d=await r.json();
+   if(d.scores&&d.scores.BTC){
+    const sc=d.scores.BTC;
+    renderScore({
+     score:sc.total,p1:sc.p1,p2:sc.p2,p3:sc.p3,
+     ma6:sc.ma6,ma40:sc.ma40,ma70:sc.ma70,ma200:sc.ma200,
+     price:sc.price,rv:sc.rsi,av:sc.adx,pb:sc.pb,bw:null
+    },d.macro?.fng,d.macro?.dominance);
+    if(d.macro){
+     const m=d.macro;
+     $('mFNG').textContent=m.fng||'—';
+     $('mFNG').style.color=m.fng&&m.fng<=20?'#22c55e':m.fng<=40?'#86efac':m.fng<=60?'#64748b':m.fng<=80?'#f59e0b':'#ef4444';
+     $('mFNGl').textContent=m.fng<=20?'Miedo extremo':m.fng<=40?'Miedo':m.fng<=60?'Neutral':m.fng<=80?'Codicia':'Codicia extrema';
+     $('mFNGb').style.width=(m.fng||50)+'%';
+     $('mDOM').textContent=m.dominance?m.dominance.toFixed(1)+'%':'—';
+     $('mDOMl').textContent=m.dominance>60?'BTC muy dominante':m.dominance>55?'BTC dominante':m.dominance>45?'Equilibrado':'Altseason';
+     $('mDOMb').style.width=(m.dominance||50)+'%';
+     $('mMCAP').textContent=m.mcap?'$'+(m.mcap/1e12).toFixed(2)+'T':'—';
+     $('mMCAPl').textContent=m.mcap?'Vol: —':'—';
+    }
+    return;
+   }
+  }
+ }catch(e){console.log('Worker fallback a datos locales',e)}
+ loadData();
+ loadMacro();
+ loadRSIMacro();
+})();
 setInterval(loadData,30000);
 setInterval(()=>{loadMacro();loadRSIMacro();},120000);
 </script>

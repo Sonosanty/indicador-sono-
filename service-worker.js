@@ -5,6 +5,7 @@ const CACHE = 'sono-v1'
 const ASSETS = [
   '/',
   '/index.html',
+  '/app.js',
   '/rangos',
   '/metodo',
   '/trades',
