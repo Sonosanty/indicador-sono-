@@ -4,8 +4,8 @@
 echo "=== Sono PRO v6.2.1 build ==="
 mkdir -p indicador_cloudflare/{metodo,assets/vendor,v2}
 
-# Core SPA files
-cp pagina.html indicador_cloudflare/index.html
+# Core SPA files - index.html from root is the real SPA (Dashboard V6)
+cp index.html indicador_cloudflare/index.html
 
 # Static assets (self-hosted vendor)
 cp -r frontend/assets/vendor indicador_cloudflare/assets/
