@@ -624,21 +624,28 @@ async function loadData(){
 
 async function loadMacro(){
  try{
- const[fngR,gR]=await Promise.all([
+ const[fngR,cgR]=await Promise.allSettled([
  fetchJson('https://api.alternative.me/fng/?limit=1'),
- fetchJson('https://vix-proxy.sonosanty.workers.dev/global')
+ fetchJson('https://api.coingecko.com/api/v3/global')
  ]);
- fngGlobal=+fngR.data[0].value;
- const fl=fngGlobal<=20?'Miedo extremo':fngGlobal<=40?'Miedo':fngGlobal<=60?'Neutral':fngGlobal<=80?'Codicia':'Codicia extrema';
- const fc=fngGlobal<=20?'#22c55e':fngGlobal<=40?'#86efac':fngGlobal<=60?'#64748b':fngGlobal<=80?'#f59e0b':'#ef4444';
- $('mFNG').textContent=fngGlobal;$('mFNG').style.color=fc;$('mFNGl').textContent=fl;$('mFNGb').style.width=fngGlobal+'%';$('mFNGb').style.background=fc;
- domGlobal=gR.data.market_cap_percentage?.btc||0;
- const dl=domGlobal>60?'BTC muy dominante':domGlobal>55?'BTC dominante':domGlobal>45?'Equilibrado':'Altseason';
- $('mDOM').textContent=domGlobal.toFixed(1)+'%';$('mDOMl').textContent=dl;$('mDOMb').style.width=domGlobal+'%';
- $('mMCAP').textContent=fmtK(gR.data.total_market_cap?.usd||0);$('mMCAPl').textContent='Vol: '+fmtK(gR.data.total_volume?.usd||0);
+ if(fngR.status==='fulfilled'){
+  fngGlobal=+fngR.value.data[0].value;
+  const fl=fngGlobal<=20?'Miedo extremo':fngGlobal<=40?'Miedo':fngGlobal<=60?'Neutral':fngGlobal<=80?'Codicia':'Codicia extrema';
+  const fc=fngGlobal<=20?'#22c55e':fngGlobal<=40?'#86efac':fngGlobal<=60?'#64748b':fngGlobal<=80?'#f59e0b':'#ef4444';
+  $('mFNG').textContent=fngGlobal;$('mFNG').style.color=fc;$('mFNGl').textContent=fl;$('mFNGb').style.width=fngGlobal+'%';$('mFNGb').style.background=fc;
+ } else {
+  $('mFNG').textContent='—';$('mFNGl').textContent='—';$('mFNGb').style.width='0%';
+ }
+ if(cgR.status==='fulfilled'){
+  domGlobal=cgR.value.data.market_cap_percentage?.btc||0;
+  const dl=domGlobal>60?'BTC muy dominante':domGlobal>55?'BTC dominante':domGlobal>45?'Equilibrado':'Altseason';
+  $('mDOM').textContent=domGlobal.toFixed(1)+'%';$('mDOMl').textContent=dl;$('mDOMb').style.width=domGlobal+'%';
+  $('mMCAP').textContent=fmtK(cgR.value.data.total_market_cap?.usd||0);$('mMCAPl').textContent='Vol: '+fmtK(cgR.value.data.total_volume?.usd||0);
+ } else {
+  $('mDOM').textContent='—';$('mMCAP').textContent='—';
+ }
  }catch(e){
  console.error('loadMacro error:',e);
- // valores por defecto
  $('mFNG').textContent='—';$('mDOM').textContent='—';$('mMCAP').textContent='—';
  }
 }
