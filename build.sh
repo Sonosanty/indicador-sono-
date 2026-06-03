@@ -16,6 +16,7 @@ cp frontend/app.js indicador_cloudflare/app.js
 
 # Pages
 cp frontend/metodo.html indicador_cloudflare/metodo.html
+cp frontend/dashboard.html indicador_cloudflare/dashboard.html
 cp frontend/pagina.html indicador_cloudflare/pagina.html 2>/dev/null || true
 
 # Configs
