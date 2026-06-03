@@ -13,7 +13,9 @@
 // Persistencia: Cloudflare KV (SONO_BOT_KV)
 // ═══════════════════════════════════════════════════════════════════════════
 
-const BINANCE = 'https://api.binance.com/api/v3'
+// Nota: Binance bloquea IPs de Cloudflare Workers (error 451)
+// Se usa Kucoin como alternativa que sí funciona desde CF Workers
+const KUCOIN = 'https://api.kucoin.com/api/v1'
 const COINGECKO = 'https://api.coingecko.com/api/v3'
 const ALTERNATIVE = 'https://api.alternative.me/fng'
 const VIX_PROXY = 'https://vix-proxy.sonosanty.workers.dev'
@@ -117,35 +119,40 @@ function computeScore(candles) {
 
 // ═══ BINANCE DATA ═════════════════════════════════════════════════════
 
-const SYMBOLS = { BTC: 'BTCUSDT', ETH: 'ETHUSDT', SOL: 'SOLUSDT', XRP: 'XRPUSDT' }
+const SYMBOLS = { BTC: 'BTC-USDT', ETH: 'ETH-USDT', SOL: 'SOL-USDT', XRP: 'XRP-USDT' }
+const SYMBOLS_BINANCE = { BTC: 'BTCUSDT', ETH: 'ETHUSDT', SOL: 'SOLUSDT', XRP: 'XRPUSDT' }
 
-async function fetchCandles(asset, attempt = 0) {
+// KuCoin API forma: BTC-USDT (no BTCUSDT)
+// Intervalos KuCoin: 1min, 3min, 5min, 15min, 30min, 1hour, 2hour, 4hour, 6hour, 8hour, 12hour, 1day, 1week
+const KUCOIN_INTERVAL = '15min'
+
+async function fetchCandles(asset) {
   const sym = SYMBOLS[asset]
-  const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
-  const urls = [`${BINANCE}/klines?symbol=${sym}&interval=${INTERVAL}&limit=${LIMIT}`]
-  if (attempt > 0) { urls.push(`https://api1.binance.com/klines?symbol=${sym}&interval=${INTERVAL}&limit=${LIMIT}`) }
-  if (attempt > 1) { urls.push(`https://api2.binance.com/klines?symbol=${sym}&interval=${INTERVAL}&limit=${LIMIT}`) }
-  if (attempt > 2) { urls.push(`https://api3.binance.com/klines?symbol=${sym}&interval=${INTERVAL}&limit=${LIMIT}`) }
-  const url = urls[Math.min(attempt, urls.length - 1)]
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 15000)
+  const url = `${KUCOIN}/market/candles?type=${KUCOIN_INTERVAL}&symbol=${sym}&limit=${LIMIT}`
   const resp = await fetch(url, {
-    headers: { 'User-Agent': UA, 'Accept': 'application/json' },
-    signal: controller.signal
+    headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' }
   })
-  clearTimeout(timeoutId)
-  if (!resp.ok) throw new Error(`Binance klines ${asset} [${url}]: ${resp.status}`)
-  return await resp.json()
+  if (!resp.ok) throw new Error(`KuCoin klines ${asset}: ${resp.status}`)
+  const data = await resp.json()
+  if (data.code !== '200000') throw new Error(`KuCoin error ${asset}: ${data.code}`)
+  // KuCoin devuelve [tiempo, apertura, cierre, maximo, minimo, volumen, cantidad]
+  // Lo normalizamos al mismo formato que Binance: [tiempo, open, high, low, close, volume]
+  return data.data.map(c => [
+    +c[0], +c[1], +c[3], +c[4], +c[2], +c[5]
+  ])
 }
 
 async function fetchTicker(asset) {
   const sym = SYMBOLS[asset]
-  const resp = await fetch(`${BINANCE}/ticker/24hr?symbol=${sym}`, {
-    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+  // Ticker 24h desde KuCoin
+  const resp = await fetch(`${KUCOIN}/market/stats?symbol=${sym}`, {
+    headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' }
   })
-  if (!resp.ok) throw new Error(`Binance ticker ${asset}: ${resp.status}`)
+  if (!resp.ok) throw new Error(`KuCoin ticker ${asset}: ${resp.status}`)
   const d = await resp.json()
-  return { close: +d.lastPrice, change: +d.priceChangePercent, high: +d.highPrice, low: +d.lowPrice }
+  if (d.code !== '200000') throw new Error(`KuCoin ticker error ${asset}: ${d.code}`)
+  const t = d.data
+  return { close: +t.last, change: +t.changeRate * 100, high: +t.high, low: +t.low }
 }
 
 // ═══ MACRO DATA ════════════════════════════════════════════════════════
@@ -255,18 +262,8 @@ async function runBot(env, ctx) {
 
   for (const asset of ASSETS) {
     try {
-      // Retry hasta 3 intentos si Binance da 451 (bloqueo geográfico)
-      let candles, ticker
-      for (let attempt = 0; attempt < 3; attempt++) {
-        try {
-          candles = await fetchCandles(asset, attempt)
-          ticker = await fetchTicker(asset)
-          break
-        } catch (e) {
-          if (attempt === 2 || (!e.message.includes('451') && !e.message.includes('AbortError'))) throw e
-          await new Promise(r => setTimeout(r, 1000 * (attempt + 1)))
-        }
-      }
+      const candles = await fetchCandles(asset)
+      const ticker = await fetchTicker(asset)
       const score = computeScore(candles)
 
       if (score) {
