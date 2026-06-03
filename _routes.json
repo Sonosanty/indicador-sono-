@@ -1,7 +1,7 @@
 {
   "version": 1,
   "include": ["/*"],
-  "exclude": ["/api/*", "/favicon.svg", "/manifest.json", "/app.js", "/service-worker.js"],
+  "exclude": ["/api/*", "/favicon.svg", "/manifest.json"],
   "fallback": {
     "/": "/index.html"
   }
