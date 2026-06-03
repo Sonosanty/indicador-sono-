@@ -1,6 +1,8 @@
 {
   "version": 1,
-  "description": "Sono Pro - static files, no SPA",
   "include": ["/*"],
-  "exclude": []
+  "exclude": ["/api/*", "/favicon.svg", "/manifest.json", "/app.js", "/service-worker.js"],
+  "fallback": {
+    "/": "/index.html"
+  }
 }
