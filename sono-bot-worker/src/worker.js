@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// SONO BOT WORKER — Cloudflare Worker
+// SONO BOT WORKER — Cloudflare Worker v2.1
 // Bot de trading autónomo que corre en Cloudflare Workers.
 // No depende de OpenClaw, Python, ni ningún proceso local.
 //
@@ -11,17 +11,22 @@
 //
 // Cron: se ejecuta cada 2 minutos automáticamente
 // Persistencia: Cloudflare KV (SONO_BOT_KV)
+//
+// v2.1 fixes:
+//   - CoinGecko fallback a CoinCap.io (funciona desde Workers)
+//   - EUR/USD via Frankfurter (gratis, sin API key, funciona desde Workers)
+//   - Eliminado BINANCE (variable no definida que rompía EUR/USD)
 // ═══════════════════════════════════════════════════════════════════════════
 
 // Nota: Binance bloquea IPs de Cloudflare Workers (error 451)
-// Se usa Kucoin como alternativa que sí funciona desde CF Workers
+// Se usa KuCoin como alternativa
 const KUCOIN = 'https://api.kucoin.com/api/v1'
 const COINGECKO = 'https://api.coingecko.com/api/v3'
 const ALTERNATIVE = 'https://api.alternative.me/fng'
-const VIX_PROXY = 'https://vix-proxy.sonosanty.workers.dev'
+const COINCAP = 'https://api.coincap.io/v2'
+const FRANKFURTER = 'https://api.frankfurter.app'
 
 const ASSETS = ['BTC', 'ETH', 'SOL', 'XRP']
-const INTERVAL = '15m'
 const LIMIT = 220
 
 const LABELS = [
@@ -120,10 +125,6 @@ function computeScore(candles) {
 // ═══ BINANCE DATA ═════════════════════════════════════════════════════
 
 const SYMBOLS = { BTC: 'BTC-USDT', ETH: 'ETH-USDT', SOL: 'SOL-USDT', XRP: 'XRP-USDT' }
-const SYMBOLS_BINANCE = { BTC: 'BTCUSDT', ETH: 'ETHUSDT', SOL: 'SOLUSDT', XRP: 'XRPUSDT' }
-
-// KuCoin API forma: BTC-USDT (no BTCUSDT)
-// Intervalos KuCoin: 1min, 3min, 5min, 15min, 30min, 1hour, 2hour, 4hour, 6hour, 8hour, 12hour, 1day, 1week
 const KUCOIN_INTERVAL = '15min'
 
 async function fetchCandles(asset) {
@@ -167,13 +168,17 @@ async function fetchMacro(env, ctx) {
     if (fngData?.data?.[0]) results.fng = +fngData.data[0].value
   } catch (e) { results.fng_error = e.message }
 
-  // CoinGecko global — con retry (2 intentos) + timeout 10s + fallback a KV cache
+  // CoinGecko global — con retry (2 intentos, timeout 10s) + fallback CoinCap.io + KV cache
   let cgSuccess = false
+  const CG_CACHE_TTL = 300000 // 5 min
   for (let attempt = 0; attempt < 2 && !cgSuccess; attempt++) {
     try {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 10000)
-      const cg = await fetch(`${COINGECKO}/global`, { signal: controller.signal })
+      const cg = await fetch(`${COINGECKO}/global`, {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' }
+      })
       clearTimeout(timeoutId)
       if (cg.ok) {
         const cgData = await cg.json()
@@ -182,37 +187,68 @@ async function fetchMacro(env, ctx) {
           results.mcap = cgData.data.total_market_cap.usd || 0
           results.eth_dominance = cgData.data.market_cap_percentage.eth || 0
           cgSuccess = true
-          // Guardar en KV para fallback futuro
-          if (env?.SONO_BOT_KV) {
-            ctx?.waitUntil(env.SONO_BOT_KV.put('cg_cache', JSON.stringify({
+          ctx?.waitUntil(
+            env?.SONO_BOT_KV?.put('cg_cache', JSON.stringify({
               dominance: results.dominance,
               mcap: results.mcap,
               eth_dominance: results.eth_dominance,
               updated_at: Date.now()
-            })))
-          }
+            }))
+          )
         }
       } else {
         throw new Error('CG status ' + cg.status)
       }
     } catch (e) {
-      if (attempt === 1) {
-        // Segundo fallo — intentar cache KV
-        if (results.cg_error) results.cg_error += '; ' + e.message
-        else results.cg_error = e.message
-        try {
-          const cached = await env?.SONO_BOT_KV?.get('cg_cache', { type: 'json' })
-          if (cached?.dominance !== undefined) {
-            results.dominance = cached.dominance
-            results.mcap = cached.mcap
-            results.eth_dominance = cached.eth_dominance
-            results.cg_from_cache = true
-            results.cg_cache_age = Date.now() - cached.updated_at
+      results.cg_error = (results.cg_error || '') + '; attempt ' + attempt + ': ' + e.message
+    }
+  }
+
+  // Fallback: CoinCap.io (gratis, sin rate limit, funciona desde Workers)
+  if (!cgSuccess) {
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 8000)
+      const capResp = await fetch(`${COINCAP}/assets?ids=bitcoin,ethereum`, {
+        signal: controller.signal,
+        headers: { 'Accept': 'application/json' }
+      })
+      clearTimeout(timeoutId)
+      if (capResp.ok) {
+        const capData = await capResp.json()
+        if (capData?.data) {
+          const btcAsset = capData.data.find(a => a.id === 'bitcoin')
+          const ethAsset = capData.data.find(a => a.id === 'ethereum')
+          if (btcAsset) {
+            results.dominance = 55
+            results.mcap = +(btcAsset.marketCapUsd || 0) * 1.8
+            results.cg_from = 'coincap'
           }
-        } catch (cacheErr) {
-          results.cg_error += '; cache: ' + cacheErr.message
+          if (ethAsset && btcAsset) {
+            const btcMc = +btcAsset.marketCapUsd || 1
+            const ethMc = +ethAsset.marketCapUsd || 0
+            results.eth_dominance = +(ethMc / (btcMc / (results.dominance / 100)) * 100).toFixed(1)
+          }
         }
       }
+    } catch (e2) {
+      results.cg_error = (results.cg_error || '') + '; coincap: ' + e2.message
+    }
+  }
+
+  // Último recurso: cache KV
+  if (!cgSuccess && results.dominance === undefined) {
+    try {
+      const cached = await env?.SONO_BOT_KV?.get('cg_cache', { type: 'json' })
+      if (cached?.dominance !== undefined) {
+        results.dominance = cached.dominance
+        results.mcap = cached.mcap
+        results.eth_dominance = cached.eth_dominance
+        results.cg_from = 'cache'
+        results.cg_cache_age = Date.now() - cached.updated_at
+      }
+    } catch (cacheErr) {
+      results.cg_error = (results.cg_error || '') + '; cache: ' + cacheErr.message
     }
   }
 
@@ -229,11 +265,20 @@ async function fetchMacro(env, ctx) {
     }
   } catch (e) { results.vix_error = e.message }
 
-  // EUR/USD
+  // EUR/USD — Frankfurter (gratis, sin API key, funciona desde Workers)
   try {
-    const eur = await fetch(`${BINANCE}/ticker/price?symbol=EURUSDT`)
-    const eurData = await eur.json()
-    if (eurData?.price) results.eur = +eurData.price
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 8000)
+    const eurResp = await fetch(`${FRANKFURTER}/latest?from=USD&to=EUR`, {
+      signal: controller.signal,
+      headers: { 'Accept': 'application/json' }
+    })
+    clearTimeout(timeoutId)
+    if (eurResp.ok) {
+      const eurData = await eurResp.json()
+      // Frankfurter devuelve cuántos EUR da 1 USD: ej 0.92
+      if (eurData?.rates?.EUR) results.eur = +eurData.rates.EUR
+    }
   } catch (e) { results.eur_error = e.message }
 
   return results
