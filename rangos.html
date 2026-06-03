@@ -1,9 +1,9 @@
-<!-- v6.0.2 20260601123400 -->
+<!-- v6.0.2 202606011400 -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <title>Sono Pro — Range Intelligence</title>
 <link rel="icon" href="/favicon.svg">
 <link rel="preconnect" href="https://stream.binance.com">
@@ -54,8 +54,8 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);-webkit
 .green{color:var(--green)}.red{color:var(--red)}.yellow{color:var(--amber)}
 .pbar{height:6px;border-radius:999px;position:relative;background:linear-gradient(90deg,rgba(239,68,68,.3),var(--bg3) 50%,rgba(34,197,94,.3));margin:6px 0}
 .pneedle{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:var(--blue);border:2px solid rgba(59,130,246,.4);transform:translate(-50%,-50%);transition:left .5s}
-.pbar-labels{display:flex;justify-content:space-between;margin-top:2px;font-size:.6rem;color:var(--dim)}
-.pbar-labels span{white-space:nowrap;padding:0 4px}
+.pbar-labels{display:flex;justify-content:space-between;margin-top:2px;font-size:.6rem;color:var(--dim);gap:4px}
+.pbar-labels span{white-space:nowrap;flex-shrink:0;min-width:fit-content}
 .check{font-size:.75rem;color:var(--muted);line-height:2.2}
 .check-item{display:flex;align-items:center;gap:6px}
 .footer{font-size:11px;color:var(--dim);text-align:center;padding:.5rem 0 1rem;font-family:var(--font-mono)}
@@ -69,6 +69,7 @@ body{font-family:var(--font-sans);background:var(--bg);color:var(--text);-webkit
 @media(max-width:768px){.g3,.g2,.tf-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:480px){.g3,.g2{grid-template-columns:1fr}}
 </style>
+<link rel="manifest" href="/manifest.json">
 </head>
 <body>
 
@@ -286,49 +287,33 @@ function loadKline(tf,onDone){
   if(analysis)updateTFCard(tf,analysis);
   updateConfluence();
   if(onDone)onDone();
- }).catch(function(){if(onDone)onDone()});
+ }).catch(function(){updateConfluence();if(onDone)onDone()});
 }
 
 function loadAllData(){
  load24hr();
- // Secuencial: 200ms entre cada fetch para evitar rate-limit
+ // Klines secuenciados: 200ms entre cada TF para evitar rate-limit de Binance
+ var tfList=['15m','5m','3m','1m'];
  var idx=0;
- function nextKline(){
-  if(idx>=TFS.length)return;
-  var tf=TFS[idx];idx++;
-  loadKline(tf,function(){setTimeout(nextKline,200)});
+ function loadNext(){
+  if(idx>=tfList.length)return;
+  var tf=tfList[idx];idx++;
+  loadKline(tf);
+  setTimeout(loadNext,200);
  }
- nextKline();
-}
-
-function showSkeletons(tf){
- // Helper: set skeleton class on all metric values for a timeframe
- var ids=['rsi-'+tf,'adx-'+tf,'ma40-'+tf,'bb-'+tf,'bias-'+tf];
- for(var i=0;i<ids.length;i++){
-  var el=$(ids[i]);
-  if(el){el.className='skeleton'+(ids[i]==='bias-'+tf?' bias-skel':' skeleton-sm');el.textContent=''}
- }
+ loadNext();
 }
 
 function changeAsset(s){
  currentSymbol=s;
  klinesData={};
- // Show skeletons on all TFs
- for(var i=0;i<TFS.length;i++)showSkeletons(TFS[i]);
- var confScore=$('conf-score');if(confScore){confScore.className='skeleton skeleton-lg';confScore.textContent='';}
- var confBias=$('conf-bias');if(confBias){confBias.className='skeleton bias-skel';confBias.textContent='';}
- $('conf-desc').textContent='Cargando...';
- var rPrice=$('r-price');if(rPrice){rPrice.className='skeleton skeleton-lg';rPrice.textContent='';}
+ // Mostrar carga mientras se obtienen nuevos datos
+ $('r-price').textContent='$--';
+ $('r-sub').textContent=s.replace('USDT','')+'/USDT · Cargando...';
  loadAllData();
 }
 
 function startRangos(){
- if(typeof SonoEngine==='undefined'){
-  setTimeout(startRangos,200);
-  $('conf-score').textContent='--';
-  $('conf-bias').textContent='Cargando...';
-  return;
- }
  document.querySelectorAll('.ab button').forEach(function(b){
   b.addEventListener('click',function(){
    document.querySelectorAll('.ab button').forEach(function(x){x.classList.remove('ac')});
@@ -342,7 +327,6 @@ function startRangos(){
  var confBias=$('conf-bias');if(confBias){confBias.className='skeleton bias-skel';confBias.textContent='';}
  $('conf-desc').textContent='Cargando...';
  var rPrice=$('r-price');if(rPrice){rPrice.className='skeleton skeleton-lg';rPrice.textContent='';}
- loadAllData();
 }
 if(document.readyState==='loading'){
  document.addEventListener('DOMContentLoaded',startRangos);
@@ -352,3 +336,4 @@ if(document.readyState==='loading'){
 </script>
 </body>
 </html>
+

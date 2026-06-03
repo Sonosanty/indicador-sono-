@@ -58,7 +58,7 @@ _STATE_FILE = os.path.join(_BOT_DIR, 'sono_state.json')
 MICRO_MODE = True
 
 # Enviar alertas Telegram en tiempo real
-SEND_TELEGRAM_ALERTS = True
+SEND_TELEGRAM_ALERTS = False
 
 # ═══ SWING TRADING ═══════════════════════════════════════
 # Timeframe 15m para velas de swing (horas/días de duración)
@@ -269,9 +269,7 @@ class SonoBot:
             'XRP': {'min_trade': 5, 'risk_per_trade': 0.80, 'symbol': 'XRP_USDT', 'quote': 'USDT', 'decimals': 1},
         }
         # ═══ UMBRALES SWING TRADING ═══
-        self.BUY_THRESHOLD = 68
-        self.SELL_THRESHOLD = 35
-        self.STRONG_BUY_THRESHOLD = 80
+        # (reservado para futuro override; la logica real usa sono-score-config.json via classify_score)
 
         # Contador de alertas para throttle
         self._last_alert_time = {}
@@ -405,7 +403,7 @@ class SonoBot:
                     f'P1={score["p1"]} P2={score["p2"]} P3={score["p3"]} '
                     f'RSI={score["rsi"]} ADX={score["adx"]} '
                     f'Price=${price:.2f} '
-                    f'ATR=${atr:.2f}' if atr else 'ATR=N/A'
+                    f'ATR=${atr:.2f}' if atr is not None else 'ATR=N/A'
                 )
                 
                 # ═══ Alertas Telegram por cambio de categoría ═══

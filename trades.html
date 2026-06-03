@@ -1,8 +1,9 @@
+<!-- v6.0.2 202606011400 -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <title>Sono Pro — Trading Journal</title>
 <link rel="icon" href="/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -55,6 +56,7 @@ td{font-family:var(--font-mono);font-size:.75rem}
 @media(max-width:768px){.g5{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:480px){.g5{grid-template-columns:repeat(2,1fr)}}
 </style>
+<link rel="manifest" href="/manifest.json">
 </head>
 <body>
 
@@ -96,8 +98,10 @@ td{font-family:var(--font-mono);font-size:.75rem}
  <div class="form-group"><label class="form-label">Entrada ($)</label><input type="number" id="f-entry" class="form-input" placeholder="0.00" step="0.01"></div>
  <div class="form-group"><label class="form-label">Salida ($)</label><input type="number" id="f-exit" class="form-input" placeholder="vacio=abierto" step="0.01"></div>
  <div class="form-group"><label class="form-label">Tamaño ($)</label><input type="number" id="f-size" class="form-input" placeholder="100" step="1"></div>
+ <div class="form-group"><label class="form-label">R:R manual</label><input type="number" id="f-rr" class="form-input" placeholder="vacio=automatico" step="0.1"></div>
  <div class="form-group"><label class="form-label">Setup</label><input type="text" id="f-setup" class="form-input" placeholder="Score > 65, RSI..."></div>
  <div class="form-group"><label class="form-label">Nota</label><input type="text" id="f-note" class="form-input" placeholder="Observaciones..."></div>
+ <div id="form-err" style="color:#ef4444;font-size:12px;margin-bottom:6px;display:none"></div>
  </div>
  <div class="flex" style="gap:6px">
  <button class="btn btn-green" onclick="addTrade()">+ Añadir Trade</button>
@@ -122,19 +126,70 @@ td{font-family:var(--font-mono);font-size:.75rem}
 <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}</style>
 
 <script>
-var STORAGE_KEY='sono-trades-v5';var trades=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
-function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(trades))};
+var TRADES_API='https://sono-trades.sonosanty.workers.dev/api/trades';var trades=[];var _tradesLoaded=false;
+async function loadTrades(){try{var r=await fetch(TRADES_API);trades=await r.json();_tradesLoaded=true;renderAll()}catch(e){trades=JSON.parse(localStorage.getItem('sono-trades-v5')||'[]');_tradesLoaded=true;renderAll()}};loadTrades();
+
+async function save(){localStorage.setItem('sono-trades-v5',JSON.stringify(trades));try{await fetch(TRADES_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(trades)})}catch(e){}};
 var $=function(id){return document.getElementById(id)};
 var fmt=function(v,d){d=d||2;return isNaN(v)||v===null?'--':Number(v).toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d})};
 function calcPnL(t){if(!t.exit)return{pnl:null,pnlPct:null};var dir=t.direction==='LONG'?1:-1;var pnlPct=((t.exit-t.entry)/t.entry)*100*dir;var pnl=(t.size||100)*pnlPct/100;return{pnl:pnl,pnlPct:pnlPct}};
-function addTrade(){var entry=parseFloat($('f-entry').value);if(!entry||isNaN(entry)||entry<=0){alert('Introduce un precio de entrada valido (>0)');$('f-entry').focus();return};var exitRaw=$('f-exit').value.trim();var exit=exitRaw?parseFloat(exitRaw):null;if(exitRaw&&(isNaN(exit)||exit<=0)){alert('Precio de salida invalido. Dejalo vacio si el trade esta abierto.');$('f-exit').focus();return};var size=parseFloat($('f-size').value);if(!size||isNaN(size)||size<=0){size=100};var trade={id:Date.now().toString(),date:$('f-date').value||new Date().toISOString().split('T')[0],asset:$('f-asset').value,direction:$('f-dir').value,entry:entry,exit:exit,size:size,setup:$('f-setup').value,note:$('f-note').value,rr:null};if(exit){var p=calcPnL(trade);trade.rr=Math.abs(p.pnlPct)>0?(Math.abs(p.pnl)/size*100).toFixed(2):'0'};trades.unshift(trade);save();renderAll();['f-entry','f-exit','f-size','f-setup','f-note'].forEach(function(id){$(id).value=''})};
-function deleteTrade(id){trades=trades.filter(function(t){return t.id!==id});save();renderAll()};
+function addTrade(){
+  var entry=parseFloat($('f-entry').value);
+  var exit=$('f-exit').value?parseFloat($('f-exit').value):null;
+  var size=parseFloat($('f-size').value)||100;
+  var date=$('f-date').value;
+  var rrManual=$('f-rr').value?parseFloat($('f-rr').value):null;
+  var errEl=$('form-err');
+  // Validaciones
+  if(!date){errEl.textContent='Selecciona una fecha';errEl.style.display='block';return}
+  if(!entry||entry<=0){errEl.textContent='Introduce un precio de entrada válido';errEl.style.display='block';return}
+  if(exit!==null&&exit<=0){errEl.textContent='Precio de salida no válido';errEl.style.display='block';return}
+  errEl.style.display='none';
+  var trade={id:Date.now().toString(),date:date,asset:$('f-asset').value,direction:$('f-dir').value,entry:entry,exit:exit,size:size,setup:$('f-setup').value||'',note:$('f-note').value||'',rr:null};
+  if(rrManual!==null){trade.rr=rrManual.toFixed(2)}
+  if(exit){
+    var p=calcPnL(trade);
+    if(rrManual===null)trade.rr=p.pnlPct.toFixed(2);
+  };
+  trades.unshift(trade);save();renderAll();
+  ['f-entry','f-exit','f-size','f-setup','f-note','f-rr'].forEach(function(id){$(id).value=''});
+  $('f-date').value='';
+}function deleteTrade(id){if(!confirm("¿Eliminar este trade?"))return;trades=trades.filter(function(t){return t.id!==id});save();renderAll()};
 function calcStats(list){var closed=list.filter(function(t){return t.exit});if(!closed.length)return{wr:0,pf:0,rr:0,pnl:0,wins:0,losses:0,total:list.length,closed:0};var wins=0,losses=0,grossW=0,grossL=0,totalPnL=0,totalRR=0;closed.forEach(function(t){var p=calcPnL(t);totalPnL+=p.pnl||0;if(p.pnl>0){wins++;grossW+=p.pnl}else{losses++;grossL+=Math.abs(p.pnl)};if(t.rr)totalRR+=parseFloat(t.rr)});return{wr:wins/closed.length*100,pf:grossL>0?grossW/grossL:wins>0?99:0,rr:closed.length>0?totalRR/closed.length:0,pnl:totalPnL,wins:wins,losses:losses,total:list.length,closed:closed.length}};
 function drawEquity(list){var canvas=$('equity-canvas');var ctx=canvas.getContext('2d');var W=canvas.offsetWidth||600;var H=120;canvas.width=W*window.devicePixelRatio;canvas.height=H*window.devicePixelRatio;ctx.scale(window.devicePixelRatio,window.devicePixelRatio);ctx.clearRect(0,0,W,H);var closed=[].concat(list).filter(function(t){return t.exit}).reverse();if(closed.length<2){ctx.fillStyle='rgba(255,255,255,0.08)';ctx.font='12px JetBrains Mono';ctx.fillText('Añade al menos 2 trades cerrados',20,60);return};var equity=0;var curve=[0].concat(closed.map(function(t){var p=calcPnL(t);equity+=p.pnl||0;return equity}));var minE=Math.min.apply(null,curve);var maxE=Math.max.apply(null,curve);var range=maxE-minE||1;var pad=range*0.1;var toX=function(i){return(i/(curve.length-1))*(W-20)+10};var toY=function(v){return H-((v-minE+pad)/(range+pad*2))*(H-20)-10};var grad=ctx.createLinearGradient(0,0,0,H);grad.addColorStop(0,equity>=0?'rgba(34,197,94,0.25)':'rgba(239,68,68,0.25)');grad.addColorStop(1,'rgba(0,0,0,0)');ctx.beginPath();curve.forEach(function(v,i){if(i===0)ctx.moveTo(toX(i),toY(v));else ctx.lineTo(toX(i),toY(v))});ctx.lineTo(toX(curve.length-1),H);ctx.lineTo(toX(0),H);ctx.closePath();ctx.fillStyle=grad;ctx.fill();ctx.beginPath();ctx.strokeStyle=equity>=0?'#22c55e':'#ef4444';ctx.lineWidth=2;curve.forEach(function(v,i){if(i===0)ctx.moveTo(toX(i),toY(v));else ctx.lineTo(toX(i),toY(v))});ctx.stroke();ctx.beginPath();ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.moveTo(10,toY(0));ctx.lineTo(W-10,toY(0));ctx.stroke();ctx.setLineDash([]);$('equity-info').textContent=closed.length+' trades · Net P&L: $'+equity.toFixed(2)};
 function getFiltered(){var dirF=$('filter-dir').value;var resultF=$('filter-result').value;return trades.filter(function(t){if(dirF==='OPEN'&&t.exit)return false;if(dirF==='LONG'&&t.direction!=='LONG')return false;if(dirF==='SHORT'&&t.direction!=='SHORT')return false;if(resultF==='win'&&(!t.exit||calcPnL(t).pnl<=0))return false;if(resultF==='loss'&&(!t.exit||calcPnL(t).pnl>=0))return false;return true})};
 function renderTable(){var list=getFiltered();$('count-label').textContent=list.length;var tbody=$('trades-tbody');if(!list.length){tbody.innerHTML='<tr><td colspan="11" style="text-align:center;color:var(--dim);padding:30px;font-size:.85rem">Sin trades que mostrar. '+(trades.length?'Cambia los filtros para ver más resultados.':'Añade tu primer trade usando el formulario de arriba.')+'</td></tr>';return};tbody.innerHTML=list.map(function(t){var p=calcPnL(t);var isWin=p.pnl!==null&&p.pnl>0;var isOpen=!t.exit;return '<tr><td>'+t.date+'</td><td>'+t.asset+'</td><td><span class="tag-'+t.direction.toLowerCase()+'">'+t.direction+'</span></td><td>$'+fmt(t.entry,t.entry>100?0:4)+'</td><td>'+(isOpen?'<span class="tag-open">ABIERTO</span>':'$'+fmt(t.exit,t.exit>100?0:4))+'</td><td class="'+(isOpen?'':isWin?'win':'loss')+'">'+(p.pnl!==null?(p.pnl>0?'+':'')+'$'+fmt(p.pnl):'--')+'</td><td class="'+(isOpen?'':isWin?'win':'loss')+'">'+(p.pnlPct!==null?(p.pnlPct>0?'+':'')+fmt(p.pnlPct)+'%':'--')+'</td><td>'+(t.rr?t.rr+'R':'--')+'</td><td style="color:var(--muted);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(t.setup||'--')+'</td><td style="color:var(--muted);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(t.note||'--')+'</td><td><button class="btn btn-ghost btn-sm" onclick="deleteTrade(\''+t.id+'\')">✕</button></td></tr>'}).join('')};
 function renderKPIs(){var s=calcStats(trades);$('kpi-total').textContent=s.total;$('kpi-wr').textContent=s.closed?s.wr.toFixed(1)+'%':'--%';$('kpi-wr').className='kpi-val '+(s.wr>=50?'green':'red');$('kpi-pf').textContent=s.closed?s.pf.toFixed(2):'--';$('kpi-pf').className='kpi-val '+(s.pf>=1?'green':'red');$('kpi-rr').textContent=s.closed?s.rr.toFixed(2)+'R':'--';$('kpi-pnl').textContent=(s.pnl>0?'+$':'$')+fmt(s.pnl);$('kpi-pnl').className='kpi-val '+(s.pnl>=0?'green':'red')};
 function renderAll(){renderKPIs();renderTable();drawEquity(trades)};
+function importCSV(){
+  var input=document.createElement('input');input.type='file';input.accept='.csv';
+  input.onchange=function(e){
+    var file=e.target.files[0];if(!file)return;
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      var lines=ev.target.result.split('\n');var imported=0;
+      for(var i=1;i<lines.length;i++){
+        var cols=lines[i].trim().split(',');
+        if(cols.length<4)continue;
+        var entry=parseFloat(cols[3]);
+        if(!entry)continue;
+        var exit=cols[4]?parseFloat(cols[4]):null;
+        var size=cols[5]?parseFloat(cols[5]):100;
+        var rr=cols[8]?parseFloat(cols[8]):null;
+        var trade={id:Date.now()+'-'+i,date:cols[0]||'',asset:cols[1]||'BTC',direction:cols[2]||'LONG',entry:entry,exit:exit,size:size,setup:cols[9]||'',note:cols[10]||'',rr:rr};
+        if(exit&&!rr){
+          var p=calcPnL(trade);
+          trade.rr=p.pnlPct.toFixed(2);
+        }
+        trades.push(trade);imported++;
+      }
+      if(imported>0){save();renderAll();alert('Importados '+imported+' trades');}
+      else alert('No se encontraron trades válidos. Formato: Fecha,Activo,Dirección,Entrada,Salida,Tamaño,P&L,P&L%,RR,Setup,Nota');
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+};
 function exportCSV(){var h='Fecha,Activo,Dirección,Entrada,Salida,Tamaño,P&L,P&L%,RR,Setup,Nota\n';var r=trades.map(function(t){var p=calcPnL(t);return[t.date,t.asset,t.direction,t.entry,t.exit||'',t.size,p.pnl!==null?p.pnl.toFixed(2):'',p.pnlPct!==null?p.pnlPct.toFixed(2):'',t.rr||'',t.setup||'',t.note||''].join(',')}).join('\n');var b=new Blob([h+r],{type:'text/csv;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='sono-trades-'+new Date().toISOString().split('T')[0]+'.csv';a.click()};
 function clearFilters(){$('filter-dir').value='';$('filter-result').value='';renderTable()};
 $('f-date').value=new Date().toISOString().split('T')[0];renderAll();
@@ -142,6 +197,10 @@ if(!trades.length){var demos=[{id:'d1',date:'2026-05-26',asset:'BTC',direction:'
 </script>
 </body>
 </html>
+
+
+
+
 
 
 
