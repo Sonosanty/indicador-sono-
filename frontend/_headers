@@ -1,0 +1,18 @@
+/*.js
+  Content-Type: application/javascript
+
+/*.json
+  Content-Type: application/json
+
+/sw.js
+  Content-Type: application/javascript
+  Service-Worker-Allowed: /
+
+/manifest.json
+  Content-Type: application/manifest+json
+
+/api/*
+  Access-Control-Allow-Origin: *
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://api.binance.com https://api.coingecko.com https://api.alternative.me https://vix-proxy.sonosanty.workers.dev wss://stream.binance.com:9443; font-src https://fonts.gstatic.com; img-src 'self' data:; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests
