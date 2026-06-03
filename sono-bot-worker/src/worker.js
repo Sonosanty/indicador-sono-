@@ -119,16 +119,30 @@ function computeScore(candles) {
 
 const SYMBOLS = { BTC: 'BTCUSDT', ETH: 'ETHUSDT', SOL: 'SOLUSDT', XRP: 'XRPUSDT' }
 
-async function fetchCandles(asset) {
+async function fetchCandles(asset, attempt = 0) {
   const sym = SYMBOLS[asset]
-  const resp = await fetch(`${BINANCE}/klines?symbol=${sym}&interval=${INTERVAL}&limit=${LIMIT}`)
-  if (!resp.ok) throw new Error(`Binance klines ${asset}: ${resp.status}`)
+  const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
+  const urls = [`${BINANCE}/klines?symbol=${sym}&interval=${INTERVAL}&limit=${LIMIT}`]
+  if (attempt > 0) { urls.push(`https://api1.binance.com/klines?symbol=${sym}&interval=${INTERVAL}&limit=${LIMIT}`) }
+  if (attempt > 1) { urls.push(`https://api2.binance.com/klines?symbol=${sym}&interval=${INTERVAL}&limit=${LIMIT}`) }
+  if (attempt > 2) { urls.push(`https://api3.binance.com/klines?symbol=${sym}&interval=${INTERVAL}&limit=${LIMIT}`) }
+  const url = urls[Math.min(attempt, urls.length - 1)]
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 15000)
+  const resp = await fetch(url, {
+    headers: { 'User-Agent': UA, 'Accept': 'application/json' },
+    signal: controller.signal
+  })
+  clearTimeout(timeoutId)
+  if (!resp.ok) throw new Error(`Binance klines ${asset} [${url}]: ${resp.status}`)
   return await resp.json()
 }
 
 async function fetchTicker(asset) {
   const sym = SYMBOLS[asset]
-  const resp = await fetch(`${BINANCE}/ticker/24hr?symbol=${sym}`)
+  const resp = await fetch(`${BINANCE}/ticker/24hr?symbol=${sym}`, {
+    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+  })
   if (!resp.ok) throw new Error(`Binance ticker ${asset}: ${resp.status}`)
   const d = await resp.json()
   return { close: +d.lastPrice, change: +d.priceChangePercent, high: +d.highPrice, low: +d.lowPrice }
@@ -241,8 +255,18 @@ async function runBot(env, ctx) {
 
   for (const asset of ASSETS) {
     try {
-      const candles = await fetchCandles(asset)
-      const ticker = await fetchTicker(asset)
+      // Retry hasta 3 intentos si Binance da 451 (bloqueo geográfico)
+      let candles, ticker
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          candles = await fetchCandles(asset, attempt)
+          ticker = await fetchTicker(asset)
+          break
+        } catch (e) {
+          if (attempt === 2 || (!e.message.includes('451') && !e.message.includes('AbortError'))) throw e
+          await new Promise(r => setTimeout(r, 1000 * (attempt + 1)))
+        }
+      }
       const score = computeScore(candles)
 
       if (score) {
