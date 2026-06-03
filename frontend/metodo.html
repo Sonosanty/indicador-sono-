@@ -239,16 +239,21 @@ function changeCoin(c){currentCoin=c;document.querySelectorAll(".btn-coin").forE
 function changeTF(t){currentTF=t;document.querySelectorAll(".btn-tf").forEach(b=>b.classList.toggle("ac",b.dataset.tf===t));_fetching=!1;fetchAll()}
 function fetchAll(){
  if(_fetching)return;_fetching=!0;$("apiChip").textContent="FETCHING";$("apiChip").className="api-chip chip-loading";
- const sym={BTC:"BTCUSDT",ETH:"ETHUSDT",SOL:"SOLUSDT",XRP:"XRPUSDT"}[currentCoin];
+ const symKC={BTC:"BTC-USDT",ETH:"ETH-USDT",SOL:"SOL-USDT",XRP:"XRP-USDT"}[currentCoin];
  const tf=currentTF,limit=Math.max(201,tf==="1h"?300:220);
- let priceData=null,klinesData=null,fngData=null,globalData=null;
+ const kcInt={"1":"1min","3":"3min","5":"5min","15":"15min","30":"30min","1h":"1hour"};
+ let klinesData=null,fngData=null,globalData=null;
  const chipOK=()=>{$("apiChip").textContent="LIVE";$("apiChip").className="api-chip chip-ok"};
  const chipErr=()=>{$("apiChip").textContent="ERROR";$("apiChip").className="api-chip chip-err"};
  Promise.allSettled([
-  fetchJ("https://api.binance.com/api/v3/ticker/24hr?symbol="+sym).then(d=>{priceData=d;const p=+d.lastPrice,c=+d.priceChangePercent;$("priceHero").textContent=fmtP(p);const e=$("priceChg");e.textContent=(c>=0?"+":"")+c.toFixed(2)+"%";e.className="price-chg "+(c>=0?"chg-up":"chg-dn");e.style.display="inline"}).catch(()=>{}),
-  fetchJ("https://api.binance.com/api/v3/klines?symbol="+sym+"&interval="+tf+"&limit="+limit).then(d=>{klinesData=d;$("errBanner").classList.remove("show")}).catch(e=>{$("errBanner").classList.add("show")}),
+  // KuCoin ticker (precio + cambio 24h)
+  fetchJ("https://api.kucoin.com/api/v1/market/stats?symbol="+symKC).then(d=>{const t=d.data;if(t){const p=+t.last,c=+t.changeRate*100;$("priceHero").textContent=fmtP(p);const e=$("priceChg");e.textContent=(c>=0?"+":"")+c.toFixed(2)+"%";e.className="price-chg "+(c>=0?"chg-up":"chg-dn");e.style.display="inline"}}).catch(()=>{}),
+  // KuCoin velas
+  fetchJ("https://api.kucoin.com/api/v1/market/candles?type="+(kcInt[tf]||"15min")+"&symbol="+symKC+"&limit="+limit).then(d=>{const raw=d.data;if(raw){klinesData=raw.map(c=>[+c[0],+c[1],+c[3],+c[4],+c[2],+c[5]]);$("errBanner").classList.remove("show")}}).catch(()=>{$("errBanner").classList.add("show")}),
+  // Fear & Greed
   fetchJ("https://api.alternative.me/fng/?limit=1").then(d=>{if(d&&d.data&&d.data[0]){fngData=+d.data[0].value}}).catch(()=>{}),
-  fetchJ("https://api.coingecko.com/api/v3/global").then(d=>{if(d&&d.data){globalData=d.data}}).catch(()=>{})
+  // Macro desde el worker (dominance, mcap, F&G backup)
+  fetchJ("https://sono-bot.sonosanty.workers.dev/api/status").then(d=>{if(d?.macro){const m=d.macro;if(m.dominance!=null)globalData={market_cap_percentage:{btc:m.dominance},total_market_cap:{usd:m.mcap||0}};if(m.fng!=null&&!fngData)fngData=m.fng}}).catch(()=>{})
  ]).then(()=>{
   _fetching=!1;
   if(!klinesData){setTimeout(fetchAll,15000);chipErr();$("errBanner").classList.add("show");return}
