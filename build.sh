@@ -19,8 +19,11 @@ cp frontend/app.js indicador_cloudflare/app.js
 cp frontend/app.module.js indicador_cloudflare/app.module.js
 
 # JS Modules (ES modules - data layer)
-mkdir -p indicador_cloudflare/js/core indicador_cloudflare/js/data
+mkdir -p indicador_cloudflare/js/core indicador_cloudflare/js/data indicador_cloudflare/js/indicators
 cp js/core/cache.js indicador_cloudflare/js/core/
+cp js/core/config.js indicador_cloudflare/js/core/
+cp js/core/state.js indicador_cloudflare/js/core/
+cp js/core/formatters.js indicador_cloudflare/js/core/
 cp js/data/adapters.js indicador_cloudflare/js/data/
 cp js/data/binance.js indicador_cloudflare/js/data/
 cp js/data/kucoin.js indicador_cloudflare/js/data/
@@ -28,6 +31,13 @@ cp js/data/coingecko.js indicador_cloudflare/js/data/
 cp js/data/alternative.js indicador_cloudflare/js/data/
 cp js/data/vix.js indicador_cloudflare/js/data/
 cp js/data/sonobot.js indicador_cloudflare/js/data/
+cp js/indicators/ma.js indicador_cloudflare/js/indicators/
+cp js/indicators/rsi.js indicador_cloudflare/js/indicators/
+cp js/indicators/adx.js indicador_cloudflare/js/indicators/
+cp js/indicators/bb.js indicador_cloudflare/js/indicators/
+cp js/indicators/score-maestro.js indicador_cloudflare/js/indicators/
+cp js/indicators/ranges.js indicador_cloudflare/js/indicators/
+cp js/indicators/confluence.js indicador_cloudflare/js/indicators/
 
 # Pages
 cp frontend/metodo.html indicador_cloudflare/metodo.html
