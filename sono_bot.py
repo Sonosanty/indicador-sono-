@@ -403,7 +403,7 @@ class SonoBot:
                     f'P1={score["p1"]} P2={score["p2"]} P3={score["p3"]} '
                     f'RSI={score["rsi"]} ADX={score["adx"]} '
                     f'Price=${price:.2f} '
-                    f'ATR=${atr:.2f}' if atr is not None else 'ATR=N/A'
+                    f'ATR={"$" + f"{atr:.2f}" if atr is not None else "N/A"}'
                 )
                 
                 # ═══ Alertas Telegram por cambio de categoría ═══
@@ -412,7 +412,7 @@ class SonoBot:
                         alert_key = f'cross_{asset}'
                         if self._should_alert(alert_key):
                             try:
-                                alert_msg = format_score_cross_alert(asset, old_score, score, score)
+                                alert_msg = format_score_cross_alert(asset, old_score, score, price)
                                 send_alert(alert_msg)
                                 logger.info(f'Telegram: alerta cambio de señal {asset}: {old_signal} -> {new_signal}')
                             except Exception as e:
