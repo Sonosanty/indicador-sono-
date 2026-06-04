@@ -405,6 +405,7 @@ body{background:#060e1a;font-family:'Courier New',monospace;color:#e2e8f0;font-s
  </div>
  <div class="score-label"><span id="coin-score-label">ACUMULAR 🔵</span></div>
  <div class="regime"><span id="coin-rm-metodo">CONSOLIDACIÓN · NEUTRAL</span></div>
+ <div style="font-size:8px;color:#2a5a8a;margin-top:2px">Score: <span id="coin-sc-metodo" style="color:#00c8f0">54</span> · <span id="coin-sl-metodo" style="color:#00c8f0">ACUMULAR</span></div>
  </div>
  <div class="pilar-card">
  <div class="p-header"><div class="p-title">P1 · Tendencia</div><div class="p-score" id="coin-p1sc" style="color:#3a8ab0">12/35</div></div>
@@ -817,7 +818,7 @@ body{background:#060e1a;font-family:'Courier New',monospace;color:#e2e8f0;font-s
   document.querySelectorAll('#page-rangos .tfp').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 
-  const d = COIN[coin];
+  const d = window.COIN_INIT[coin];
   if (!d) return;
 
   const fmt = (n) => n < 10 ? n.toFixed(4) : n < 100 ? n.toFixed(2) : Math.round(n).toLocaleString();
@@ -888,11 +889,11 @@ body{background:#060e1a;font-family:'Courier New',monospace;color:#e2e8f0;font-s
   gId('coin-price-rangos', usd(d.p));
   gId('coin-rg-bias', d.rgb);
   gId('coin-rg-conf', d.rgc);
-  gId('coin-rg-state', d.rgs);
+  gId('coin-rg-state', d.rgst || d.rgs || '');
 
   // Rangos cards
   const rangoCards = document.querySelectorAll('.rango-card');
-  d.rgtf.forEach(function(tfStr, i) {
+  if (d.rgtf && d.rgtf.forEach) d.rgtf.forEach(function(tfStr, i) {
     const parts = tfStr.split('|');
     if (rangoCards[i]) {
       const card = rangoCards[i];
@@ -948,11 +949,16 @@ window.COIN_INIT = {
     msc:54,msl:'ACUMULAR',mrg:'CONSOLIDACION',
     rgb:'NEUTRAL',rgc:'MEDIA',rgst:'Rango lateral',
     r2:69700,r1:68500,s1:60700,s2:59000,
-    mc:35,mcp:'1.28T',
+    mcp:'1.28T',
     trp:64236,trc:-3.03,
     ma6:64100,ma40:64850,ma70:65220,ma200:67150,
     ma6c:-0.21,ma40c:-0.95,ma70c:-1.51,ma200c:-4.34,
-    rx:4,rxl:'OK'
+    rx:4,rxl:'OK',
+    m1:31,m3:42,m5:50,m15:54,mtft:48,
+    mcl:'🟢 MACRO ALCISTA',mc:'#00c8f0',mcs:'4/6',mcrg:'CONSOLIDACIÓN',mcbi:'NEUTRAL',mcrk:'MEDIO',
+    p1s:'12/35',p2s:'24/35',p3s:'18/30',
+    dbg:'[BTC] RSI:26.8 | ADX:36.1 | BB:0.18 | Score:54 | Macro:4/6 | MTF:48/100',
+    rgtf:['1min|#ef4444|ZONA ROJA|85|Agressive Sell|#ef4444|Alta presión bajista, sin soporte cercano|172,63 180,58 185,52 190,48 200,55|#ef4444','3min|#f59e0b|ZONA AMARILLA|55|Bearish|#f59e0b|Momentum bajista, posible rebote|80,45 95,50 110,55 125,48 140,52|#f59e0b','5min|#7aaad0|ZONA AZUL|40|Neutral-Bearish|#7aaad0|Rango sin dirección clara, volumen bajo|60,50 75,48 90,52 105,50 120,51|#7aaad0','15min|#00c8f0|ZONA VERDE|30|Neutral|#00c8f0|Micro tendencia lateral, esperar confirmación|40,55 55,52 70,54 85,51 100,53|#00c8f0']
   },
     ETH:{
     pair:'ETH/USDT',p:1777,pe:1635,cp:-4.12,ca:-76,h24:1850,l24:1755,v:'18.2B',
@@ -964,11 +970,16 @@ window.COIN_INIT = {
     msc:40,msl:'NEUTRAL',mrg:'Consolidacion',
     rgb:'OSO',rgc:'ALTA',rgst:'Rango no direccional',
     r2:1950,r1:1865,s1:1700,s2:1620,
-    mc:35,mcp:'228.5B',
+    mcp:'228.5B',
     trp:1777,trc:-4.12,
     ma6:1720,ma40:1690,ma70:1650,ma200:1580,
     ma6c:-2.1,ma40c:0.3,ma70c:1.8,ma200c:5.2,
-    rx:4,rxl:'OK'
+    rx:4,rxl:'OK',
+    m1:35,m3:40,m5:45,m15:48,mtft:42,
+    mcl:'🟠 MACRO NEUTRAL',mc:'#f59e0b',mcs:'3/6',mcrg:'CONSOLIDACIÓN',mcbi:'NEUTRAL',mcrk:'MEDIO',
+    p1s:'28/35',p2s:'31/35',p3s:'29/30',
+    dbg:'[ETH] RSI:42 | ADX:32 | BB:0.08 | Score:38 | Macro:3/6 | MTF:42/100',
+    rgtf:['1min|#ef4444|ZONA ROJA|75|Agressive Sell|#ef4444|Alta presión bajista, ETH débil|160,40 175,38 190,35 205,42 220,36|#ef4444','3min|#f59e0b|ZONA AMARILLA|60|Bearish|#f59e0b|Bajista suave, volumen descendiendo|90,42 105,45 120,40 135,48 150,44|#f59e0b','5min|#7aaad0|ZONA AZUL|45|Neutral|#7aaad0|Rango lateral, sin señal clara|65,48 80,50 95,47 110,52 125,49|#7aaad0','15min|#00c8f0|ZONA VERDE|35|Neutral-Bullish|#00c8f0|Micro recuperación, posible entrada|45,50 60,53 75,51 90,55 105,52|#00c8f0']
   },
     SOL:{
     pair:'SOL/USDT',p:69.76,pe:64.18,cp:-5.18,ca:-3.82,h24:73.5,l24:68.2,v:'4.8B',
@@ -980,11 +991,16 @@ window.COIN_INIT = {
     msc:35,msl:'VENTA SHORT+',mrg:'Bajista',
     rgb:'OSO',rgc:'ALTA',rgst:'Rango bajista',
     r2:82,r1:76,s1:62,s2:56,
-    mc:30,mcp:'28.9B',
+    mcp:'28.9B',
     trp:69.76,trc:-5.18,
     ma6:65,ma40:62,ma70:58,ma200:52,
     ma6c:-3.2,ma40c:-0.8,ma70c:2.5,ma200c:8.1,
-    rx:4,rxl:'BAJO'
+    rx:4,rxl:'BAJO',
+    m1:30,m3:35,m5:38,m15:42,mtft:36,
+    mcl:'🔴 MACRO BAJISTA',mc:'#ef4444',mcs:'2/6',mcrg:'BAJISTA',mcbi:'OSO',mcrk:'ALTO',
+    p1s:'25/35',p2s:'28/35',p3s:'24/30',
+    dbg:'[SOL] RSI:38 | ADX:28 | BB:0.12 | Score:35 | Macro:2/6 | MTF:36/100',
+    rgtf:['1min|#ef4444|ZONA ROJA|80|Agressive Sell|#ef4444|Venta agresiva, SOL bajista fuerte|150,30 165,28 180,25 195,35 210,30|#ef4444','3min|#f59e0b|ZONA AMARILLA|65|Bearish|#f59e0b|Tendencia bajista, volumen alto|85,32 100,35 115,30 130,38 145,34|#f59e0b','5min|#7aaad0|ZONA AZUL|50|Neutral|#7aaad0|Sin dirección, consolidación|60,40 75,42 90,38 105,44 120,41|#7aaad0','15min|#00c8f0|ZONA VERDE|40|Neutral|#00c8f0|Rebote leve, precaución|40,45 55,48 70,44 85,50 100,47|#00c8f0']
   },
     XRP:{
     pair:'XRP/USDT',p:1.17,pe:1.08,cp:-3.97,ca:-0.048,h24:1.22,l24:1.16,v:'3.5B',
@@ -996,11 +1012,16 @@ window.COIN_INIT = {
     msc:42,msl:'NEUTRAL',mrg:'Neutral',
     rgb:'NEUTRAL',rgc:'MEDIA',rgst:'Rango lateral',
     r2:1.28,r1:1.22,s1:1.1,s2:1.05,
-    mc:40,mcp:'68B',
+    mcp:'68B',
     trp:1.17,trc:-3.97,
     ma6:1.12,ma40:1.15,ma70:1.08,ma200:1.02,
     ma6c:-1.8,ma40c:-0.5,ma70c:2,ma200c:6.5,
-    rx:5,rxl:'OK'
+    rx:5,rxl:'OK',
+    m1:38,m3:44,m5:48,m15:52,mtft:44,
+    mcl:'🟠 MACRO NEUTRAL',mc:'#f59e0b',mcs:'3/6',mcrg:'NEUTRAL',mcbi:'NEUTRAL',mcrk:'MEDIO',
+    p1s:'30/35',p2s:'32/35',p3s:'28/30',
+    dbg:'[XRP] RSI:44 | ADX:35 | BB:0.10 | Score:40 | Macro:3/6 | MTF:44/100',
+    rgtf:['1min|#ef4444|ZONA ROJA|70|Sell|#ef4444|Presión bajista moderada|170,35 185,32 200,30 215,38 230,34|#ef4444','3min|#f59e0b|ZONA AMARILLA|55|Bearish|#f59e0b|Tendencia bajista suave|90,40 105,42 120,38 135,45 150,41|#f59e0b','5min|#7aaad0|ZONA AZUL|45|Neutral|#7aaad0|Rango lateral, volumen normal|65,45 80,48 95,44 110,50 125,47|#7aaad0','15min|#00c8f0|ZONA VERDE|35|Neutral-Bullish|#00c8f0|Micro tendencia alcista, posible acumulación|45,48 60,52 75,49 90,55 105,51|#00c8f0']
   },
 };
 
