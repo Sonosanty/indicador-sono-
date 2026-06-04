@@ -229,7 +229,25 @@ body{background:#060e1a;font-family:'Courier New',monospace;color:#e2e8f0;font-s
  stroke-dasharray="226.2" stroke-dashoffset="103.8" id="coin-ring-dash" stroke-linecap="round"
  transform="rotate(-90 44 44)"/>
  </svg>
- <div class="rscore"><div class="rscore-num"><span id="coin-score-num">54</span></div><div class="rscore-den">/100</div></div>
+ <div class="rscore"><div class="rscore-num"><span id="coin-score-num">54</span></div>
+<span id="coin-doml" style="display:none">0</span>
+<span id="coin-r3" style="display:none">0</span>
+<span id="coin-r3l" style="display:none">0</span>
+<span id="coin-sc" style="display:none">0</span>
+<span id="coin-sl" style="display:none">0</span>
+<span id="coin-p1s" style="display:none">0</span>
+<span id="coin-p2s" style="display:none">0</span>
+<span id="coin-p3s" style="display:none">0</span>
+<span id="coin-mrg" style="display:none">0</span>
+<span id="coin-ma6c" style="display:none">0</span>
+<span id="coin-ma40c" style="display:none">0</span>
+<span id="coin-ma70c" style="display:none">0</span>
+<span id="coin-ma200c" style="display:none">0</span>
+<span id="coin-r2" style="display:none">0</span>
+<span id="coin-r1" style="display:none">0</span>
+<span id="coin-s1" style="display:none">0</span>
+<span id="coin-s2" style="display:none">0</span>
+<div class="rscore-den">/100</div></div>
  </div>
  <div class="score-label"><span id="coin-score-label">ACUMULAR 🔵</span></div>
  <div class="pillars">
@@ -819,6 +837,12 @@ body{background:#060e1a;font-family:'Courier New',monospace;color:#e2e8f0;font-s
   btn.classList.add('active');
 
   const d = window.COIN_INIT[coin];
+  window.currentCoin = coin;
+
+  window.currentCoin = coin;
+
+  window.currentCoin = coin;
+
   if (!d) return;
 
   const fmt = (n) => n < 10 ? n.toFixed(4) : n < 100 ? n.toFixed(2) : Math.round(n).toLocaleString();
@@ -1024,20 +1048,21 @@ window.COIN_INIT = {
     rgtf:['1min|#ef4444|ZONA ROJA|70|Sell|#ef4444|Presión bajista moderada|170,35 185,32 200,30 215,38 230,34|#ef4444','3min|#f59e0b|ZONA AMARILLA|55|Bearish|#f59e0b|Tendencia bajista suave|90,40 105,42 120,38 135,45 150,41|#f59e0b','5min|#7aaad0|ZONA AZUL|45|Neutral|#7aaad0|Rango lateral, volumen normal|65,45 80,48 95,44 110,50 125,47|#7aaad0','15min|#00c8f0|ZONA VERDE|35|Neutral-Bullish|#00c8f0|Micro tendencia alcista, posible acumulación|45,48 60,52 75,49 90,55 105,51|#00c8f0']
   },
 };
+window.currentCoin = 'BTC';
+window.currentCoin = 'BTC';
+window.currentCoin = 'BTC';
 
 function showPage(id, btn) {
  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
  document.querySelectorAll('.navbtn').forEach(b => b.classList.remove('active'));
  document.getElementById('page-' + id).classList.add('active');
  btn.classList.add('active');
- window.scrollTo(0,0);
-}
-function setTF(btn) {
- const parent = btn.closest('.tf-row') || btn.parentElement;
- parent.querySelectorAll('.tfp').forEach(b => b.classList.remove('active'));
- btn.classList.add('active');
-}
-
-</script>
+ window.scrollTo(0, 0);
+  // Persist currentCoin across pages
+  const cc = window.currentCoin || 'BTC';
+  document.querySelectorAll('.atab').forEach(t => {
+    t.classList.toggle('active', t.textContent.trim() === cc);
+  });
+}</script>
 </body>
 </html>
