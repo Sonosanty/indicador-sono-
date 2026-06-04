@@ -13,7 +13,7 @@ function fk(n){return n>=1e12?"$"+(n/1e12).toFixed(2)+"T":n>=1e9?"$"+(n/1e9).toF
 function fm(n){return "$"+Math.round(n).toLocaleString("en-US")};
 
 // ===== SCORE MAESTRO UNIFICADO v2 =====
-// Alineado con sono_score.py (Python) — fuente canonica
+// Alineado con sono_score.py (Python) ÔÇö fuente canonica
 // =========================================
 var SCORE_CFG = null;
 
@@ -179,7 +179,7 @@ $id("mtx").textContent="F&G "+fg+" Dom "+ST.db.toFixed(1)+"%";
 var vxVal=ST.vx||15;
 var sd;
 if(ST._fromWorker&&ST._workerScore){
-  // Data came from worker — transform to local format
+  // Data came from worker ÔÇö transform to local format
   var ws=ST._workerScore;
   sd={
     sc: ws.total, p1: ws.p1, p2: ws.p2, p3: ws.p3,
@@ -214,15 +214,14 @@ if(sd.ma200Avail&&sd.m2){
 }
 $id("riv").textContent=sd.r||"--";$id("ril").textContent=sd.r>70?"Sobrecompra":sd.r<30?"Sobreventa":sd.r>50?"Alcista":"Bajista";$id("rib").style.width=Math.min((sd.r||0),100)+"%";
 $id("adv").textContent=sd.a||"--";$id("adl").textContent=sd.a>30?"Fuerte":sd.a>20?"Moderado":"Debil";$id("adb").style.width=Math.min((sd.a||0)*2,100)+"%";
-$id("bbv").textContent=sd.pb!==null?sd.pb.toFixed(2):"--";$id("bbl").textContent=sd.pb!==null?sd.pb>0.8?"Sobrecompra":sd.pb<0.2?"Sobreventa":"Media":"--";
-       218 var pr2=sd.r!==null?(sd.r-50)/50:0;$id("pd").style.left=Math.max(8,Math.min(92,50+pr2*42))+"%";
+$id("bbv").textContent=sd.pb!==null?sd.pb.toFixed(2):"--";$id("bbl").textContent=sd.pb!==null?sd.pb>0.8?"Sobrecompra":sd.pb<0.2?"Sobreventa":"Media":"--";  var pr2=sd.r!==null?(sd.r-50)/50:0;$id("pd").style.left=Math.max(8,Math.min(92,50+pr2*42))+"%";
 $id('plb').textContent=pr2>0.2?'COMPRA':pr2<-0.2?'VENTA':'NEUTRAL';
 $id("r1").textContent=sd.m40?fm(sd.m40*1.05):"--";$id("r2").textContent=sd.m70?fm(sd.m70*1.08):"--";
 $id("s1").textContent=sd.m40?fm(sd.m40*0.95):"--";$id("s2").textContent=sd.m70?fm(sd.m70*0.92):"--";
 $id("srp").textContent=fm(sd.p);
 // MTF
 if(ST._fromWorker&&ST._workerScore){
-  // Worker only has current TF score — show single value as approximate MTF
+  // Worker only has current TF score ÔÇö show single value as approximate MTF
   var scRad=sd.sc;
   var approxMTF=scRad>=70?100:scRad>=62?75:scRad>=52?55:scRad>=42?45:scRad>=30?25:10;
   $id('cp').textContent=approxMTF+'/100';
@@ -233,7 +232,7 @@ for(var ti=0;ti<tfs.length;ti++){var sdi=cs(tfs[ti]);if(!sdi)continue;var ts=sdi
 $id('cp').textContent=mtfTotal+'/100';$id('cp').className='pl '+(mtfTotal>=70?'pgg':mtfTotal>=50?'pb':mtfTotal>=30?'pw':'prr')}catch(e){}};
 // Senales
 var chk=[sd.r>50,sd.a>25,sd.p>sd.m40,sd.pb>0.5,fg<=20||fg>=80];
-var sis=document.querySelectorAll("#sr .si");for(var si=0;si<Math.min(chk.length,sis.length);si++){sis[si].textContent=chk[si]?"✓":"—";sis[si].className="si "+(chk[si]?"sy":"sn")};
+var sis=document.querySelectorAll("#sr .si");for(var si=0;si<Math.min(chk.length,sis.length);si++){sis[si].textContent=chk[si]?"Ô£ô":"ÔÇö";sis[si].className="si "+(chk[si]?"sy":"sn")};
 // RSI 3D REAL (cache con fetch a Binance 1d)
 var rsi3d='--';
 // Intentar usar cache local primero
@@ -360,7 +359,7 @@ function fetchAll(){
     fetchUrl('https://sono-bot.sonosanty.workers.dev/api/status', 8000)
     .then(function(wd){
       if(wd&&wd.scores&&wd.macro){
-        // Worker responded with scores — populate ST from it
+        // Worker responded with scores ÔÇö populate ST from it
         var sc=wd.scores[CA];
         if(sc&&sc.price){
           ST.price=sc.price;
@@ -389,19 +388,19 @@ function fetchAll(){
         ST._fetching=false;
         return;
       }
-      // Worker responded but no useful data — fall through to local
+      // Worker responded but no useful data ÔÇö fall through to local
       startLocal();
     })
     .catch(function(){
-      // Worker unavailable — fall through to local
+      // Worker unavailable ÔÇö fall through to local
       startLocal();
     });
   }
 
-  // ===== FALLBACK: Cálculo local directo =====
+  // ===== FALLBACK: C├ílculo local directo =====
   function startLocal(){
     if(_allDone)return;
-    if(ld)ld.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> Worker offline — fuentes directas...';ld.className='st-bar co';
+    if(ld)ld.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> Worker offline ÔÇö fuentes directas...';ld.className='st-bar co';
 
   function done(){
     if(_allDone)return;
@@ -458,8 +457,10 @@ function scheduleUpd(){
 // Init
 ST.loading=true;
 renderHTML();
-document.querySelectorAll(".ab button").forEach(function(b){b.addEventListener("click",function(){CA=this.getAttribute("data-a");document.querySelectorAll(".ab button").forEach(function(x){x.classList.remove("ac")});this.classList.add("ac");document.querySelectorAll('.asset-tab').forEach(function(t){t.classList.remove('active');if(t.getAttribute('data-asset')===CA)t.classList.add('active')});_dataReady=false;var sb=document.getElementById('st-bar');if(sb){sb.className='st-bar co';sb.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> Conectando fuentes de datos...'};renderHTML();fetchAll()})});
+document.querySelectorAll(".ab button").forEach(function(b){b.addEventListener("click",function(){CA=this.getAttribute("data-a");document.querySelectorAll(".ab button").forEach(function(x){x.classList.remove("ac")});this.classList.add("ac");_dataReady=false;var sb=document.getElementById('st-bar');if(sb){sb.className='st-bar co';sb.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> Conectando fuentes de datos...'};renderHTML();fetchAll()})});
 fetchAll();setInterval(function(){if(!ST._fetching)fetchAll();},30000);
+window.fetchAll=fetchAll;window.ST=ST;
+
 })();
 
 

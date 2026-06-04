@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="/assets/css/layout.css">
 <link rel="stylesheet" href="/assets/css/components.css">
 <link rel="stylesheet" href="/assets/css/mockup-overrides.css">
-<script src="/assets/vendor/chart.umd.min.js?_v=mpzb3dko"></script>
+<script src="/assets/vendor/chart.umd.min.js?_v=v1780570965333"></script>
 <script type="module" src="/app.module.js"></script>
 <style>
 .page-panel{display:none}.page-panel.active{display:block}
@@ -254,18 +254,10 @@
   Sono PRO v6 — <span id="tsEl">--:--:--</span> — <span id="lu">última actualización</span>
 </div>
 
-<script src="/app.js?_v=mpzb3dko"></script>
-<script src="/spa-controller.js?_v=mpzb3dko"></script>
+<script src="/app.js?_v=v1780570965333"></script>
+<script src="/spa-controller.js?_v=v1780570965333"></script>
 
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/service-worker.js', { scope: '/' }).then(function(reg) {
-      setInterval(function(){ reg.update(); }, 1800000);
-    }).catch(function(err){ console.log('[SW] Error:', err); });
-  });
-}
-</script>
+
 
 </body>
 </html>
