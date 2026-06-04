@@ -54,6 +54,7 @@ cp frontend/pagina.html indicador_cloudflare/pagina.html 2>/dev/null || true
 
 # Configs
 cp frontend/_headers indicador_cloudflare/_headers
+cp frontend/_redirects indicador_cloudflare/_redirects 2>/dev/null || true
 cp _routes.json indicador_cloudflare/_routes.json
 
 # Service worker (simplificado, sin precache de ASSETS)
