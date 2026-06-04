@@ -8,27 +8,32 @@
 <link rel="stylesheet" href="/assets/css/base.css">
 <link rel="stylesheet" href="/assets/css/layout.css">
 <link rel="stylesheet" href="/assets/css/components.css">
+<link rel="stylesheet" href="/assets/css/mockup-overrides.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script type="module" src="/app.module.js"></script>
 </head>
 <body class="btc-dashboard">
 
-<header class="topbar">
-  <div>
-    <h1>Trades Realtime</h1>
-    <p>Auditoría de señales abiertas y cerradas por websocket</p>
+<nav class="topnav">
+  <div class="logo">SONO PRO</div>
+  <div class="nav-links">
+    <a href="/">Dashboard</a>
+    <a href="/metodo">Método</a>
+    <a href="/rangos">Rangos</a>
+    <a href="/trades" class="active">Trades</a>
   </div>
-  <div class="topbar-actions">
-    <a href="index.html">Dashboard</a>
-    <a href="range_explorer.html">Rangos</a>
-    
-<div class="asset-tabs" style="margin-left:auto">
-<button class="asset-btn active" data-asset="BTC">BTC</button>
-<button class="asset-btn" data-asset="ETH">ETH</button>
-<button class="asset-btn" data-asset="SOL">SOL</button>
-<button class="asset-btn" data-asset="XRP">XRP</button>
+  <div class="live-indicator">
+    <span id="wsStatus" class="st-bar co"><span class="st-dot" style="background:#3b82f6"></span> Conectando...</span>
+    <span id="livePrice" class="st-bar co" style="font-size:10px">$--</span>
+  </div>
+</nav>
+<div class="health-bar">
+  <span class="source">trades.json</span>
+  <span style="color:#4a7aaa">· Worker real</span>
+  <span style="color:#4a7aaa">·</span>
+  <span id="wsLatency" style="color:#4a7aaa">Sin conexión</span>
+  <span class="status-alert" style="margin-left:auto">WS BTC precio live activo</span>
 </div>
-  </div>
-</header>
 
 <main class="dashboard-shell">
 
