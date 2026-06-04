@@ -14,6 +14,9 @@ cp -r frontend/assets/vendor indicador_cloudflare/assets/
 # CSS modules (design tokens)
 cp -r assets/css indicador_cloudflare/assets/
 
+# Mockup design overrides
+cp assets/css/mockup-overrides.css indicador_cloudflare/assets/css/ 2>/dev/null || true
+
 # App JS - logica del dashboard
 cp frontend/app.js indicador_cloudflare/app.js
 cp frontend/app.module.js indicador_cloudflare/app.module.js

@@ -458,7 +458,7 @@ function scheduleUpd(){
 // Init
 ST.loading=true;
 renderHTML();
-document.querySelectorAll(".ab button").forEach(function(b){b.addEventListener("click",function(){CA=this.getAttribute("data-a");document.querySelectorAll(".ab button").forEach(function(x){x.classList.remove("ac")});this.classList.add("ac");_dataReady=false;var sb=document.getElementById('st-bar');if(sb){sb.className='st-bar co';sb.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> Conectando fuentes de datos...'};renderHTML();fetchAll()})});
+document.querySelectorAll(".ab button").forEach(function(b){b.addEventListener("click",function(){CA=this.getAttribute("data-a");document.querySelectorAll(".ab button").forEach(function(x){x.classList.remove("ac")});this.classList.add("ac");document.querySelectorAll('.asset-tab').forEach(function(t){t.classList.remove('active');if(t.getAttribute('data-asset')===CA)t.classList.add('active')});_dataReady=false;var sb=document.getElementById('st-bar');if(sb){sb.className='st-bar co';sb.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> Conectando fuentes de datos...'};renderHTML();fetchAll()})});
 fetchAll();setInterval(function(){if(!ST._fetching)fetchAll();},30000);
 })();
 
