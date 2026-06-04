@@ -11,6 +11,9 @@ cp index.html indicador_cloudflare/index.html
 # Self-hosted vendor assets (chart.js, luxon, adapters)
 cp -r frontend/assets/vendor indicador_cloudflare/assets/
 
+# CSS modules (design tokens)
+cp -r assets/css indicador_cloudflare/assets/
+
 # App JS - logica del dashboard
 cp frontend/app.js indicador_cloudflare/app.js
 
