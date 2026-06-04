@@ -933,7 +933,43 @@ window.COIN_INIT = {
     ],
     trp:69.76,trc:-5.33
   },
-  XRP:{
+  ETH:{
+    pair:'ETH/USDT',p:1777,pe:1635,cp:-4.12,ca:-76,h24:1850,l24:1755,v:'18.2B',
+    sc:38,sl:'VENTA SHORT+ \u26a0\ufe0f',rg:'\U0001f534',
+    p1:28,p1s:'BULLISH',p2:31,p2s:'BEARISH',p3:29,p3s:'BULLISH',
+    fg:12,fgl:'Miedo Extremo \U0001f631',
+    vx:14.2,vxl:'Bajo',dm:10.8,dml:'Baja',
+    r3:48,r3l:'NEUTRAL \u26aa',
+    rsi:42,adx:32,bb:0.08,
+    msc:40,msl:'NEUTRAL \u26aa',mrg:'\U0001f7e1',
+    rgb:'OSO',rgc:'ALTA',rgst:'Rango no direccional \U0001f7e1',
+    m1:'\u26aa',m3:'\U0001f535',m5:'\u26aa',m15:'\U0001f534',mtft:5,
+    r2:1950,r1:1865,s1:1700,s2:1620,
+    mc:35,mcrg:'\U0001f7e1',mcbi:'OSO',mcp:'228.5B',
+    trp:1777,trc:-4.12,
+    ma6:1720,ma40:1690,ma70:1650,ma200:1580,
+    ma6c:-2.1,ma40c:0.3,ma70c:1.8,ma200c:5.2,
+    rx:4,rxl:'\U0001f7e1'
+  },
+  SOL:{
+    pair:'SOL/USDT',p:69.76,pe:64.18,cp:-5.18,ca:-3.82,h24:73.50,l24:68.20,v:'4.8B',
+    sc:35,sl:'VENTA SHORT+ \u26a0\ufe0f',rg:'\U0001f534',
+    p1:25,p1s:'BULLISH',p2:28,p2s:'BEARISH',p3:24,p3s:'NEUTRAL',
+    fg:12,fgl:'Miedo Extremo \U0001f631',
+    vx:14.2,vxl:'Bajo',dm:2.3,dml:'Baja',
+    r3:45,r3l:'NEUTRAL \u26aa',
+    rsi:38,adx:28,bb:0.12,
+    msc:35,msl:'VENTA SHORT+ \u26a0\ufe0f',mrg:'\U0001f534',
+    rgb:'OSO',rgc:'ALTA',rgst:'Rango bajista \U0001f534',
+    m1:'\U0001f535',m3:'\u26aa',m5:'\U0001f534',m15:'\U0001f534',mtft:4,
+    r2:82,r1:76,s1:62,s2:56,
+    mc:30,mcrg:'\U0001f534',mcbi:'OSO FUERTE',mcp:'28.9B',
+    trp:69.76,trc:-5.18,
+    ma6:65,ma40:62,ma70:58,ma200:52,
+    ma6c:-3.2,ma40c:-0.8,ma70c:2.5,ma200c:8.1,
+    rx:4,rxl:'\U0001f534'
+  },
+XRP:{
     pair:'XRP/USDT',p:1.17,pe:1.08,cp:-3.97,ca:-0.048,h24:1.22,l24:1.16,v:'3.5B',
     sc:40,sl:'NEUTRAL \u26aa',rg:'NEUTRAL \u00b7 RIESGO MODERADO',rg2:'NEUTRAL',
     p1:8,p2:16,p3:16,
@@ -1094,7 +1130,7 @@ function showPage(id, btn) {
  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
  document.querySelectorAll('.navbtn').forEach(b => b.classList.remove('active'));
  document.getElementById('page-' + id).classList.add('active');
- btn.classList.add('active');
+ if (btn) btn.classList.add('active');
  window.scrollTo(0,0);
 }
 function setTF(btn) {
