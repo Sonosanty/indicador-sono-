@@ -810,7 +810,16 @@ body{background:#060e1a;font-family:'Courier New',monospace;color:#e2e8f0;font-s
  <div class="footer">Binance WS · trades.json real · No es consejo financiero</div>
 </div>
 
-<script>:-4.34,
+<script>window.COIN = window.COIN || {};
+window.COIN = {
+  BTC:{
+    pair:'BTC/USDT',p:64236,pe:59097,cp:-3.03,ca:-2010,h24:66820,l24:63980,v:'28.4B',
+    sc:54,sl:'ACUMULAR \U0001f535',rg:'CONSOLIDACI\u00d3N \u00b7 NEUTRAL \u00b7 RIESGO MEDIO',rg2:'CONSOLIDACI\u00d3N \u00b7 NEUTRAL',
+    p1:12,p2:24,p3:18,
+    fg:12,fgl:'\U0001f631 Miedo extremo',fgc:'#ef4444',vx:'16.06',vxl:'Bajo / Normal',vxc:'#22c55e',
+    dm:'55.6%',dml:'Altcoins dormidas',dmc:'#f59e0b',r3:27,r3l:'Sobreventa real',r3c:'#8b5cf6',
+    rsi:27.4,adx:36.1,bb:0.18,ma40:64850,ma40c:-0.95,
+    ma6:64100,ma6c:-0.21,ma70:65220,ma70c:-1.51,ma200:67150,ma200c:-4.34,
     m1:31,m3:42,m5:50,m15:54,mtft:48,
     sig:['ADX > 25 \u2192 tendencia activa','RSI < 30 \u2192 se\u00f1al rebote','F&G extremo < 25'],
     sigp:['+15pts','+18pts','macro'],
@@ -914,7 +923,136 @@ body{background:#060e1a;font-family:'Courier New',monospace;color:#e2e8f0;font-s
       '3M|#ef4444|\u2b07 ZONA ALTA|32|Presi\u00f3n vendedora|#ef444466|Resistencia en $0.524<br>Riesgo: medio|0,12 20,14 40,13 60,16 80,18 100,20 120,22 140,23 160,24 180,25 200,26|#ef4444',
       '1M|#22c55e|\u2b06 ZONA BAJA / REBOTE|62|Presi\u00f3n compradora|#22c55e66|Rebote microsc\u00f3pico<br>Riesgo: bajo muy corto|0,24 20,22 40,23 60,19 80,17 100,15 120,13 140,12 160,11 180,10 200,9|#22c55e'
     ],
-    trp:
+    trp:0.5234,trc:-1.73
+  }
+};
+
+window.setCoin = function(btn, coin) {
+  // Update coin tabs on dashboard
+  document.querySelectorAll('.atab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#page-metodo .tfp:not(.navbtn)').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#page-rangos .tfp').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const d = COIN[coin];
+  if (!d) return;
+
+  const fmt = (n) => n < 10 ? n.toFixed(4) : n < 100 ? n.toFixed(2) : Math.round(n).toLocaleString();
+  const usd = (n) => '$' + (n < 1 ? n.toFixed(4) : n < 100 ? n.toFixed(2) : Math.round(n).toLocaleString());
+  const pct = (n) => (n > 0 ? '+' : '') + n.toFixed(2) + '%';
+
+  // === DASHBOARD ===
+  gId('coin-pair-main', d.pair.split('/')[0]);
+  gId('coin-price-main', usd(d.p));
+  gId('coin-price-eur', '\u2248 ' + Math.round(d.pe).toLocaleString() + ' EUR');
+  gId('coin-price-chg', '\u25bc ' + pct(d.cp) + ' \u00b7 \u2212' + usd(Math.abs(d.ca)));
+  gId('coin-high', usd(d.h24));
+  gId('coin-low', usd(d.l24));
+  gId('coin-vol', d.v);
+  gId('coin-score-num', d.sc);
+  gId('coin-score-label', d.sl);
+  gId('coin-regime', d.rg);
+  gId('coin-p1', d.p1); gId('coin-p2', d.p2); gId('coin-p3', d.p3);
+  gId('coin-p1-bar').style.width = Math.round(d.p1 / 35 * 100) + '%';
+  gId('coin-p2-bar').style.width = Math.round(d.p2 / 35 * 100) + '%';
+  gId('coin-p3-bar').style.width = Math.round(d.p3 / 30 * 100) + '%';
+  gId('coin-fg', d.fg); gId('coin-fg-label', d.fgl);
+  gId('coin-vix', d.vx); gId('coin-vix-label', d.vxl);
+  gId('coin-dom', d.dm); gId('coin-dom-label', d.dml);
+  gId('coin-rsi3d', d.r3); gId('coin-rsi3d-label', d.r3l);
+  gId('coin-rsi', d.rsi); gId('coin-adx', d.adx); gId('coin-bb', d.bb); gId('coin-ma40', d.ma40.toLocaleString());
+  gId('coin-rsi-bar').style.width = Math.round(d.rsi) + '%';
+  gId('coin-adx-bar').style.width = Math.round(d.adx / 60 * 100) + '%';
+  gId('coin-bb-bar').style.width = Math.round(d.bb / 1 * 100) + '%';
+  gId('coin-ma40-chg').textContent = 'precio ' + pct(d.ma40c) + ' bajo MA40';
+
+  gId('coin-ma6', d.ma6.toLocaleString()); gId('coin-ma6-chg', pct(d.ma6c));
+  gId('coin-ma40-v', d.ma40.toLocaleString()); gId('coin-ma40chg', pct(d.ma40c));
+  gId('coin-ma70', d.ma70.toLocaleString()); gId('coin-ma70-chg', pct(d.ma70c));
+  gId('coin-ma200', d.ma200.toLocaleString()); gId('coin-ma200-chg', pct(d.ma200c));
+
+  gId('coin-mtf' + d.m1, d.m1); gId('coin-mtf' + d.m3, d.m3); gId('coin-mtf' + d.m5, d.m5); gId('coin-mtf' + d.m15, d.m15);
+  gId('coin-mtf-total', d.mtft);
+
+  gId('coin-sr-r2', usd(d.r2)); gId('coin-sr-r1', usd(d.r1));
+  gId('coin-sr-s1', usd(d.s1)); gId('coin-sr-s2', usd(d.s2));
+  gId('coin-sr-live', usd(d.p));
+
+  const mcEl = gId('coin-macro');
+  mcEl.innerHTML = d.mcl; mcEl.style.color = d.mc;
+  gId('coin-macro-score', d.mcs.split('/')[0]);
+  gId('coin-macro-regime', d.mcrg);
+  gId('coin-macro-bias', d.mcbi);
+  gId('coin-macro-risk', d.mcrk);
+
+  // === METODO ===
+  gId('coin-pair-metodo', coin);
+  gId('coin-price-metodo', usd(d.p));
+  gId('coin-sc-metodo', d.msc);
+  gId('coin-sl-metodo', d.msl);
+  gId('coin-rm-metodo', d.mrg);
+  gId('coin-p1sc', d.p1s); gId('coin-p2sc', d.p2s); gId('coin-p3sc', d.p3s);
+  gId('coin-fg-metodo', d.fg);
+  gId('coin-dom-metodo', d.dm);
+  gId('coin-rsi3d-metodo', d.r3);
+  gId('coin-mcap-metodo', d.mcp);
+
+  // Debug panel
+  gId('coin-debug').innerHTML = d.dbg;
+
+  // === RANGOS ===
+  gId('coin-pair-rangos', coin);
+  gId('coin-price-rangos', usd(d.p));
+  gId('coin-rg-bias', d.rgb);
+  gId('coin-rg-conf', d.rgc);
+  gId('coin-rg-state', d.rgs);
+
+  // Rangos cards
+  const rangoCards = document.querySelectorAll('.rango-card');
+  d.rgtf.forEach(function(tfStr, i) {
+    const parts = tfStr.split('|');
+    if (rangoCards[i]) {
+      const card = rangoCards[i];
+      // Update TF name
+      card.querySelector('.rc-tf').textContent = parts[0];
+      // Zone
+      const zone = card.querySelector('.rc-zone');
+      zone.textContent = parts[2];
+      zone.style.color = parts[1];
+      // Gauge
+      const gaugeFill = card.querySelector('.gauge-fill');
+      gaugeFill.style.width = parts[3] + '%';
+      gaugeFill.style.background = parts[5];
+      gId2(card.querySelector('.gauge-label'), parts[4]);
+      // Context
+      gId2(card.querySelector('.rc-ctx-text'), parts[6]);
+      // Sparkline
+      const poly = card.querySelector('.sparkline polyline');
+      if (poly) {
+        poly.setAttribute('points', parts[7]);
+        poly.setAttribute('stroke', parts[8]);
+      }
+      // Gauge position dot
+      const gpos = card.querySelector('.gauge-pos');
+      if (gpos) gpos.style.left = parts[3] + '%';
+    }
+  });
+
+  // === TRADES ===
+  gId('coin-tr-price', usd(d.trp));
+  gId('coin-tr-chg', '\u25bc ' + pct(d.trc));
+}
+
+window.gId = function(id, val) {
+  const el = document.getElementById(id);
+  if (el && val !== undefined) el.textContent = val;
+  return el;
+}
+window.gId2 = function(el, val) {
+  if (el) el.textContent = val;
+}
+
+
 
 window.COIN_INIT = {
   BTC:{
@@ -926,13 +1064,25 @@ window.COIN_INIT = {
     rsi:26.8,adx:35.2,bb:0.16,ma40:64800,ma40c:-1.35,
     ma6:63800,ma6c:0.21,ma70:65300,ma70c:-2.10,ma200:67200,ma200c:-4.86,
     m1:30,m3:40,m5:48,m15:52,mtft:42,
-
-
-4 20,15 40,14 60,16 80,15 100,16 120,14 140,16 160,15 180,16 200,15|#f59e0b',
-      '1M|#22c55e|\u2b06 ZONA BAJA|55|Micro-compradores|#22c55e66|Rebote microsc\u00f3pico<br>Riesgo: bajo|0,22 20,20 40,22 60,18 80,16 100,14 120,13 140,12 160,11 180,10 200,9|#22c55e'
+    sig:['ADX > 25 \u2192 tendencia activa','RSI < 30 \u2192 se\u00f1al rebote','F&G extremo < 25'],
+    sigp:['+15pts','+18pts','macro'],
+    r2:69700,r1:68500,s1:60700,s2:59000,r2s:'weak',r1s:'med',s1s:'strong',s2s:'weak',
+    mc:'#22c55e',mcl:'\U0001f7e2 MACRO ALCISTA',mcs:'4 / 6',mcrg:'CONSOLIDACI\u00d3N',mcbi:'NEUTRAL',mcrk:'MEDIO',
+    msc:52,msl:'ACUMULAR \U0001f535',mrg:'NEUTRAL',
+    p1s:'10/35',p2s:'22/35',p3s:'16/30',
+    p1st:'MA6 x MA70:+5pts|Precio > MA40:0pts|Precio > MA200:0pts',
+    p2st:'ADX 35.2 > 25:+15pts|RSI 26.8 < 30 (rebote):+18pts',
+    p3st:'%B 0.16 \u2192 zona 0-0.20:+16pts',
+    dbg:'MA6 63,800 < MA70 65,300 X | Precio 63,932 < MA40 64,800 X | Precio < MA200 X | ADX 35.2 +15 | RSI 26.8 +18 | %B 0.16 +16 = 52',
+    mcp:'$1.28T',
+    rgb:'NEUTRAL',rgc:'68/100',rgs:'ACUMULAR',
+    rgtf:[
+      '15M|#22c55e|\u2b06 ZONA BAJA / ESPERA|70|Presi\u00f3n compradora|#22c55e66|Nivel cr\u00edtico: $63,600 (SUP1)<br>Riesgo: bajo|0,22 20,20 40,24 60,26 80,22 100,25 120,28 140,24 160,27 180,29 200,26|#00c8f0',
+      '5M|#f59e0b|\u25c6 ZONA MEDIA / COMPRESI\u00d3N|52|Presi\u00f3n neutra|#f59e0b66|Sin direcci\u00f3n clara<br>Riesgo: medio|0,14 20,16 40,13 60,15 80,14 100,16 120,15 140,17 160,15 180,16 200,14|#f59e0b',
+      '3M|#ef4444|\u2b07 ZONA ALTA / DISTRIBUCI\u00d3N|30|Presi\u00f3n vendedora|#ef444466|Riesgo: alto si pierde $63,800|0,10 20,12 40,10 60,14 80,17 100,19 120,22 140,24 160,26 180,27 200,28|#ef4444',
+      '1M|#22c55e|\u2b06 ZONA BAJA / REBOTE|65|Presi\u00f3n compradora|#22c55e66|Momentum positivo 1m<br>Riesgo: bajo|0,26 20,24 40,26 60,22 80,20 100,18 120,16 140,14 160,12 180,10 200,9|#22c55e'
     ],
-    trp:69.76,trc:-5.33
-  },
+    trp:63932,trc:-3.
   ETH:{
     pair:'ETH/USDT',p:1777,pe:1635,cp:-4.12,ca:-76,h24:1850,l24:1755,v:'18.2B',
     sc:38,sl:'VENTA SHORT+ \u26a0\ufe0f',rg:'\U0001f534',
@@ -969,7 +1119,8 @@ window.COIN_INIT = {
     ma6c:-3.2,ma40c:-0.8,ma70c:2.5,ma200c:8.1,
     rx:4,rxl:'\U0001f534'
   },
-XRP:{
+  },
+  XRP:{
     pair:'XRP/USDT',p:1.17,pe:1.08,cp:-3.97,ca:-0.048,h24:1.22,l24:1.16,v:'3.5B',
     sc:40,sl:'NEUTRAL \u26aa',rg:'NEUTRAL \u00b7 RIESGO MODERADO',rg2:'NEUTRAL',
     p1:8,p2:16,p3:16,
@@ -999,133 +1150,6 @@ XRP:{
   }
 };
 
-
-
-// Inicializar con BTC por defecto
-let currentCoin = 'BTC';
-
-window.setCoin = function(btn, coin) {
-  currentCoin = coin;
-  // Update all coin tabs
-  document.querySelectorAll('.atab').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('#page-metodo .tfp, #page-rangos .tfp').forEach(b => {
-    if (b.textContent.trim() === coin) b.classList.add('active');
-    else b.classList.remove('active');
-  });
-  if (btn) btn.classList.add('active');
-
-  const d = COIN_INIT[coin];
-  if (!d) return;
-
-  const pfmt = (n) => n < 0.1 ? n.toFixed(4) : n < 10 ? n.toFixed(2) : Math.round(n).toLocaleString();
-  const usd = (n) => '$' + (n < 0.1 ? n.toFixed(4) : n < 10 ? n.toFixed(2) : Math.round(n).toLocaleString());
-  const pct = (n) => (n > 0 ? '+' : '') + n.toFixed(2) + '%';
-
-  // === DASHBOARD ===
-  gId('coin-pair-main', coin);
-  gId('coin-price-main', usd(d.p));
-  gId('coin-price-eur', '\u2248 ' + Math.round(d.pe).toLocaleString() + ' EUR');
-  gId('coin-price-chg', '\u25bc ' + pct(d.cp) + ' \u00b7 \u2212' + usd(Math.abs(d.ca)));
-  gId('coin-high', usd(d.h24));
-  gId('coin-low', usd(d.l24));
-  gId('coin-vol', d.v);
-  gId('coin-score-num', d.sc);
-  gId('coin-score-label', d.sl);
-  gId('coin-regime', d.rg);
-  gId('coin-p1', d.p1); gId('coin-p2', d.p2); gId('coin-p3', d.p3);
-  const gs = (id, pct) => { const e = document.getElementById(id); if(e) e.style.width = pct + '%'; };
-  gs('coin-p1-bar', Math.round(d.p1/35*100));
-  gs('coin-p2-bar', Math.round(d.p2/35*100));
-  gs('coin-p3-bar', Math.round(d.p3/30*100));
-  gId('coin-fg', d.fg); gId('coin-fg-label', d.fgl);
-  gId('coin-vix', d.vx); gId('coin-vix-label', d.vxl);
-  gId('coin-dom', d.dm); gId('coin-dom-label', d.dml);
-  gId('coin-rsi3d', d.r3); gId('coin-rsi3d-label', d.r3l);
-  gId('coin-rsi', d.rsi); gId('coin-adx', d.adx); gId('coin-bb', d.bb);
-  gId('coin-ma40', pfmt(d.ma40));
-  gs('coin-rsi-bar', Math.min(100, Math.round(d.rsi)));
-  gs('coin-adx-bar', Math.min(100, Math.round(d.adx/60*100)));
-  gs('coin-bb-bar', Math.min(100, Math.round(d.bb*100)));
-  gId('coin-ma40-chg').textContent = 'precio ' + pct(d.ma40c) + ' bajo MA40';
-
-  gId('coin-ma6', pfmt(d.ma6)); gId('coin-ma6-chg', pct(d.ma6c));
-  gId('coin-ma40-v', pfmt(d.ma40)); gId('coin-ma40chg', pct(d.ma40c));
-  gId('coin-ma70', pfmt(d.ma70)); gId('coin-ma70-chg', pct(d.ma70c));
-  gId('coin-ma200', pfmt(d.ma200)); gId('coin-ma200-chg', pct(d.ma200c));
-
-  // MTF
-  const mtfIds = ['coin-mtf' + d.m1, 'coin-mtf' + d.m3, 'coin-mtf' + d.m5, 'coin-mtf' + d.m15];
-  mtfIds.forEach(id => { const e = document.getElementById(id); if(e) e.textContent = e.id.replace('coin-mtf',''); });
-  // Correct MTF values
-  gId('coin-mtf' + d.m1, d.m1); gId('coin-mtf' + d.m3, d.m3);
-  gId('coin-mtf' + d.m5, d.m5); gId('coin-mtf' + d.m15, d.m15);
-  gId('coin-mtf-total', d.mtft);
-
-  gId('coin-sr-r2', usd(d.r2)); gId('coin-sr-r1', usd(d.r1));
-  gId('coin-sr-s1', usd(d.s1)); gId('coin-sr-s2', usd(d.s2));
-  gId('coin-sr-live', usd(d.p));
-
-  const mcEl = gId('coin-macro');
-  mcEl.innerHTML = d.mcl; mcEl.style.color = d.mc;
-  gId('coin-macro-score', d.mcs.split('/')[0]);
-  gId('coin-macro-regime', d.mcrg);
-  gId('coin-macro-bias', d.mcbi);
-  gId('coin-macro-risk', d.mcrk);
-
-  // === METODO ===
-  gId('coin-pair-metodo', coin);
-  gId('coin-price-metodo', usd(d.p));
-  gId('coin-sc-metodo', d.msc);
-  gId('coin-sl-metodo', d.msl);
-  gId('coin-rm-metodo', d.mrg);
-  gId('coin-p1sc', d.p1s); gId('coin-p2sc', d.p2s); gId('coin-p3sc', d.p3s);
-  gId('coin-fg-metodo', d.fg);
-  gId('coin-dom-metodo', d.dm);
-  gId('coin-rsi3d-metodo', d.r3);
-  gId('coin-mcap-metodo', d.mcp);
-  gId('coin-debug').innerHTML = d.dbg;
-
-  // === RANGOS ===
-  gId('coin-pair-rangos', coin);
-  gId('coin-price-rangos', usd(d.p));
-  gId('coin-rg-bias', d.rgb);
-  gId('coin-rg-conf', d.rgc);
-  gId('coin-rg-state', d.rgs);
-
-  const rangoCards = document.querySelectorAll('.rango-card');
-  d.rgtf.forEach(function(tfStr, i) {
-    const parts = tfStr.split('|');
-    if (rangoCards[i]) {
-      const card = rangoCards[i];
-      card.querySelector('.rc-tf').textContent = parts[0];
-      const zone = card.querySelector('.rc-zone');
-      zone.textContent = parts[2];
-      zone.style.color = parts[1];
-      const gfill = card.querySelector('.gauge-fill');
-      gfill.style.width = parts[3] + '%';
-      gfill.style.background = parts[5];
-      const glab = card.querySelector('.gauge-label');
-      if(glab) glab.textContent = parts[4];
-      const ctx = card.querySelector('.rc-ctx-text');
-      if(ctx) ctx.innerHTML = parts[6];
-      const poly = card.querySelector('.sparkline polyline');
-      if (poly) { poly.setAttribute('points', parts[7]); poly.setAttribute('stroke', parts[8]); }
-      const gpos = card.querySelector('.gauge-pos');
-      if (gpos) gpos.style.left = parts[3] + '%';
-    }
-  });
-
-  // === TRADES ===
-  gId('coin-tr-price', usd(d.trp));
-  gId('coin-tr-chg', '\u25bc ' + pct(d.trc));
-}
-
-window.gId = function(id, val) {
-  const el = document.getElementById(id);
-  if (el && val !== undefined) el.textContent = val;
-  return el;
-}
-
 function showPage(id, btn) {
  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
  document.querySelectorAll('.navbtn').forEach(b => b.classList.remove('active'));
@@ -1138,8 +1162,6 @@ function setTF(btn) {
  parent.querySelectorAll('.tfp').forEach(b => b.classList.remove('active'));
  btn.classList.add('active');
 }
-
-
 </script>
 </body>
 </html>
