@@ -16,6 +16,7 @@ cp -r assets/css indicador_cloudflare/assets/
 
 # App JS - logica del dashboard
 cp frontend/app.js indicador_cloudflare/app.js
+cp frontend/app.module.js indicador_cloudflare/app.module.js
 
 # JS Modules (ES modules - data layer)
 mkdir -p indicador_cloudflare/js/core indicador_cloudflare/js/data

@@ -264,12 +264,67 @@ $id("lu").textContent="updated "+new Date().toLocaleTimeString("es-ES",{hour:"2-
 
 function fetchUrl(u,t){t=t||8000;var ac=new AbortController;setTimeout(function(){ac.abort()},t);return fetch(u,{signal:ac.signal}).then(function(r){return r.json()})};
 
-// ===== FETCH ALL con secuenciacion + CoinGecko fallback =====
-function fetchFg(){
+function fetchUrl(u,t){t=t||8000;var ac=new AbortController;setTimeout(function(){ac.abort()},t);return fetch(u,{signal:ac.signal}).then(function(r){return r.json()})};
+
+// ===== FETCH VIA MODULE (ES module con adapters.js) =====
+// Se usa cuando app.module.js cargo correctamente
+var _moduleFetching=false;
+function fetchViaModule(){
+  if(_moduleFetching)return;
+  _moduleFetching=true;
+  var ld=document.getElementById("st-bar");
+  if(ld){ld.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> Conectando via data layer...';ld.className="st-bar co";}
+  
+  window._fetchMarketData(CA,{timeframes:['1m','3m','5m','15m','1h','3d']})
+    .then(function(md){
+      if(!md) throw new Error("No data");
+      ST.price=md.price||0;
+      ST.high=md.high||0;
+      ST.low=md.low||0;
+      ST.ch=md.change24hPct||0;
+      ST.kl=md.klines||{};
+      ST.fg=md.fng||50;
+      ST.vx=md.vix||0;
+      ST.db=md.btcDominance||0;
+      ST.de=md.ethDominance||0;
+      ST.mc=md.marketCap||0;
+      ST.er=md.eurUsd||1.08;
+      ST.health=md.health||{source:'module'};
+      
+      saveHist("sono_fg",ST.fg);
+      saveHist("sono_vx",ST.vx);
+      _moduleFetching=false;
+      ST._fetching=false;
+      updateDone();
+    })
+    .catch(function(err){
+      console.log('[SONO] Module fetch failed, fallback to direct:', err);
+      _moduleFetching=false;
+      ST._fetching=false;
+      // Fallback: ejecutar fetchAll clasico
+      window._fetchMarketData=null; // Deshabilitar modulo
+      fetchAllLegacy();
+    });
+}
+
+// Version legacy de fetchAll para fallback
+var _legacyData={total:0,expected:0};
+function fetchAllLegacy(){
+  var s=AS[CA];
+  MA_CACHE={};
+  if(ST._fetching)return;
+  ST._fetching=true;
+  if(!SCORE_CFG){ loadScoreConfig(); }
+
   fetchUrl("https://api.alternative.me/fng/?limit=1").then(function(g){if(g&&g.data&&g.data[0]){ST.fg=+g.data[0].value;saveHist("sono_fg",ST.fg);}}).catch(function(){ST.fg=ST.fg||50});
 }
 
 function fetchAll(){
+  // Si el ES module cargo, usar fetchMarketData unificado
+  if(window._fetchMarketData){
+    fetchViaModule();
+    return;
+  }
   var s=AS[CA];
   MA_CACHE={};
   if(ST._fetching)return;

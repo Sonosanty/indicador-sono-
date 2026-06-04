@@ -22,11 +22,18 @@
 .db{display:flex;flex-direction:column;gap:12px;font-size:13px}
 .sw{display:flex;align-items:center;gap:16px}
 </style><link rel="manifest" href="/manifest.json">
+<script type="module" src="/app.module.js"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
   })
+}
+</script>
+<script>
+// Fallback ES module detection
+if (!window._usingModule) {
+  // ES module no cargo, app.js hara los fetches directamente
 }
 </script>
 </head><body>
