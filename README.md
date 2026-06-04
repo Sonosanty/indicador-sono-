@@ -1,59 +1,111 @@
-# Indicador Sono Pro
+# Sono PRO — Dashboard de Trading
 
-Dashboard de trading multi-activo con Score Maestro para swing trading en timeframe 15m.
+Dashboard de trading en tiempo real para BTC, ETH, SOL y XRP. Desplegado en Cloudflare Pages con arquitectura modular ES.
 
 **URL:** https://indicador-sono.pages.dev
 
-## Estrategia
+## Stack
 
-Score Maestro 0-100 basado en Smart Money Concepts + momentum. Señales de COMPRA/VENTA/NEUTRAL/DISTRIBUCIÓN según el score y su tendencia. Swing trading en temporalidad 15m con SL/TP dinámico.
+- **Frontend:** HTML+CSS+JS vanilla, ES modules, Chart.js
+- **Indicadores:** SMA, RSI Cutler, ADX 14, Bollinger %B, Score Maestro proprietario
+- **APIs:** Binance (klines + ticker), KuCoin (fallback klines), CoinGecko (global), Alternative.me (Fear & Greed), Proxy VIX (Cloudflare Worker)
+- **Deploy:** Cloudflare Pages v3 (build script Bash, auto-deploy en push a `main`)
+- **Bot:** Python (sono_bot.py + sono_score.py) para señales reales (requiere $10 USDT en Pionex)
 
-## Monedas
+## Estructura del proyecto
 
-- BTC
-- ETH
-- SOL
-- XRP
+```
+indicador-sono-/
+├── index.html                  ← Dashboard principal
+├── build.sh                    ← Script de build para Cloudflare Pages
+├── _headers / _routes.json     ← Configuración Cloudflare (CSP, CORS, SPA fallback)
+├── sono-score-config.json      ← Config del Score Maestro (única fuente de verdad)
+├── assets/css/                 ← Design tokens modulares
+│   ├── tokens.css              ← Variables CSS (colores, spacing, fonts)
+│   ├── base.css                ← Reset, tipografía, animaciones
+│   ├── layout.css              ← Grids, topbar, nav, responsive
+│   └── components.css          ← Cards, rings, pills, tablas, skeletons
+├── js/                         ← Módulos ES (lógica compartida)
+│   ├── core/                   ← Config, state, cache, formatters
+│   │   ├── config.js           ← Constantes (assets, TFs, umbrales score)
+│   │   ├── state.js            ← Store reactivo pub/sub
+│   │   ├── formatters.js       ← Formatos de precio, market cap, %, tiempo
+│   │   └── cache.js            ← SWR cache con TTL, fetch con timeout
+│   ├── data/                   ← Adapters de fuentes de datos
+│   │   ├── adapters.js         ← Orquestador (Worker → Binance → KuCoin → fallbacks)
+│   │   ├── binance.js          ← Klines, ticker 24h, EUR/USD
+│   │   ├── kucoin.js           ← Klines con mapper defensivo de columnas
+│   │   ├── coingecko.js        ← Global (market cap, dominancia)
+│   │   ├── alternative.js      ← Fear & Greed Index
+│   │   ├── vix.js              ← VIX proxy worker (VIX + global + EUR)
+│   │   └── sonobot.js          ← Worker Sono-Bot (datos consolidados)
+│   └── indicators/             ← Indicadores técnicos
+│       ├── ma.js               ← SMA con cache por hash
+│       ├── rsi.js              ← Cutler RSI 14
+│       ├── adx.js              ← ADX 14
+│       ├── bb.js               ← Bollinger %B
+│       ├── score-maestro.js    ← Score Maestro (P1+P2+P3, classifyScore, macroScore)
+│       ├── ranges.js           ← Soportes y resistencias por pivotes
+│       └── confluence.js       ← Confluencia multi-timeframe
+└── frontend/                   ← HTMLs de las páginas
+    ├── app.js                  ← Dashboard (IIFE, funcional legacy)
+    ├── app.module.js           ← ES module bridge (expone módulos al window)
+    ├── metodo.html             ← Vista analítica con gráficos
+    ├── range_explorer.html     ← Range Intelligence
+    └── trades_explorer.html    ← Historial de trades (demo)
+```
 
-## Componentes
+## Score Maestro (P1+P2+P3 = 0-100)
 
-| Componente | Descripción |
-|---|---|
-| `index.html` | Dashboard principal (V6 standalone, HTML+CSS+JS) |
-| `rangos.html` | Rangos multi-timeframe por moneda |
-| `trades.html` | Historial de trades y posiciones |
-| `metodo.html` | Estrategia con gráfico multi-panel Chart.js |
-| `sono_bot.py` | Bot de trading Pionex modo paper |
-| `sono_score.py` | Motor de score unificado (importado por el bot) |
+Sistema propietario de scoring en tiempo real basado en tres pilares:
 
-## APIs externas
+| Pilar | Máximo | Componentes |
+|-------|--------|-------------|
+| **P1 — Tendencia** | 35 | MA6>MA40 (+12), MA6>MA70 (+10), MA40>MA200 (+13) |
+| **P2 — Momentum** | 35 | ADX>35/25/else (+15/10/3), RSI>=50/>=35/else (+12/7/2), Precio>MA200 (+8) |
+| **P3 — Bollinger** | 30 | %B<0.15/0.35/0.65/0.85/else (+28/20/14/7/2) |
 
-- **Binance** — precios y velas en tiempo real (WebSocket + REST)
-- **CoinGecko** — datos de mercado (dominancia, market cap)
-- **Alternative.me** — Fear & Greed Index
-- **Worker VIX** — proxy propio para VIX y EUR (Edge Worker Cloudflare)
+### Clasificación
 
-## Despliegue
+| Rango | Señal | Acción |
+|-------|-------|--------|
+| 78-100 | COMPRA FUERTE | Long agresivo |
+| 62-77 | COMPRA | Long prudente |
+| 52-61 | ACUMULAR | Entradas parciales |
+| 42-51 | NEUTRAL | Esperar |
+| 30-41 | VENTA | Reducir posición |
+| 18-29 | VENTA FUERTE | Short |
+| 0-17 | CAPITULACIÓN | Cash / oportunidad de compra |
 
-El dashboard se despliega automáticamente en Cloudflare Pages desde la rama `main`. Push a GitHub → build automático en Cloudflare.
+## APIs y fallbacks
 
-Build output: raíz del repo (sin build command — HTML estático).
+| Dato | Fuente primaria | Fallback | TTL |
+|------|----------------|----------|-----|
+| Klines | Binance REST | KuCoin (mapper defensivo) | 30s |
+| Ticker 24h | Binance REST | CoinGecko simple/price | 30s |
+| Fear & Greed | Alternative.me | Worker Sono-Bot | 5 min |
+| Market Cap / Dominancia | CoinGecko global | Worker VIX proxy | 3 min |
+| VIX | Worker VIX proxy | — | 2 min |
+| EUR/USD | Binance EURUSDT | — | 15 min |
 
-## Worker VIX
+## Deploy
 
-El Worker `vix-proxy-worker` (rama `worker-vix`) corre en Cloudflare Workers y sirve:
-- VIX (CBOE Volatility Index)
-- EUR/USD
+Cada push a `main` activa el build automático en Cloudflare Pages:
 
-Worker URL: `https://vix-proxy.sonosanty.workers.dev`
+```bash
+bash build.sh
+# → output en indicador_cloudflare/
+# → deploy en https://indicador-sono.pages.dev
+```
 
-## Estado del proyecto
+Para forzar recarga de caché en el navegador: `Ctrl+Shift+R`
 
-- Dashboard: ✅ Activo en `indicador-sono.pages.dev`
-- VIX Worker: ✅ Activo
-- Bot Pionex: Paper trading (requiere arranque manual)
-- Build: Automático via Cloudflare Pages + GitHub
+## Bot Python (offline)
 
----
+- `sono_bot.py` — Bot de trading para Pionex (requiere $10 USDT mínimo)
+- `sono_score.py` — Score Maestro en Python (canónico, fuente de verdad de los pesos)
+- `sono-score-config.json` — Config compartida (umbrales, labels, colores)
 
-*Proyecto personal de análisis cuantitativo BTC/ETH/SOL/XRP.*
+## Licencia
+
+Uso privado — Santy / ultrafino.com

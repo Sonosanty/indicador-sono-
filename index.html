@@ -26,7 +26,18 @@
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
+    navigator.serviceWorker.register('/service-worker.js', { scope: '/' }).then((reg) => {
+      // Actualizacion automatica cada 30 min
+      setInterval(() => { reg.update(); }, 1800000);
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange', () => {
+          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            console.log('[SW] Nueva version disponible. Recarga para activar.');
+          }
+        });
+      });
+    }).catch((err) => { console.log('[SW] Registration failed:', err); });
   })
 }
 </script>
