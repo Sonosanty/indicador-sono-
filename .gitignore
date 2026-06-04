@@ -52,6 +52,9 @@ backup_*
 
 # Submodules / carpetas con git propio
 indicador-sono-repo/
+sono-pro/
+indicador-sono/
+_clone_review/
 
 # Heap snapshots
 *.heapsnapshot
@@ -80,5 +83,34 @@ reports/
 _audit_*
 
 _old/
+
+# Audit files (workspace level)
+audit-*.md
+auditoria-*.md
+
+# Bot runtime state
+sono_state.json
+
+# OpenClaw workspace metadata
+.clawhub/
+
+# Project-level Node deps
+package.json
+package-lock.json
+
+# Legacy Python build scripts (frontend/)
+frontend/*.py
+
+# Legacy Python scripts (root)
+indicator*.py
+build_*.py
+check_*.py
+fix_*.py
+patch_*.py
+rebuild_*.py
+merge_*.py
+inject_*.py
+replace_*.py
+adapt_*.py
 
 openclaw-backup*.json
