@@ -119,15 +119,15 @@ var METODO = {};
   function destroyCharts(){}
   function fetchAll() {
     if (METODO_FETCHING) return; METODO_FETCHING = true;
-    var sym={'BTC':'BTC-USDT','ETH':'ETH-USDT','SOL':'SOL-USDT','XRP':'XRP-USDT'}[coin]||'BTC-USDT';
-    var kcInt={'1':'1min','3':'3min','5':'5min','15':'15min','30':'30min','1h':'1hour'};
+    var sym={'BTC':'BTCUSDT','ETH':'ETHUSDT','SOL':'SOLUSDT','XRP':'XRPUSDT'}[coin]||'BTCUSDT';
+    var binInterval={'1':'1m','3':'3m','5':'5m','15':'15m','30':'30m','1h':'1h'};
     var limit = Math.max(201, tf==='1h'?300:220);
-    var klinesData=null, fngData=null, globalData=null;
+    var klinesData=null, fngData=null, globalData=null, tickerData=null;
     var chip = document.getElementById('apiChip');
     if (chip) { chip.textContent='FETCHING'; chip.className='api-chip chip-loading'; }
     Promise.allSettled([
-      fetchJ('https://api.kucoin.com/api/v1/market/stats?symbol='+sym).then(function(d){if(d&&d.data){var p=+d.data.last,c=+d.data.changeRate*100;var ph=document.getElementById('metodoPrice');if(ph)ph.textContent=fmtP(p);var pc=document.getElementById('metodoChg');if(pc){pc.textContent=(c>=0?'+':'')+c.toFixed(2)+'%';pc.className='price-chg '+(c>=0?'chg-up':'chg-dn');pc.style.display='inline';}}}).catch(function(){}),
-      fetchJ('https://api.kucoin.com/api/v1/market/candles?type='+(kcInt[tf]||'15min')+'&symbol='+sym+'&limit='+limit).then(function(d){if(d&&d.data){klinesData=d.data.map(function(c){return[+c[0],+c[1],+c[3],+c[4],+c[2],+c[5]];});var eb=document.getElementById('metodoErr');if(eb)eb.style.display='none';}}).catch(function(){var eb=document.getElementById('metodoErr');if(eb)eb.style.display='block';}),
+      fetchJ('https://api.binance.com/api/v3/ticker/24hr?symbol='+sym).then(function(d){if(d&&d.lastPrice){tickerData=d;var p=+d.lastPrice,c=+d.priceChangePercent;var ph=document.getElementById('metodoPrice');if(ph)ph.textContent=fmtP(p);var pc=document.getElementById('metodoChg');if(pc){pc.textContent=(c>=0?'+':'')+c.toFixed(2)+'%';pc.className='price-chg '+(c>=0?'chg-up':'chg-dn');pc.style.display='inline';}}}).catch(function(){}),
+      fetchJ('https://api.binance.com/api/v3/klines?symbol='+sym+'&interval='+(binInterval[tf]||'15m')+'&limit='+limit).then(function(d){if(d&&d.length){klinesData=d.map(function(c){return[+c[0],+c[1],+c[2],+c[3],+c[4],+c[5],+c[6],+c[7],+c[8],+c[9],+c[10],+c[11]];});var eb=document.getElementById('metodoErr');if(eb)eb.style.display='none';}}).catch(function(){var eb=document.getElementById('metodoErr');if(eb)eb.style.display='block';}),
       fetchJ('https://api.alternative.me/fng/?limit=1').then(function(d){if(d&&d.data&&d.data[0])fngData=+d.data[0].value;}).catch(function(){}),
       fetchJ('https://sono-bot.sonosanty.workers.dev/api/status').then(function(d){if(d&&d.macro){var m=d.macro;if(m.dominance!=null)globalData={market_cap_percentage:{btc:m.dominance},total_market_cap:{usd:m.mcap||0}};if(m.fng!=null&&!fngData)fngData=m.fng;}}).catch(function(){})
     ]).then(function(){
