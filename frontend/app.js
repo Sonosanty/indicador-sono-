@@ -264,8 +264,6 @@ $id("lu").textContent="updated "+new Date().toLocaleTimeString("es-ES",{hour:"2-
 
 function fetchUrl(u,t){t=t||8000;var ac=new AbortController;setTimeout(function(){ac.abort()},t);return fetch(u,{signal:ac.signal}).then(function(r){return r.json()})};
 
-function fetchUrl(u,t){t=t||8000;var ac=new AbortController;setTimeout(function(){ac.abort()},t);return fetch(u,{signal:ac.signal}).then(function(r){return r.json()})};
-
 // ===== FETCH VIA MODULE (ES module con adapters.js) =====
 // Se usa cuando app.module.js cargo correctamente
 var _moduleFetching=false;
@@ -427,13 +425,15 @@ function fetchAll(){
     {name:'vx',skip:function(){return swrOk('vx');},run:function(){return fetchUrl('https://vix-proxy.sonosanty.workers.dev/vix').then(function(d){if(d&&d.vix){ST.vx=d.vix;saveHist('sono_vx',ST.vx);$('vxv').textContent=d.vix.toFixed(2);$('vxl').textContent='VIX REAL';SWR.vx=Date.now();}}).catch(function(){ST.vx=ST.vx||15;$('vxl').textContent='VIX estimado';});}},
     {name:'eur',skip:function(){return swrOk('eur');},run:function(){return fetchUrl('https://api.binance.com/api/v3/ticker/price?symbol=EURUSDT').then(function(e){ST.er=+e.price||1.08;SWR.eur=Date.now();}).catch(function(){ST.er=ST.er||1.08});}}
   ];
-  tasks.forEach(function(t){if(t.skip&&t.skip()){done();return;}t.run().then(function(){done()}).catch(function(){done()});});
+  tasks.forEach(function(t){if(t.skip&&t.skip()){taskDone();return;}t.run().then(function(){taskDone()}).catch(function(){taskDone()});});
   var tfs=['1m','3m','5m','15m','1h','3d'],tfi=0;
+  var kDone=0;
+  function klineDone(){kDone++;if(kDone>=tfs.length){clearTimeout(_fetchTimer);}}
   function nxt(){
     if(tfi>=tfs.length)return;
     var tf=tfs[tfi];tfi++;
     var lim=tf==='3d'?30:tf==='1h'?300:220;
-    fetchUrl('https://api.binance.com/api/v3/klines?symbol='+s+'&interval='+tf+'&limit='+lim).then(function(k){ST.kl[tf]=k}).catch(function(){}).then(function(){done()}).catch(function(){done()});
+    fetchUrl('https://api.binance.com/api/v3/klines?symbol='+s+'&interval='+tf+'&limit='+lim).then(function(k){ST.kl[tf]=k}).catch(function(){}).then(function(){klineDone()}).catch(function(){klineDone()});
     if(tfi<tfs.length)setTimeout(nxt,200);
   }
   nxt();
