@@ -1,0 +1,4 @@
+# SPA redirects - todas las rutas sirven index.html
+/metodo / 200
+/rangos / 200
+/trades / 200

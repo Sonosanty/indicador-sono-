@@ -4,6 +4,10 @@
 /*.json
   Content-Type: application/json
 
+# SPA: no cache para index.html
+/
+  Cache-Control: no-cache
+
 /service-worker.js
   Content-Type: application/javascript
   Service-Worker-Allowed: /
