@@ -19,7 +19,9 @@ cp frontend/app.js indicador_cloudflare/app.js
 
 # Pages
 cp frontend/metodo.html indicador_cloudflare/metodo.html
-cp frontend/dashboard.html indicador_cloudflare/dashboard.html
+cp frontend/range_explorer.html indicador_cloudflare/rangos.html
+cp frontend/trades_explorer.html indicador_cloudflare/trades.html
+cp frontend/dashboard.html indicador_cloudflare/dashboard.html 2>/dev/null || true
 cp frontend/pagina.html indicador_cloudflare/pagina.html 2>/dev/null || true
 
 # Configs
