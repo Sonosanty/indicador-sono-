@@ -215,9 +215,8 @@ if(sd.ma200Avail&&sd.m2){
 $id("riv").textContent=sd.r||"--";$id("ril").textContent=sd.r>70?"Sobrecompra":sd.r<30?"Sobreventa":sd.r>50?"Alcista":"Bajista";$id("rib").style.width=Math.min((sd.r||0),100)+"%";
 $id("adv").textContent=sd.a||"--";$id("adl").textContent=sd.a>30?"Fuerte":sd.a>20?"Moderado":"Debil";$id("adb").style.width=Math.min((sd.a||0)*2,100)+"%";
 $id("bbv").textContent=sd.pb!==null?sd.pb.toFixed(2):"--";$id("bbl").textContent=sd.pb!==null?sd.pb>0.8?"Sobrecompra":sd.pb<0.2?"Sobreventa":"Media":"--";
-var pr2=sd.r!==null?(sd.r-50)/50:0;$id("pd").style.left=Math.max(5,Math.min(95,50+pr2*45))+"%";
-$id("plb").textContent=pr2>0.2?"COMPRA":pr2<-0.2?"VENTA":"NEUTRAL";
-if(sd.m40){$id("m4v").textContent=fm(sd.m40);$id("m4l").textContent=((sd.p/sd.m40-1)*100>=0?"+":"")+((sd.p/sd.m40-1)*100).toFixed(2)+"%"};
+       218 var pr2=sd.r!==null?(sd.r-50)/50:0;$id("pd").style.left=Math.max(8,Math.min(92,50+pr2*42))+"%";
+$id('plb').textContent=pr2>0.2?'COMPRA':pr2<-0.2?'VENTA':'NEUTRAL';
 $id("r1").textContent=sd.m40?fm(sd.m40*1.05):"--";$id("r2").textContent=sd.m70?fm(sd.m70*1.08):"--";
 $id("s1").textContent=sd.m40?fm(sd.m40*0.95):"--";$id("s2").textContent=sd.m70?fm(sd.m70*0.92):"--";
 $id("srp").textContent=fm(sd.p);
@@ -258,8 +257,12 @@ if(_rsi3dCache.value!==null && Date.now()-_rsi3dCache.ts<_rsi3dCache.ttl){
   }
 }
 $id("rmv").textContent=rsi3d;$id("rml").textContent=rsi3d>=60?"Alcista":rsi3d>=45?"Neutral":"Bajista";
-$id("rmv").style.color=rsi3d>=60?"#22c55e":rsi3d>=45?"#f59e0b":"#ef4444";
+$id('rmv').style.color=rsi3d>=60?'#22c55e':rsi3d>=45?'#f59e0b':'#ef4444';
 $id("lu").textContent="updated "+new Date().toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+
+// MA40: ocultar fila si no hay datos en vez de mostrar 'Calculando...'
+var m4row=$id('m4')&&$id('m4').parentElement;
+if(!sd.m40&&m4row){m4row.style.display='none'}else if(sd.m40&&m4row){m4row.style.display='block';$id('m4v').textContent=fm(sd.m40);$id('m4l').textContent=((sd.p/sd.m40-1)*100>=0?'+':'')+((sd.p/sd.m40-1)*100).toFixed(2)+'%'};
 }
 
 function fetchUrl(u,t){t=t||8000;var ac=new AbortController;setTimeout(function(){ac.abort()},t);return fetch(u,{signal:ac.signal}).then(function(r){return r.json()})};
