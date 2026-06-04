@@ -272,6 +272,16 @@ var _moduleFetching=false;
 function fetchViaModule(){
   if(_moduleFetching)return;
   _moduleFetching=true;
+  
+  // Redirigir cs() y sl() a los modulos reales
+  if(window._moduleExports){
+    window.cs = function(c){ return window._moduleExports.computeScore(c, CTF); };
+    window.sl = function(s){ var r = window._moduleExports.classifyScore(s); return [r.label, r.cssClass]; };
+    window.getMAs = window._moduleExports.getMAs;
+    window.clearMACache = window._moduleExports.clearMACache;
+    window._moduleExports.loadScoreConfig().then(function(){ console.log('[SONO] Score config loaded from module'); });
+  }
+  
   var ld=document.getElementById("st-bar");
   if(ld){ld.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> Conectando via data layer...';ld.className="st-bar co";}
   
