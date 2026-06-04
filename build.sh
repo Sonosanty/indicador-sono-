@@ -42,6 +42,9 @@ cp js/indicators/score-maestro.js indicador_cloudflare/js/indicators/
 cp js/indicators/ranges.js indicador_cloudflare/js/indicators/
 cp js/indicators/confluence.js indicador_cloudflare/js/indicators/
 
+# SPA Controller
+cp frontend/spa-controller.js indicador_cloudflare/spa-controller.js
+
 # Pages
 cp frontend/metodo.html indicador_cloudflare/metodo.html
 cp frontend/range_explorer.html indicador_cloudflare/rangos.html

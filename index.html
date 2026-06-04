@@ -2,25 +2,42 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sono PRO — Dashboard</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SONO PRO — Dashboard</title>
 <link rel="stylesheet" href="/assets/css/tokens.css">
 <link rel="stylesheet" href="/assets/css/base.css">
 <link rel="stylesheet" href="/assets/css/layout.css">
 <link rel="stylesheet" href="/assets/css/components.css">
 <link rel="stylesheet" href="/assets/css/mockup-overrides.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script type="module" src="/app.module.js"></script>
+<style>
+.page-panel{display:none}.page-panel.active{display:block}
+#page-metodo .shell-metodo{display:grid;grid-template-columns:280px 1fr;gap:0;min-height:calc(100vh - 120px)}
+#page-metodo .sidebar{background:var(--bg-card);border-right:1px solid var(--border);padding:12px;overflow-y:auto}
+#page-metodo .main{padding:0;overflow-y:auto}
+#page-metodo .ctbar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--bg-elevated)}
+#page-metodo .chart-card{margin:0;border:none;border-radius:0;background:var(--bg-base)}
+.canvas-wrap>canvas{display:block;width:100%!important;height:100%!important}
+.trades-toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:8px 0}
+.trades-hero{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.badge-open{display:inline-block;background:rgba(79,142,247,0.2);color:#4f8ef7;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700}
+.badge-side{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700}.badge-side.LONG{background:rgba(20,184,129,0.2);color:#14b981}.badge-side.SHORT{background:rgba(239,68,68,0.2);color:#ef4444}
+.badge-result{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700}.badge-result.TP{background:rgba(20,184,129,0.2);color:#14b981}.badge-result.SL{background:rgba(239,68,68,0.2);color:#ef4444}.badge-result.BE{background:rgba(251,191,36,0.2);color:#fbbf24}
+.positive{color:#14b981}.negative{color:#ef4444}.neutral{color:#fbbf24}
+@media(max-width:800px){#page-metodo .shell-metodo{grid-template-columns:1fr;height:auto}#page-metodo .sidebar{position:static;height:auto;overflow:visible}.trades-hero{grid-template-columns:repeat(2,1fr)}}
+</style>
 </head>
-<body class="btc-dashboard">
+<body class="sono-spa">
 
-<!-- ===== TOPNAV ===== -->
+<!-- TOPNAV -->
 <nav class="topnav">
   <div class="logo">SONO PRO</div>
   <div class="nav-links">
-    <a href="#" class="active" data-page="dashboard" onclick="showPage('dashboard',this)">Dashboard</a>
-    <a href="/metodo" data-page="metodo" onclick="showPage('metodo',this)">Método</a>
-    <a href="/rangos" data-page="rangos" onclick="showPage('rangos',this)">Rangos</a>
-    <a href="/trades" data-page="trades" onclick="showPage('trades',this)">Trades</a>
+    <a href="#" class="active" data-page="dashboard" onclick="SPA.show('dashboard',this)">Dashboard</a>
+    <a href="#" data-page="metodo" onclick="SPA.show('metodo',this)">Método</a>
+    <a href="#" data-page="rangos" onclick="SPA.show('rangos',this)">Rangos</a>
+    <a href="#" data-page="trades" onclick="SPA.show('trades',this)">Trades</a>
   </div>
   <div class="live-indicator">
     <span id="st-bar" class="st-bar co"><span class="st-dot" style="background:#3b82f6"></span> Conectando...</span>
@@ -28,7 +45,7 @@
   </div>
 </nav>
 
-<!-- ===== HEALTH BAR ===== -->
+<!-- HEALTH BAR -->
 <div class="health-bar">
   <span class="source">Binance WS</span>
   <span style="color:#4a7aaa">· real-time</span>
@@ -37,90 +54,216 @@
   <span class="status-alert" id="errBanner" style="display:none">⚠ No hay datos de velas (KuCoin timeout)</span>
 </div>
 
-<!-- ===== PAGE: DASHBOARD ===== -->
+<!-- ==================== PAGE 1: DASHBOARD ==================== -->
 <div id="page-dashboard" class="page-panel active">
-
   <div class="asset-tabs-row">
-    <button class="asset-tab active" data-asset="BTC" onclick="changeAsset('BTC',this)">BTC</button>
-    <button class="asset-tab" data-asset="ETH" onclick="changeAsset('ETH',this)">ETH</button>
-    <button class="asset-tab" data-asset="SOL" onclick="changeAsset('SOL',this)">SOL</button>
-    <button class="asset-tab" data-asset="XRP" onclick="changeAsset('XRP',this)">XRP</button>
+    <button class="asset-tab active" data-asset="BTC" onclick="SPA.changeAsset('BTC',this)">BTC</button>
+    <button class="asset-tab" data-asset="ETH" onclick="SPA.changeAsset('ETH',this)">ETH</button>
+    <button class="asset-tab" data-asset="SOL" onclick="SPA.changeAsset('SOL',this)">SOL</button>
+    <button class="asset-tab" data-asset="XRP" onclick="SPA.changeAsset('XRP',this)">XRP</button>
   </div>
-
-  <!-- Contenedor donde app.js inyecta el HTML via innerHTML -->
   <div id="rt"></div>
+</div>
 
-</div>  <!-- /page-dashboard -->
-
-<!-- ===== PAGE: MÉTODO ===== -->
+<!-- ==================== PAGE 2: MÉTODO ==================== -->
 <div id="page-metodo" class="page-panel">
-  <p style="padding:40px 20px;color:#2a5a8a;text-align:center">Cargando Método... <a href="/metodo">Ir a la versión completa →</a></p>
+  <div class="shell-metodo">
+    <aside class="sidebar" id="metodo-sidebar">
+      <!-- Score Maestro -->
+      <div class="sb-section">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-weight:600;margin-bottom:6px">Score Maestro Sono</div>
+        <div class="score-wrap" style="padding:.8rem 0">
+          <div class="ring-container">
+            <svg viewBox="0 0 150 150"><circle class="ring-bg" cx="75" cy="75" r="65"/><circle class="ring-fill" id="ringArc" cx="75" cy="75" r="65" stroke="var(--blue)"/></svg>
+            <div class="ring-inner">
+              <div class="score-num" id="scoreNum" style="color:var(--blue)">--</div>
+              <div class="score-denom">/ 100</div>
+            </div>
+          </div>
+          <div class="score-state" id="scoreState">Cargando...</div>
+          <div class="score-zone" id="scoreZone">--</div>
+          <div class="regime-pill" id="regimePill">-- analizando --</div>
+        </div>
+      </div>
+      <!-- Pilares -->
+      <div class="sb-section">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-weight:600;margin-bottom:8px">Pilares</div>
+        <div class="pilar-row"><div><div class="pilar-name">P1 · Medias Móviles</div><div class="pilar-bar-wrap"><div class="pilar-bar" id="p1bar" style="background:linear-gradient(90deg,var(--blue),var(--cyan));width:0%"></div></div></div><div class="pilar-pts" id="p1pts" style="color:var(--blue)">--</div></div>
+        <div class="pilar-row"><div><div class="pilar-name">P2 · Momentum</div><div class="pilar-bar-wrap"><div class="pilar-bar" id="p2bar" style="background:linear-gradient(90deg,var(--green),var(--teal));width:0%"></div></div></div><div class="pilar-pts" id="p2pts" style="color:var(--green)">--</div></div>
+        <div class="pilar-row"><div><div class="pilar-name">P3 · Bollinger</div><div class="pilar-bar-wrap"><div class="pilar-bar" id="p3bar" style="background:linear-gradient(90deg,var(--amber),var(--purple));width:0%"></div></div></div><div class="pilar-pts" id="p3pts" style="color:var(--amber)">--</div></div>
+      </div>
+      <!-- Señales -->
+      <div class="sb-section">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-weight:600;margin-bottom:8px">Señales activas</div>
+        <div class="sig-item"><div class="sig-dot" id="d_ma6x70" style="background:var(--dim)"></div><div class="sig-name">MA6 × MA70</div><div class="sig-val" id="v_ma6x70" style="color:var(--text3)">--</div><div class="sig-pts">15 pts</div></div>
+        <div class="sig-item"><div class="sig-dot" id="d_ma40" style="background:var(--dim)"></div><div class="sig-name">Precio vs MA40</div><div class="sig-val" id="v_ma40" style="color:var(--text3)">--</div><div class="sig-pts">10 pts</div></div>
+        <div class="sig-item"><div class="sig-dot" id="d_ma200" style="background:var(--dim)"></div><div class="sig-name">Precio vs MA200</div><div class="sig-val" id="v_ma200" style="color:var(--text3)">--</div><div class="sig-pts">10 pts</div></div>
+        <div class="sig-item"><div class="sig-dot" id="d_adx" style="background:var(--dim)"></div><div class="sig-name">ADX &gt; 25</div><div class="sig-val" id="v_adx" style="color:var(--text3)">--</div><div class="sig-pts">15 pts</div></div>
+        <div class="sig-item"><div class="sig-dot" id="d_rsi" style="background:var(--dim)"></div><div class="sig-name">RSI momentum</div><div class="sig-val" id="v_rsi" style="color:var(--text3)">--</div><div class="sig-pts">20 pts</div></div>
+        <div class="sig-item"><div class="sig-dot" id="d_bb" style="background:var(--dim)"></div><div class="sig-name">Bollinger %B</div><div class="sig-val" id="v_bb" style="color:var(--text3)">--</div><div class="sig-pts">30 pts</div></div>
+      </div>
+      <!-- Macro -->
+      <div class="sb-section">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-weight:600;margin-bottom:8px">Macro</div>
+        <div class="macro-grid">
+          <div class="mc-item"><div class="mc-lbl">Fear &amp; Greed</div><div class="mc-val" id="mFNG" style="color:var(--green)">--</div><div class="mc-sub" id="mFNGl">--</div><div class="mc-bar"><div class="mc-fill" id="mFNGb" style="background:var(--green);width:0%"></div></div></div>
+          <div class="mc-item"><div class="mc-lbl">Dom. BTC</div><div class="mc-val" id="mDOM" style="color:var(--blue)">--</div><div class="mc-sub" id="mDOMl">--</div><div class="mc-bar"><div class="mc-fill" id="mDOMb" style="background:var(--blue);width:0%"></div></div></div>
+          <div class="mc-item"><div class="mc-lbl">RSI 1h</div><div class="mc-val" id="mRSI" style="color:var(--cyan)">--</div><div class="mc-sub" id="mRSIl">--</div><div class="mc-bar"><div class="mc-fill" id="mRSIb" style="background:var(--cyan);width:0%"></div></div></div>
+          <div class="mc-item"><div class="mc-lbl">MktCap</div><div class="mc-val" id="mMCAP" style="color:var(--purple)">--</div><div class="mc-sub" id="mMCAPl">--</div><div class="mc-bar"><div class="mc-fill" id="mMCAPb" style="background:var(--purple);width:50%"></div></div></div>
+        </div>
+      </div>
+      <!-- Zonas -->
+      <div class="sb-section" style="flex:1">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-weight:600;margin-bottom:8px">Zonas de decisión</div>
+        <div id="zonasWrap">
+          <div class="zona-item" data-min="78"><div class="zona-score" style="color:var(--blue)">78-100</div><div class="zona-lbl">Compra fuerte</div><div class="zona-tag" style="background:rgba(79,142,247,.15);color:var(--blue)">LONG</div></div>
+          <div class="zona-item" data-min="62"><div class="zona-score" style="color:var(--green)">62-77</div><div class="zona-lbl">Compra</div><div class="zona-tag" style="background:rgba(34,197,94,.15);color:var(--green)">LONG+</div></div>
+          <div class="zona-item" data-min="52"><div class="zona-score" style="color:#86efac">52-61</div><div class="zona-lbl">Acumular</div><div class="zona-tag" style="background:rgba(134,239,172,.12);color:#86efac">PARCIAL</div></div>
+          <div class="zona-item" data-min="42"><div class="zona-score" style="color:var(--text3)">42-51</div><div class="zona-lbl">Neutral</div><div class="zona-tag" style="background:rgba(255,255,255,.06);color:var(--text3)">ESPERAR</div></div>
+          <div class="zona-item" data-min="30"><div class="zona-score" style="color:var(--amber)">30-41</div><div class="zona-lbl">Venta</div><div class="zona-tag" style="background:rgba(245,158,11,.15);color:var(--amber)">SHORT+</div></div>
+          <div class="zona-item" data-min="18"><div class="zona-score" style="color:#fca5a5">18-29</div><div class="zona-lbl">Venta fuerte</div><div class="zona-tag" style="background:rgba(252,165,165,.12);color:#fca5a5">SHORT</div></div>
+          <div class="zona-item" data-min="0"><div class="zona-score" style="color:var(--red)">0-17</div><div class="zona-lbl">Capitulación</div><div class="zona-tag" style="background:rgba(239,68,68,.12);color:var(--red)">CASH</div></div>
+        </div>
+      </div>
+    </aside>
+    <main class="main" id="metodo-main">
+      <div class="ctbar">
+        <div class="btn-group">
+          <button class="btn-coin ac" data-coin="BTC" onclick="window.METODO&&METODO.changeCoin('BTC')">BTC</button>
+          <button class="btn-coin" data-coin="ETH" onclick="window.METODO&&METODO.changeCoin('ETH')">ETH</button>
+          <button class="btn-coin" data-coin="SOL" onclick="window.METODO&&METODO.changeCoin('SOL')">SOL</button>
+          <button class="btn-coin" data-coin="XRP" onclick="window.METODO&&METODO.changeCoin('XRP')">XRP</button>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:6px"><div class="price-hero" id="metodoPrice">$--</div><span class="price-chg" id="metodoChg" style="display:none">--</span></div>
+        <div style="margin-left:auto" class="btn-group">
+          <button class="btn-tf" data-tf="1m" onclick="window.METODO&&METODO.changeTF('1m')">1m</button>
+          <button class="btn-tf ac" data-tf="3m" onclick="window.METODO&&METODO.changeTF('3m')">3m</button>
+          <button class="btn-tf" data-tf="5m" onclick="window.METODO&&METODO.changeTF('5m')">5m</button>
+          <button class="btn-tf" data-tf="15m" onclick="window.METODO&&METODO.changeTF('15m')">15m</button>
+          <button class="btn-tf" data-tf="1h" onclick="window.METODO&&METODO.changeTF('1h')">1h</button>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title"><span id="chartTitle">BTC</span>/USDT <span style="font-size:11px;color:var(--text3)">· MA6 · MA40 · MA70 · MA200 · BB · RSI · ADX · %B</span></div>
+          <div class="legend-wrap">
+            <div class="leg"><div class="leg-line" style="background:#4f8ef7"></div>MA6</div>
+            <div class="leg"><div class="leg-line" style="background:#f59e0b"></div>MA40</div>
+            <div class="leg"><div class="leg-line" style="background:#a855f7"></div>MA70</div>
+            <div class="leg"><div class="leg-line" style="background:#94a3b8"></div>MA200</div>
+            <div class="leg"><div class="leg-line" style="background:rgba(6,182,212,.6)"></div>BB</div>
+          </div>
+        </div>
+        <div class="err-banner" id="metodoErr">⚠ Error conectando. Reintentando en 15s...</div>
+        <div class="panels-wrap" id="metodoPanels"></div>
+      </div>
+      <div class="alert-note"><strong>⚠</strong> Método cuantitativo y mecánico. Herramienta de análisis, no consejo financiero.</div>
+    </main>
+  </div>
 </div>
 
-<!-- ===== PAGE: RANGOS ===== -->
+<!-- ==================== PAGE 3: RANGOS ==================== -->
 <div id="page-rangos" class="page-panel">
-  <p style="padding:40px 20px;color:#2a5a8a;text-align:center">Cargando Rangos... <a href="/rangos">Ir a la versión completa →</a></p>
+  <section id="range-global" style="width:100%">
+    <div class="range-hero" id="rangeHero">
+      <div class="range-hero-inner">
+        <div>
+          <div class="range-hero-eyebrow"><span class="range-live-dot"></span> Market Structure Radar</div>
+          <div class="range-hero-price" id="heroPrice">Cargando...</div>
+          <div class="range-hero-state"><span class="range-status-pill" id="heroPill">⏳ Leyendo mercado</span></div>
+          <p class="range-hero-message" id="heroMessage">Leyendo contexto de mercado.</p>
+        </div>
+        <div class="range-hero-panel">
+          <div class="range-hero-kpi" id="kpiBias"><span>Bias</span><strong>—</strong><small>Esperando</small></div>
+          <div class="range-hero-kpi" id="kpiConf"><span>Confianza</span><strong>—</strong><small>Score contextual</small></div>
+          <div class="range-hero-kpi" id="kpiState"><span>Estado</span><strong>—</strong><small>Confluencia</small></div>
+          <div class="range-hero-kpi"><span>Refresh</span><strong>20s</strong><small>Actualización live</small></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section id="range-timeframes" class="range-grid-explorer"></section>
+  <div class="range-footer-note">Lectura automática basada en rangos recientes, posición porcentual, clusters de soporte/resistencia y volumen relativo.</div>
 </div>
 
-<!-- ===== PAGE: TRADES ===== -->
+<!-- ==================== PAGE 4: TRADES ==================== -->
 <div id="page-trades" class="page-panel">
-  <p style="padding:40px 20px;color:#2a5a8a;text-align:center">Cargando Trades... <a href="/rangos">Ir a la versión completa →</a></p>
+  <div class="trades-hero">
+    <article class="card"><div class="label">BTC Live</div><div class="value" id="t-livePrice">—</div><div class="source">Binance aggTrade</div></article>
+    <article class="card"><div class="label">Abiertos</div><div class="value" id="summaryOpen">—</div></article>
+    <article class="card" id="wsCard"><div class="label">Realtime</div><div class="value"><span id="t-wsStatus">Conectando...</span></div><div class="source" id="t-wsLatency">Sin conexión</div></article>
+    <article class="card"><div class="label">Cerrados</div><div class="value" id="summaryClosed">—</div></article>
+  </div>
+  <div class="analytics-grid" style="display:grid;grid-template-columns:1fr 1.5fr;gap:16px;margin-bottom:16px">
+    <section id="tradeSummary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+      <article class="card"><div class="label">TP / BE / SL</div><div class="value" id="summaryTpSl">—</div></article>
+      <article class="card"><div class="label">Winrate</div><div class="value" id="summaryWinrate">—</div></article>
+      <article class="card"><div class="label">R total</div><div class="value" id="summaryRTotal">—</div></article>
+      <article class="card"><div class="label">R medio</div><div class="value" id="summaryRAvg">—</div></article>
+      <article class="card"><div class="label">PnL total</div><div class="value" id="summaryPnlTotal">—</div></article>
+      <article class="card"><div class="label">PnL medio</div><div class="value" id="summaryPnlAvg">—</div></article>
+    </section>
+    <section class="tf-panel trade-panel" style="border:1px solid var(--border);border-radius:10px;background:var(--bg-card);padding:12px">
+      <h2 style="font-size:14px;margin:0 0 8px">Equity Curve</h2>
+      <div class="kpi-row" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:8px">
+        <div><span style="font-size:10px;color:var(--text3)">Max DD</span><strong id="equityMaxDd" style="display:block;font-size:12px">—</strong></div>
+        <div><span style="font-size:10px;color:var(--text3)">PF</span><strong id="equityProfitFactor" style="display:block;font-size:12px">—</strong></div>
+        <div><span style="font-size:10px;color:var(--text3)">Expectancy</span><strong id="equityExpectancy" style="display:block;font-size:12px">—</strong></div>
+        <div><span style="font-size:10px;color:var(--text3)">Best R</span><strong id="equityBestR" style="display:block;font-size:12px">—</strong></div>
+        <div><span style="font-size:10px;color:var(--text3)">Worst R</span><strong id="equityWorstR" style="display:block;font-size:12px">—</strong></div>
+      </div>
+      <div style="min-height:120px"><canvas id="equityChart"></canvas></div>
+    </section>
+  </div>
+  <section class="trades-toolbar">
+    <div style="display:flex;gap:8px">
+      <button class="tab-btn active" data-tab="open" onclick="TRADES.switchTab('open',this)">OPEN</button>
+      <button class="tab-btn" data-tab="closed" onclick="TRADES.switchTab('closed',this)">CLOSED</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select id="filterSide" onchange="TRADES.applyFilters()" style="background:var(--bg-elevated);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:6px;font-size:12px">
+        <option value="ALL">Todos</option>
+        <option value="LONG">LONG</option>
+        <option value="SHORT">SHORT</option>
+      </select>
+      <input type="text" id="filterSetup" placeholder="Buscar setup..." oninput="TRADES.applyFilters()" style="background:var(--bg-elevated);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:6px;font-size:12px;width:120px">
+    </div>
+  </section>
+  <section class="tf-panel tab-panel active" id="tab-open" style="border:1px solid var(--border);border-radius:10px;background:var(--bg-card);margin-bottom:12px;padding:12px">
+    <h2 style="font-size:14px;margin:0 0 8px">Trades activos</h2>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead><tr style="border-bottom:1px solid var(--border)"><th>ID</th><th>Estado</th><th>TF</th><th>Side</th><th>Setup</th><th>Entry</th><th>SL</th><th>TP1</th><th>TP2</th><th>TP3</th><th>MFE</th><th>MAE</th><th>Dur.</th><th>R act.</th><th>Abierto</th></tr></thead>
+        <tbody id="openTradesBody"></tbody>
+      </table>
+    </div>
+  </section>
+  <section class="tf-panel tab-panel" id="tab-closed" style="border:1px solid var(--border);border-radius:10px;background:var(--bg-card);padding:12px">
+    <h2 style="font-size:14px;margin:0 0 8px">Trades cerrados</h2>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead><tr style="border-bottom:1px solid var(--border)"><th>ID</th><th>Resultado</th><th>TF</th><th>Side</th><th>Setup</th><th>Entry</th><th>Cierre</th><th>TP1</th><th>SL</th><th>MFE</th><th>MAE</th><th>Dur.</th><th>R gest.</th><th>PnL</th><th>Touch</th></tr></thead>
+        <tbody id="closedTradesBody"></tbody>
+      </table>
+    </div>
+  </section>
 </div>
 
-<!-- ===== FOOTER ===== -->
-<div class="site-footer">
+<!-- FOOTER global -->
+<div class="site-footer" id="globalFooter">
   Sono PRO v6 — <span id="tsEl">--:--:--</span> — <span id="lu">última actualización</span>
 </div>
 
-<script>
-// ===== SPA NAVIGATION =====
-function showPage(page, el){
-  document.querySelectorAll('.page-panel').forEach(function(p){ p.classList.remove('active'); });
-  var panel = document.getElementById('page-'+page);
-  if(panel) panel.classList.add('active');
-  document.querySelectorAll('.nav-links a').forEach(function(a){ a.classList.remove('active'); });
-  if(el) el.classList.add('active');
-  else {
-    document.querySelectorAll('.nav-links a[data-page="'+page+'"]').forEach(function(a){ a.classList.add('active'); });
-  }
-}
-function changeAsset(asset, btn){
-  // Delegar al boton de asset del app.js
-  var abs = document.querySelectorAll('#rt .ab button');
-  if(abs.length > 0){
-    abs.forEach(function(b){
-      if(b.getAttribute('data-a') === asset) { b.click(); return; }
-    });
-  }else{
-    // Fallback: cambiar via ST global
-    if(window.CA !== undefined){
-      window.CA = asset;
-      document.querySelectorAll('.asset-tab').forEach(function(t){ t.classList.remove('active'); });
-      if(btn) btn.classList.add('active');
-      if(window.fetchAll) window.fetchAll();
-    }
-  }
-}
-</script>
-
 <script src="/app.js"></script>
+<script src="/spa-controller.js"></script>
 
-<!-- Service Worker -->
 <script>
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js', { scope: '/' }).then((reg) => {
-      setInterval(() => { reg.update(); }, 1800000);
-      reg.addEventListener('updatefound', () => {
-        const newSW = reg.installing;
-        newSW.addEventListener('statechange', () => {
-          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-            console.log('[SW] Nueva version disponible. Recarga para activar.');
-          }
-        });
-      });
-    }).catch((err) => { console.log('[SW] Registration failed:', err); });
-  })
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js', { scope: '/' }).then(function(reg) {
+      setInterval(function(){ reg.update(); }, 1800000);
+    }).catch(function(err){ console.log('[SW] Error:', err); });
+  });
 }
 </script>
 
