@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="/assets/css/layout.css">
 <link rel="stylesheet" href="/assets/css/components.css">
 <link rel="stylesheet" href="/assets/css/mockup-overrides.css">
-<script src="/assets/vendor/chart.umd.min.js?_v=v1780577749119"></script>
+<script src="/assets/vendor/chart.umd.min.js?_v=v1780581993294"></script>
 <script type="module" src="/app.module.js"></script>
 <style>
 .page-panel{display:none}.page-panel.active{display:block}
@@ -189,7 +189,7 @@
 </div>
 
 <!-- ==================== PAGE 4: TRADES ==================== -->
-<div id="  <section id="page-trades" class="page-panel">
+<div id="  <section id="  <section id="page-trades" class="page-panel">
     <section class="trades-hero">
       <article class="card">
         <div class="label">BTC Live</div>
@@ -204,7 +204,7 @@
         <div class="label">Realtime</div>
         <div class="value">
           <span class="trade-status-dot"></span>
-          <span id="wsStatus">Conectando...</span>
+          <span id="wsStatus">&mdash;</span>
         </div>
         <div class="source" id="wsLatency">Sin conexion</div>
       </article>
@@ -218,21 +218,19 @@
       <section class="trade-summary-grid" id="tradeSummary">
         <article class="card"><div class="label">TP / BE / SL</div><div class="value" id="summaryTpSl">&mdash;</div></article>
         <article class="card"><div class="label">Winrate</div><div class="value" id="summaryWinrate">&mdash;</div></article>
-        <article class="card"><div class="label">R gestionado total</div><div class="value" id="summaryRTotal">&mdash;</div></article>
-        <article class="card"><div class="label">R gestionado medio</div><div class="value" id="summaryRAvg">&mdash;</div></article>
-        <article class="card"><div class="label">PnL cierre total</div><div class="value" id="summaryPnlTotal">&mdash;</div></article>
-        <article class="card"><div class="label">PnL cierre medio</div><div class="value" id="summaryPnlAvg">&mdash;</div></article>
+        <article class="card"><div class="label">PnL total</div><div class="value" id="summaryPnlTotal">&mdash;</div></article>
+        <article class="card"><div class="label">PnL medio</div><div class="value" id="summaryPnlAvg">&mdash;</div></article>
       </section>
       <section class="tf-panel trades-panel chart-panel">
         <div class="tf-header">
-          <div><h2>Equity Curve</h2><p class="sub">Evolucion acumulada del sistema en multiplos R.</p></div>
+          <div><h2>Equity Curve</h2><p class="sub">Evolucion acumulada del sistema en dolares simulados.</p></div>
         </div>
         <div class="equity-kpis">
           <div><span>Max DD</span><strong id="equityMaxDd">&mdash;</strong></div>
           <div><span>Profit Factor</span><strong id="equityProfitFactor">&mdash;</strong></div>
           <div><span>Expectancy</span><strong id="equityExpectancy">&mdash;</strong></div>
-          <div><span>Mejor R</span><strong id="equityBestR">&mdash;</strong></div>
-          <div><span>Peor R</span><strong id="equityWorstR">&mdash;</strong></div>
+          <div><span>Mejor $</span><strong id="equityBestR">&mdash;</strong></div>
+          <div><span>Peor $</span><strong id="equityWorstR">&mdash;</strong></div>
         </div>
         <div style="padding:0 16px 16px;flex:1;min-height:160px">
           <canvas id="equityChart" role="img" aria-label="Equity curve"></canvas>
@@ -245,7 +243,7 @@
         <div><h2>Rendimiento por Setup</h2><p class="sub">Agrupacion estadistica por estructura detectada.</p></div>
       </div>
       <table class="tf-table">
-        <thead><tr><th>Setup</th><th>Trades</th><th>TP / BE / SL</th><th>Winrate</th><th>R total</th><th>R medio</th><th>Profit Factor</th></tr></thead>
+        <thead><tr><th>Setup</th><th>Trades</th><th>TP / BE / SL</th><th>Winrate</th><th>PnL total</th><th>PnL medio</th><th>Profit Factor</th></tr></thead>
         <tbody id="setupStatsBody"></tbody>
       </table>
     </section>
@@ -255,23 +253,32 @@
         <div><h2>Rendimiento por Timeframe</h2><p class="sub">Comparativa de rendimiento segun timeframe.</p></div>
       </div>
       <table class="tf-table">
-        <thead><tr><th>Timeframe</th><th>Trades</th><th>TP / BE / SL</th><th>Winrate</th><th>R total</th><th>R medio</th><th>Profit Factor</th></tr></thead>
+        <thead><tr><th>Timeframe</th><th>Trades</th><th>TP / BE / SL</th><th>Winrate</th><th>PnL total</th><th>PnL medio</th><th>Profit Factor</th></tr></thead>
         <tbody id="tfStatsBody"></tbody>
       </table>
     </section>
 
     <section class="trades-toolbar">
       <div class="tabs-row">
-        <button class="tab-btn active" onclick="window.TRADES.switchTab('open',this)">OPEN</button>
-        <button class="tab-btn" onclick="window.TRADES.switchTab('closed',this)">CLOSED</button>
+        <button class="tab-btn active" data-tab="open" onclick="window.TRADES.switchTab('open',this)">OPEN</button>
+        <button class="tab-btn" data-tab="closed" onclick="window.TRADES.switchTab('closed',this)">CLOSED</button>
       </div>
       <div class="filters-row">
+        <select id="filterStatus" onchange="window.TRADES.applyFilters()">
+          <option value="ALL">Todos</option>
+          <option value="OPEN">OPEN</option>
+          <option value="CLOSED">CLOSED</option>
+          <option value="TP">TP</option>
+          <option value="SL">SL</option>
+          <option value="BE">BE</option>
+        </select>
         <select id="filterSide" onchange="window.TRADES.applyFilters()">
           <option value="ALL">Todos los lados</option>
           <option value="LONG">LONG</option>
           <option value="SHORT">SHORT</option>
         </select>
         <input type="text" id="filterSetup" placeholder="Buscar setup..." oninput="window.TRADES.applyFilters()">
+        <input type="text" id="filterTf" placeholder="Buscar timeframe..." oninput="window.TRADES.applyFilters()">
       </div>
     </section>
 
@@ -281,7 +288,7 @@
         <div class="range-refresh-pill" id="lastRefresh">Actualizando...</div>
       </div>
       <table class="tf-table">
-        <thead><tr><th>ID</th><th>Estado</th><th>TF</th><th>Side</th><th>Setup</th><th>Entry</th><th>SL</th><th>TP1</th><th>TP2</th><th>TP3</th><th>MFE</th><th>MAE</th><th>Duracion</th><th>R actual</th><th>Abierto</th></tr></thead>
+        <thead><tr><th>ID</th><th>Estado</th><th>TF</th><th>Side</th><th>Setup</th><th>Entry</th><th>SL</th><th>TP1</th><th>TP2</th><th>TP3</th><th>Max TP</th><th>MFE</th><th>MAE</th><th>Duracion</th><th>Abierto</th></tr></thead>
         <tbody id="openTradesBody"></tbody>
       </table>
     </section>
@@ -291,7 +298,7 @@
         <div><h2>Trades cerrados</h2><p class="sub">Primer toque confirmado en realtime.</p></div>
       </div>
       <table class="tf-table">
-        <thead><tr><th>ID</th><th>Resultado</th><th>TF</th><th>Side</th><th>Setup</th><th>Entry</th><th>Cierre</th><th>TP1</th><th>SL</th><th>MFE</th><th>MAE</th><th>Duracion</th><th>R gest.</th><th>PnL</th><th>Touch</th></tr></thead>
+        <thead><tr><th>ID</th><th>Resultado</th><th>TF</th><th>Side</th><th>Setup</th><th>Entry</th><th>Cierre</th><th>TP1</th><th>TP2</th><th>TP3</th><th>Max TP</th><th>SL</th><th>MFE</th><th>MAE</th><th>Duracion</th><th>PnL cierre</th><th>Touch time</th></tr></thead>
         <tbody id="closedTradesBody"></tbody>
       </table>
     </section>
@@ -300,8 +307,8 @@
   Sono PRO v6 — <span id="tsEl">--:--:--</span> — <span id="lu">última actualización</span>
 </div>
 
-<script src="/app.js?_v=v1780577749119"></script>
-<script src="/spa-controller.js?_v=v1780577749119"></script>
+<script src="/app.js?_v=v1780581993294"></script>
+<script src="/spa-controller.js?_v=v1780581993294"></script>
 
 
 
