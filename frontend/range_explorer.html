@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="/assets/css/layout.css">
 <link rel="stylesheet" href="/assets/css/components.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script type="module" src="/app.module.js"></script>
 </head>
 <body class="btc-dashboard">
 
@@ -19,8 +20,9 @@
     <p>Radar automático de extremos, rangos, zonas y barridos BTC.</p>
   </div>
   <nav class="topbar-actions">
-    <a href="index.html">Dashboard</a>
-    <a href="trades_explorer.html">Trades</a>
+    <a href="/">Dashboard</a>
+    <a href="/trades">Trades</a>
+    <a href="/metodo">Metodo</a>
     
 <div class="asset-tabs" style="margin-left:auto">
 <button class="asset-btn active" data-asset="BTC">BTC</button>
@@ -73,6 +75,9 @@
 const $ = id => document.getElementById(id);
 const fmtN = (n,d=2) => Number(n).toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
 
+// Si el ES module cargo, usar modulos compartidos
+if(window._moduleExports){var mx=window._moduleExports;window._calcRSI=function(cl,p){return mx.rsi(cl,p);};}
+
 let LIVE_PRICE = 73900;
 const TFS = ['15m','5m','3m','1m'];
 const KLINES_CACHE = {};
@@ -91,6 +96,15 @@ async function fetchAllKlines(){ await Promise.all(TFS.map(tf=>fetchKlines(tf)))
 
 // ── RSI ───────────────────────────────
 function calcRSI(closes,p=14){
+  // Usar modulo si esta disponible
+  if(window._calcRSI && !window._calcRSI._used && closes.length > p+1){
+    const result = new Array(closes.length).fill(null);
+    for(let i=p; i<closes.length; i++){
+      result[i] = window._calcRSI(closes.slice(0,i+1), p);
+    }
+    window._calcRSI._used = true;
+    return result;
+  }
   const out=new Array(closes.length).fill(0);
   let g=0,l=0;
   for(let i=1;i<=p;i++){const d=closes[i]-closes[i-1];d>0?g+=d:l-=d;}
