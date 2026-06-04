@@ -11,33 +11,92 @@ var AS={BTC:"BTCUSDT",ETH:"ETHUSDT",SOL:"SOLUSDT",XRP:"XRPUSDT"};
 function $(i){return document.getElementById(i)};
 function fk(n){return n>=1e12?"$"+(n/1e12).toFixed(2)+"T":n>=1e9?"$"+(n/1e9).toFixed(1)+"B":n>=1e6?"$"+(n/1e6).toFixed(0)+"M":"$"+n.toFixed(0)};
 function fm(n){return "$"+Math.round(n).toLocaleString("en-US")};
+
+// ===== SCORE MAESTRO UNIFICADO v2 =====
+// Alineado con sono_score.py (Python) — fuente canonica
+// =========================================
+var SCORE_CFG = null;
+
+function loadScoreConfig(){
+  return fetch('/sono-score-config.json',{cache:'no-store'})
+    .then(function(r){return r.json()})
+    .then(function(cfg){ SCORE_CFG = cfg; })
+    .catch(function(){ SCORE_CFG = null; });
+}
 function sm(a,p){if(!a||a.length<p)return null;var s=0;for(var i=a.length-p;i<a.length;i++)s+=+a[i];return s/p};
 function rs(c,p){p=p||14;if(!c||c.length<p+1)return null;var g=0,l=0;for(var i=c.length-p;i<c.length;i++){var d=+c[i]-+c[i-1];if(d>0)g+=d;else l-=d}return Math.round(100-100/(1+(g/p)/((l/p)||0.0001)))};
 function ax(h,l,c,p){p=p||14;if(!c||c.length<p+2)return{adx:null};var pD=[],mD=[],tr=[];for(var i=1;i<c.length;i++){var pH=+h[i]-+h[i-1],mL=+l[i-1]-+l[i];pD.push(pH>mL&&pH>0?pH:0);mD.push(mL>pH&&mL>0?mL:0);tr.push(Math.max(+h[i]-+l[i],Math.abs(+h[i]-+c[i-1]),Math.abs(+l[i]-+c[i-1])))};var sp=0,sm2=0,st=0;for(var i=pD.length-p;i<pD.length;i++){sp+=pD[i];sm2+=mD[i];st+=tr[i]};st=st||1;var pDI=Math.round(100*sp/st),mDI=Math.round(100*sm2/st);return{adx:Math.round(Math.abs(pDI-mDI)/((pDI+mDI)||1)*100)}};
 function bb(c,p,k){p=p||20;k=k||2;if(!c||c.length<p)return{pb:null};var sl=c.slice(-p),m=0;for(var i=0;i<p;i++)m+=+sl[i];m/=p;var sd=0;for(var i=0;i<p;i++)sd+=(+sl[i]-m)*(+sl[i]-m);sd=Math.sqrt(sd/p);return{pb:(+c[c.length-1]-(m-k*sd))/(((m+k*sd)-(m-k*sd))||1)}};
+// Hash rapido para MA_CACHE en vez de comparar arrays por referencia
+function hashArr(arr){
+  if(!arr||arr.length===0) return '';
+  var last=arr[arr.length-1];
+  return arr.length+'_'+(+last[0]||0);
+}
+
+// Score Maestro COMPLETAMENTE ALINEADO con sono_score.py (Python)
+// P1: MA6>MA40=12, MA6>MA70=10, MA40>MA200=13 (max 35)
+// P2: ADX>35=15, ADX>25=10, ADX<25=3 + RSI 50-70=12, RSI>=35=7, RSI<35=2 + Precio>MA200=8 (max 35)
+// P3: %B<0.15=28, <0.35=20, <0.65=14, <0.85=7, else=2 (max 30)
 function cs(c){
-  if(!c||c.length<30)return null;
+  if(!c||c.length<30) return null;
   var cl=c.map(function(x){return+x[4]}),hi=c.map(function(x){return+x[2]}),lo=c.map(function(x){return+x[3]}),p=cl[cl.length-1];
   var tLen=cl.length;
   var k=CTF;
-  var m6,m40,m70,m2;
-  var c6=MA_CACHE[k+"_6"],c40=MA_CACHE[k+"_40"],c70=MA_CACHE[k+"_70"],c200=MA_CACHE[k+"_200"];
-  if(c6&&c6.tf===c){m6=c6.v}else{m6=sm(cl,6);MA_CACHE[k+"_6"]={tf:c,v:m6}}
-  if(c40&&c40.tf===c){m40=c40.v}else{m40=sm(cl,40);MA_CACHE[k+"_40"]={tf:c,v:m40}}
-  if(c70&&c70.tf===c){m70=c70.v}else{m70=sm(cl,70);MA_CACHE[k+"_70"]={tf:c,v:m70}}
-  if(tLen>=200){if(c200&&c200.tf===c){m2=c200.v}else{m2=sm(cl,200);MA_CACHE[k+"_200"]={tf:c,v:m2}}}else{m2=null}
+  var h=hashArr(c);
+  // MA_CACHE con hash real
+  var m6=null,m40=null,m70=null,m2=null;
+  var k6=k+'_6_'+h, k40=k+'_40_'+h, k70=k+'_70_'+h, k200=k+'_200_'+h;
+  if(MA_CACHE[k6]){m6=MA_CACHE[k6]}else if(tLen>=6){m6=sm(cl,6);MA_CACHE[k6]=m6}
+  if(MA_CACHE[k40]){m40=MA_CACHE[k40]}else if(tLen>=40){m40=sm(cl,40);MA_CACHE[k40]=m40}
+  if(MA_CACHE[k70]){m70=MA_CACHE[k70]}else if(tLen>=70){m70=sm(cl,70);MA_CACHE[k70]=m70}
+  if(tLen>=200){
+    if(MA_CACHE[k200]){m2=MA_CACHE[k200]}else{m2=sm(cl,200);MA_CACHE[k200]=m2}
+  }
   var p1=0;
-  if(m6&&m70)p1+=m6>m70?15:0;
-  if(m40)p1+=p>m40?10:0;
-  if(m2)p1+=p>m2?10:0;
+  if(m6!==null&&m40!==null) p1+=m6>m40?12:0;
+  if(m6!==null&&m70!==null) p1+=m6>m70?10:0;
+  if(m40!==null&&m2!==null) p1+=m40>m2?13:0;
   var r=rs(cl),a=ax(hi,lo,cl).adx,p2=0;
-  if(a)p2+=a>25?15:a>20?8:0;
-  if(r)p2+=r>55?20:r>50?14:r<30?18:r<45?6:10;
+  if(a!==null){
+    p2+=a>35?15:a>25?10:3;
+  }
+  if(r!==null){
+    p2+=r>=50&&r<70?12:r>=35?7:2;
+  }
+  if(m2!==null){
+    p2+=p>m2?8:0;
+  }
   var b=bb(cl).pb,p3=0;
-    if(b!==null)p3=b>0.8||b<0?5:b>0.5?10:b>0.2?25:b>0?20:5;
-  return{sc:Math.round(p1+p2+p3),p1,p2,p3,m6,m40,m70,m2,p,r,a,pb:b,tLen:tLen,ma200Avail:m2!==null};
+  if(b!==null){
+    if(b<0.15) p3=28;
+    else if(b<0.35) p3=20;
+    else if(b<0.65) p3=14;
+    else if(b<0.85) p3=7;
+    else p3=2;
+  }
+  var total=Math.min(100,Math.round(p1+p2+p3));
+  return{sc:total,p1,p2,p3,m6,m40,m70,m2,p,r,a,pb:b,tLen:tLen,ma200Avail:m2!==null};
 };
-function sl(s){if(s>=78)return["Compra fuerte","pgg"];if(s>=62)return["Compra","pgg"];if(s>=52)return["Acumular","pb"];if(s>=42)return["Neutral","pgg2"];if(s>=30)return["Venta","pw"];return["Venta fuerte","prr"]};
+function sl(s){
+  var B = SCORE_CFG ? SCORE_CFG.barreras : null;
+  if(!B){
+    if(s>=78) return['COMPRA FUERTE','pgg'];
+    if(s>=62) return['COMPRA','pgg'];
+    if(s>=52) return['ACUMULAR','pb'];
+    if(s>=42) return['NEUTRAL','pgg2'];
+    if(s>=30) return['VENTA','pw'];
+    if(s>=18) return['VENTA FUERTE','prr'];
+    return['CAPITULACION','prr'];
+  }
+  if(s>=B.compra_fuerte) return['COMPRA FUERTE','pgg'];
+  if(s>=B.compra) return['COMPRA','pgg'];
+  if(s>=B.acumulacion) return['ACUMULAR','pb'];
+  if(s>=B.neutral) return['NEUTRAL','pgg2'];
+  if(s>=B.distribucion) return['VENTA','pw'];
+  if(s>=B.venta) return['VENTA FUERTE','prr'];
+  return['CAPITULACION','prr'];
+};
 function fl(v){if(v<=20)return["Miedo extremo","pgg"];if(v<=40)return["Miedo","pw"];if(v<=60)return["Neutral","pgg2"];if(v<=80)return["Codicia","pw"];return["Codicia extrema","prr"]};
 function rg(s2,f,d){if(s2>=70&&f<40)return["Acum.agresiva","LONG SWING","Bajo","pgg"];if(s2>=62)return["Tendencia alcista","LONG","Medio","pgg"];if(s2>=50&&d>55)return["Rotacion BTC","LONG BTC","Medio","pb"];if(s2>=42)return["Consolidacion","NEUTRAL","Medio","pgg2"];if(s2>=30)return["Distribucion","SHORT","Alto","pw"];return["Capitulacion","CASH","Muy alto","prr"]};
 function regimeCrypto(fg,dom,vx){if(!fg)return["--","--"];var r="Neutral";var c2="pgg2";if(fg<=25&&dom>58){r="Acumulacion";c2="pgg"}else if(fg<=40&&dom>55&&vx<20){r="Acumulacion temprana";c2="pb"}else if(fg>=75&&vx<15){r="Euforia";c2="prr"}else if(fg>=65&&vx>20){r="Distribucion";c2="pw"}else if(dom<42&&fg<40){r="Rotacion Altcoins";c2="pb"}else if(vx>28){r="Panico";c2="prr"}else if(fg>55&&dom<48&&vx<18){r="Expansion";c2="pgg"}return[r,c2]}
@@ -176,8 +235,28 @@ $id('cp').textContent=mtfTotal+'/100';$id('cp').className='pl '+(mtfTotal>=70?'p
 // Senales
 var chk=[sd.r>50,sd.a>25,sd.p>sd.m40,sd.pb>0.5,fg<=20||fg>=80];
 var sis=document.querySelectorAll("#sr .si");for(var si=0;si<Math.min(chk.length,sis.length);si++){sis[si].textContent=chk[si]?"✓":"—";sis[si].className="si "+(chk[si]?"sy":"sn")};
-// RSI Macro 3D
-var rsi3d="--";var kl3d=ST.kl["3d"];if(kl3d&&kl3d.length>15){var cl3d=kl3d.map(function(x){return+x[4]});var r3d=rs(cl3d,14);if(r3d!==null)rsi3d=r3d}else if(sd.r!==null){rsi3d=Math.round((sd.r+fg/2+50+(100-vxVal*2>0?100-vxVal*2:0))/4)}
+// RSI 3D REAL (cache con fetch a Binance 1d)
+var rsi3d='--';
+// Intentar usar cache local primero
+if(_rsi3dCache.value!==null && Date.now()-_rsi3dCache.ts<_rsi3dCache.ttl){
+  rsi3d=_rsi3dCache.value;
+}else{
+  // Trigger fetch asincrono (no bloquea render)
+  computeRsi3d().then(function(v){
+    if(v!==null){
+      $i('rmv').textContent=v;
+      $i('rml').textContent=v>=60?'Alcista':v>=45?'Neutral':'Bajista';
+      $i('rmv').style.color=v>=60?'#22c55e':v>=45?'#f59e0b':'#ef4444';
+    }
+  });
+  // Usar klines 3d real si estan en ST, no promedio artificial
+  var kl3d=ST.kl['3d'];
+  if(kl3d&&kl3d.length>15){
+    var cl3d=kl3d.map(function(x){return+x[4]});
+    var r3d=rs(cl3d,14);
+    if(r3d!==null) rsi3d=r3d;
+  }
+}
 $id("rmv").textContent=rsi3d;$id("rml").textContent=rsi3d>=60?"Alcista":rsi3d>=45?"Neutral":"Bajista";
 $id("rmv").style.color=rsi3d>=60?"#22c55e":rsi3d>=45?"#f59e0b":"#ef4444";
 $id("lu").textContent="updated "+new Date().toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
@@ -195,7 +274,15 @@ function fetchAll(){
   MA_CACHE={};
   if(ST._fetching)return;
   ST._fetching=true;
-  var _fetchTimer=setTimeout(function(){ST._fetching=false;_total=0;var ld=document.getElementById("st-bar");if(ld){ld.innerHTML='<span class="st-dot" style="background:#f59e0b"></span> Timeout - reintentando';ld.className="st-bar co";}},15000);
+  // Cargar config de score si no se ha cargado
+  if(!SCORE_CFG){ loadScoreConfig(); }
+  var _fetchTimer=setTimeout(function(){ST._fetching=false;_total=0;var ld=document.getElementById("st-bar");if(ld){ld.innerHTML='<span class="st-dot" style="background:#f59e0b"></span> Timeout - reintentando en 30s';ld.className="st-bar co";}
+    // Si aun hay skeleton, mostrar mensaje de error
+    var skels=document.querySelectorAll('.skeleton');
+    if(skels.length>0){
+      document.querySelectorAll('.skeleton').forEach(function(e){e.classList.remove('skeleton');e.textContent='--';(e.style||{}).width='auto'});
+      var rbe=document.getElementById('rb');if(rbe)rbe.textContent='Error de conexion - reintentando';
+    }},20000);
   var ld=document.getElementById("st-bar");
   if(ld){ld.innerHTML='<span class="st-dot" style="background:#3b82f6"></span> Conectando...';ld.className="st-bar co";}
   var _completed=0,_total=0;
@@ -280,7 +367,8 @@ function fetchAll(){
   function nxt(){
     if(tfi>=tfs.length)return;
     var tf=tfs[tfi];tfi++;
-    fetchUrl('https://api.binance.com/api/v3/klines?symbol='+s+'&interval='+tf+'&limit=220').then(function(k){ST.kl[tf]=k}).catch(function(){}).then(function(){done()}).catch(function(){done()});
+    var lim=tf==='3d'?30:tf==='1h'?300:220;
+    fetchUrl('https://api.binance.com/api/v3/klines?symbol='+s+'&interval='+tf+'&limit='+lim).then(function(k){ST.kl[tf]=k}).catch(function(){}).then(function(){done()}).catch(function(){done()});
     if(tfi<tfs.length)setTimeout(nxt,200);
   }
   nxt();
