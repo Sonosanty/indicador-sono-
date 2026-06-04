@@ -164,35 +164,375 @@ var METODO = {};
 })();
 
 // ============================================================
-// RANGOS VIEW (stub)
-// ============================================================
-window.initRangos = function() {
-  document.getElementById('heroPrice') && (document.getElementById('heroPrice').textContent = 'Cargando datos...');
-  console.log('[Rangos] stub');
-};
-window.cleanupRangos = function() {
-  console.log('[Rangos] cleanup');
-};
 
 // ============================================================
-// TRADES VIEW (stub)
+// RANGOS VIEW
+// ============================================================
+var RANGOS_INTERVAL = null;
+var RANGOS_WS = null;
+var RANGOS_LIVE_PRICE = 73900;
+var RANGOS_KLINES_CACHE = {};
+var RANGOS_TFS = ['15m','5m','3m','1m'];
+var RANGOS_CHART_INSTANCES = {};
+
+(function() {
+  function $(id) { return document.getElementById(id); }
+  function fmtN(n,d) { if (arguments.length<2) d=2; return Number(n).toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+  
+  function getModuleRSI() {
+    try { if (window._moduleExports && window._moduleExports.rsi) return window._moduleExports.rsi; } catch(e) {}
+    return null;
+  }
+  
+  function calcRSI(closes, p) {
+    p = p || 14;
+    var mod = getModuleRSI();
+    if (mod) {
+      var result = new Array(closes.length).fill(null);
+      for(var i=p; i<closes.length; i++) result[i] = mod(closes.slice(0,i+1), p);
+      return result;
+    }
+    var out = new Array(closes.length).fill(0);
+    var g=0,l=0;
+    for(var i=1;i<=p;i++){var d=closes[i]-closes[i-1];d>0?g+=d:l-=d;}
+    var ag=g/p, al=l/p;
+    out[p]=al===0?100:100-100/(1+ag/al);
+    for(var i=p+1;i<closes.length;i++){var d=closes[i]-closes[i-1];ag=(ag*(p-1)+(d>0?d:0))/p;al=(al*(p-1)+(d<0?-d:0))/p;out[i]=al===0?100:100-100/(1+ag/al);}
+    return out;
+  }
+  
+  function fetchKlines(tf) {
+    return fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval='+tf+'&limit=60',{cache:'no-store'})
+      .then(function(r){return r.json();})
+      .then(function(d){RANGOS_KLINES_CACHE[tf]=d.map(function(k){return{o:+k[1],h:+k[2],l:+k[3],c:+k[4],v:+k[5]};});})
+      .catch(function(){RANGOS_KLINES_CACHE[tf]=null;});
+  }
+  
+  function fetchAllKlines() { return Promise.all(RANGOS_TFS.map(fetchKlines)); }
+  
+  function analyzeRange(tf) {
+    var kl = RANGOS_KLINES_CACHE[tf], price = RANGOS_LIVE_PRICE;
+    if (!kl || kl.length < 10) return buildFallback(tf, price);
+    var slice = kl.slice(-30);
+    var highs = slice.map(function(k){return k.h;}), lows = slice.map(function(k){return k.l;});
+    var rHigh = Math.max.apply(null,highs), rLow = Math.min.apply(null,lows), rRange = rHigh - rLow;
+    var pos = Math.max(0, Math.min(1, (price - rLow) / (rRange||1)));
+    var res=[], sup=[];
+    for(var i=2;i<slice.length-2;i++){
+      var h=slice[i].h; if(h>slice[i-1].h&&h>slice[i-2].h&&h>slice[i+1].h&&h>slice[i+2].h&&h>price) res.push(h);
+      var l=slice[i].l; if(l<slice[i-1].l&&l<slice[i-2].l&&l<slice[i+1].l&&l<slice[i+2].l&&l<price) sup.push(l);
+    }
+    var resSorted=[...new Set(res)].sort(function(a,b){return a-b}).slice(0,3);
+    var supSorted=[...new Set(sup)].sort(function(a,b){return b-a}).slice(0,3);
+    while(resSorted.length<3) resSorted.push(Math.round(price+rRange*0.1*(resSorted.length+1)));
+    while(supSorted.length<3) supSorted.push(Math.round(price-rRange*0.1*(supSorted.length+1)));
+    var closes=slice.map(function(k){return k.c;}), rsiArr=calcRSI(closes,14), rsi=rsiArr[rsiArr.length-1];
+    var bias=rsi>55?'ALCISTA':rsi<45?'BAJISTA':'NEUTRO', biasNum=rsi>55?70:rsi<45?30:50, conf=Math.round(Math.abs(biasNum-50)*2+40);
+    var zone, pressure, intensity, context, liquidity, sweep, reaction, note;
+    if (pos>0.75) { zone='alta'; pressure='VENDEDORA'; intensity=pos>0.88?'FUERTE':'MEDIA'; context='Zona alta'; liquidity='Liquidez vendedora'; sweep='Posible barrido HH'; reaction='Esperar rechazo'; note='Precio en zona alta del rango.'; }
+    else if (pos<0.25) { zone='baja'; pressure='COMPRADORA'; intensity=pos<0.12?'FUERTE':'MEDIA'; context='Zona baja'; liquidity='Liquidez compradora'; sweep='Posible barrido LL'; reaction='Vigilar rebote'; note='Precio en zona baja del rango.'; }
+    else { zone='media'; pressure='COMPRESION'; intensity='NEUTRA'; context='Zona media'; liquidity='Sin ventaja clara'; sweep='Sin barrido claro'; reaction='Esperar confirmacion'; note='Precio en zona media del rango.'; }
+    function strengthOf(p2) { var d=Math.abs(price-p2)/rRange; return d<0.05?'extreme':d<0.12?'strong':d<0.20?'medium':'weak'; }
+    return {tf:tf, dominant:tf==='15m', pressure:pressure, intensity:intensity, zone:zone, context:context, liquidity:liquidity, sweep:sweep, reaction:reaction, note:note,
+      res:resSorted.map(function(p2,i){return{label:'RES '+(i+1),price:p2,strength:strengthOf(p2)};}),
+      sup:supSorted.map(function(p2,i){return{label:'SUP '+(i+1),price:p2,strength:strengthOf(p2)};}),
+      price:price, rHigh:rHigh, rLow:rLow, rRange:rRange, gaugePos:Math.round(pos*100), bias:bias, biasNum:biasNum, conf:conf, rsi:rsi, candles:slice};
+  }
+  
+  function buildFallback(tf, price) {
+    var sp={'15m':200,'5m':110,'3m':70,'1m':45}[tf]||150;
+    return {tf:tf, dominant:tf==='15m', pressure:'COMPRESION', intensity:'NEUTRA', zone:'media', context:'Zona media', liquidity:'Sin ventaja clara',
+      sweep:'Sin barrido claro', reaction:'Esperar confirmacion', note:'Precio en zona media del rango.',
+      res:[{label:'RES 1',price:price+sp,strength:'medium'},{label:'RES 2',price:price+sp*1.8,strength:'weak'},{label:'RES 3',price:price+sp*2.8,strength:'weak'}],
+      sup:[{label:'SUP 1',price:price-sp,strength:'medium'},{label:'SUP 2',price:price-sp*1.8,strength:'weak'},{label:'SUP 3',price:price-sp*2.5,strength:'weak'}],
+      price:price, rHigh:price+sp*3, rLow:price-sp*3, rRange:sp*6, gaugePos:50, bias:'NEUTRO', biasNum:50, conf:45, rsi:50, candles:[]};
+  }
+  
+  function renderHero() {
+    var d = analyzeRange('15m');
+    var hero = document.getElementById('rangeHero');
+    var hp = document.getElementById('heroPrice'); if(hp) hp.textContent = '$'+fmtN(d.price,2);
+    var pill = document.getElementById('heroPill');
+    if (hero) {
+      if (d.zone==='alta') { if(pill){pill.textContent='DOWN ZONA ALTA - Presion vendedora';pill.className='range-status-pill bearish';} hero.className='range-hero bearish'; }
+      else if (d.zone==='baja') { if(pill){pill.textContent='UP ZONA BAJA - Presion compradora';pill.className='range-status-pill bullish';} hero.className='range-hero bullish'; }
+      else { if(pill){pill.textContent='- ZONA MEDIA - Sin ventaja clara';pill.className='range-status-pill';} hero.className='range-hero'; }
+    }
+    var hm = document.getElementById('heroMessage'); if(hm) hm.textContent = 'Precio en zona '+d.zone+' del rango. '+d.note;
+    var b = document.getElementById('kpiBias'); if(b) b.innerHTML = '<span>Bias</span><strong style="color:'+(d.bias==='ALCISTA'?'#22c55e':d.bias==='BAJISTA'?'#ef4444':'#f59e0b')+'">'+d.bias+'</strong><small>RSI macro '+d.rsi.toFixed(1)+'</small>';
+    var c = document.getElementById('kpiConf'); if(c) c.innerHTML = '<span>Confianza</span><strong>'+d.conf+'/100</strong><small>Score contextual</small>';
+    var s = document.getElementById('kpiState'); if(s) s.innerHTML = '<span>Estado</span><strong>'+d.pressure+' '+d.intensity+'</strong><small>Confluencia MTF</small>';
+  }
+  
+  function renderTFCards() {
+    var grid = document.getElementById('range-timeframes');
+    if (!grid) return;
+    Object.values(RANGOS_CHART_INSTANCES).forEach(function(ch){ try{ch.destroy();}catch(e){} });
+    RANGOS_CHART_INSTANCES = {};
+    grid.innerHTML = '';
+    RANGOS_TFS.forEach(function(tf) {
+      var d = analyzeRange(tf);
+      var cursorLeft = Math.max(5, Math.min(95, d.gaugePos))+'%';
+      var resRows = d.res.slice().reverse().map(function(l){ return '<div class="range-level-row resistance '+l.strength+'"><span>'+l.label+'</span><strong>$'+fmtN(l.price,0)+'</strong><em>'+l.strength+'</em><div class="range-strength-row '+l.strength+'"><span>+'+fmtN(Math.abs(l.price-d.price),0)+'</span><div><i style="width:'+Math.min(100,Math.abs(l.price-d.price)/d.rRange*300)+'%"></i></div></div></div>'; }).join('');
+      var supRows = d.sup.map(function(l){ return '<div class="range-level-row support '+l.strength+'"><span>'+l.label+'</span><strong>$'+fmtN(l.price,0)+'</strong><em>'+l.strength+'</em><div class="range-strength-row '+l.strength+'"><span>'+fmtN(d.price-l.price,0)+'</span><div><i style="width:'+Math.min(100,Math.abs(d.price-l.price)/d.rRange*300)+'%"></i></div></div></div>'; }).join('');
+      var cardId = 'chart-'+tf;
+      var card = document.createElement('div');
+      card.className = 'range-spatial-card';
+      card.innerHTML = 
+        '<div class="range-spatial-head"><div class="range-spatial-title"><div class="range-card-header">'+tf+(d.dominant?' <span class="range-dominant-pill">DOMINANTE</span>':'')+'</div><div class="range-operational '+(d.bias==='ALCISTA'?'bullish':d.bias==='BAJISTA'?'bearish':'')+'">'+(d.zone==='media'?'RANGO / ESPERA':d.zone==='alta'?'ZONA ALTA / ESPERA':'ZONA BAJA / ESPERA')+'</div></div>'+
+        '<div class="range-pressure-panel"><span>Presion del mercado</span><strong style="color:'+(d.zone==='alta'?'#ef4444':d.zone==='baja'?'#22c55e':'#f59e0b')+'">'+d.pressure+'</strong><small>'+d.intensity+'</small>'+
+        '<div class="pressure-meter"><div class="pressure-meter-track"></div><div class="pressure-meter-dot" style="left:'+cursorLeft+'"></div></div>'+
+        '<div class="pressure-labels"><span>VENTA</span><span>NEUTRO</span><span>COMPRA</span></div></div></div>'+
+        '<div class="range-spatial-body"><div style="display:flex;flex-direction:column;gap:8px">'+
+        '<div class="range-side-title resistance" style="font-size:10px;margin-bottom:4px">. RESISTENCIAS</div>'+resRows+
+        '<div style="padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)"><span style="color:#64748b;font-size:10px;font-weight:800">PRECIO LIVE</span><div style="font-size:20px;font-weight:900;font-family:var(--mono);letter-spacing:-.04em;color:#f8fafc">$'+fmtN(d.price,2)+'</div></div>'+
+        '<div class="range-side-title support" style="font-size:10px;margin-bottom:4px">v SOPORTES</div>'+supRows+'</div>'+
+        '<div class="range-bias-panel"><div class="range-bias-block"><label>Contexto</label><strong>'+d.context+'</strong></div><div class="range-bias-block"><label>Liquidez</label><strong>'+d.liquidity+'</strong></div><div class="range-bias-block"><label>Sweep</label><strong>'+d.sweep+'</strong></div><div class="range-bias-block"><label>Reaccion esperada</label><strong>'+d.reaction+'</strong></div></div>'+
+        '<div class="range-spatial-chart"><canvas id="'+cardId+'" style="width:100%;height:80px"></canvas></div></div>'+
+        '<div style="font-size:12px;color:#94a3b8;padding-top:4px;border-top:1px solid rgba(255,255,255,.06);margin-top:4px">'+d.note+'</div>';
+      grid.appendChild(card);
+      if(d.candles && d.candles.length && window.Chart) {
+        var ctx = document.getElementById(cardId);
+        if (ctx) {
+          var prices = d.candles.slice(-20).map(function(k){return k.c;});
+          var col = d.zone==='alta'?'#ef4444':d.zone==='baja'?'#22c55e':'#58a6ff';
+          RANGOS_CHART_INSTANCES[tf] = new Chart(ctx, {
+            type:'line', data:{labels:prices.map(function(_,i){return i;}), datasets:[{data:prices, borderColor:col, backgroundColor:col.replace(')',',0.08)').replace('rgb','rgba'), borderWidth:1.5, pointRadius:0, tension:0.3, fill:true}]},
+            options:{responsive:true, maintainAspectRatio:false, animation:false, plugins:{legend:{display:false},tooltip:{enabled:false}}, scales:{x:{display:false},y:{display:false}}}
+          });
+        }
+      }
+    });
+  }
+  
+  window.initRangos = function() {
+    // Fetch live price
+    fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT',{cache:'no-store'})
+      .then(function(r){return r.json();})
+      .then(function(d){RANGOS_LIVE_PRICE=+d.price;})
+      .catch(function(){})
+      .then(function(){
+        fetchAllKlines().then(function(){
+          renderHero();
+          renderTFCards();
+        });
+      });
+    // WS for live price
+    try {
+      RANGOS_WS = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade');
+      RANGOS_WS.onmessage = function(e) {
+        RANGOS_LIVE_PRICE = parseFloat(JSON.parse(e.data).p);
+        var hp = document.getElementById('heroPrice');
+        if (hp) hp.textContent = '$'+fmtN(RANGOS_LIVE_PRICE,2);
+      };
+      RANGOS_WS.onclose = function() { setTimeout(function(){ try{RANGOS_WS=new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade');}catch(e){} }, 5000); };
+      RANGOS_WS.onerror = function() { RANGOS_WS.close(); };
+    } catch(e) {}
+    // Poll every 20s
+    if (RANGOS_INTERVAL) clearInterval(RANGOS_INTERVAL);
+    RANGOS_INTERVAL = setInterval(function() {
+      fetchAllKlines().then(function(){
+        renderHero();
+        renderTFCards();
+      });
+    }, 20000);
+    console.log('[Rangos] iniciado');
+  };
+  
+  window.cleanupRangos = function() {
+    if (RANGOS_INTERVAL) { clearInterval(RANGOS_INTERVAL); RANGOS_INTERVAL = null; }
+    if (RANGOS_WS) { try { RANGOS_WS.close(); } catch(e) {} RANGOS_WS = null; }
+    Object.values(RANGOS_CHART_INSTANCES).forEach(function(ch){ try{ch.destroy();}catch(e){} });
+    RANGOS_CHART_INSTANCES = {};
+    console.log('[Rangos] cleanup');
+  };
+})();
+
+// ============================================================
+
+// ============================================================
+// TRADES VIEW
 // ============================================================
 var TRADES_WS = null;
-window.TRADES = {
-  switchTab: function(tab, btn) {
-    document.querySelectorAll('#tab-open, #tab-closed').forEach(function(p){ p.classList.remove('active'); });
-    document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
-    var panel = document.getElementById('tab-' + tab);
-    if (panel) panel.classList.add('active');
-    if (btn) btn.classList.add('active');
-  },
-  applyFilters: function(){}
+var TRADES_INTERVAL = null;
+var TRADES_LIVE_PRICE = 73900;
+var TRADES_EQUITY_CHART = null;
+
+// Demo data (same as trades_explorer.html)
+var DEMO_OPEN = [
+  {id:233,tf:'candles_3m',side:'LONG',setup:'lower_rejection',entry:73948.13,sl:73840.81,tp1:74014.30,tp2:74047.38,tp3:74097.01,mfe:0,mae:0,dur:'9m 53s',r:0.00,opened:'30/05/26 19:03:27'},
+  {id:232,tf:'candles_15m',side:'LONG',setup:'lower_rejection',entry:73989.03,sl:73517.19,tp1:74249.47,tp2:74384.19,tp3:74922.27,mfe:0,mae:0,dur:'57m 52s',r:0.00,opened:'30/05/26 15:28'},
+  {id:220,tf:'candles_5m',side:'LONG',setup:'bullish_impulse',entry:74030.01,sl:73755.20,tp1:74198.12,tp2:74283.68,tp3:74410.51,mfe:0,mae:0,dur:'1h 57m',r:0.00,opened:'30/05/26 17:25'},
+];
+var DEMO_CLOSED = [
+  {id:219,res:'TP',tf:'candles_3m',side:'LONG',setup:'sell_absorption',entry:73500,close:74014,tp1:74014,sl:73200,mfe:514,mae:0,dur:'22m',r:1.71,pnl:5.13,touch:'30/05/26 14:22'},
+  {id:218,res:'SL',tf:'candles_5m',side:'SHORT',setup:'bearish_impulse',entry:74200,close:73800,tp1:73800,sl:74500,mfe:400,mae:0,dur:'1h',r:-1.00,pnl:-3.00,touch:'30/05/26 12:10'},
+  {id:217,res:'TP',tf:'candles_3m',side:'LONG',setup:'lower_rejection',entry:72800,close:73500,tp1:73500,sl:72400,mfe:700,mae:0,dur:'45m',r:1.75,pnl:7.00,touch:'30/05/26 10:30'},
+  {id:216,res:'BE',tf:'candles_5m',side:'LONG',setup:'buy_absorption',entry:73100,close:73100,tp1:73600,sl:72700,mfe:300,mae:0,dur:'30m',r:0.00,pnl:0.00,touch:'30/05/26 09:00'},
+  {id:215,res:'TP',tf:'candles_15m',side:'LONG',setup:'lower_rejection',entry:71000,close:72500,tp1:72500,sl:70200,mfe:1500,mae:0,dur:'3h',r:1.88,pnl:15.00,touch:'29/05/26 15:00'},
+  {id:214,res:'SL',tf:'candles_3m',side:'SHORT',setup:'upper_rejection',entry:73900,close:74200,tp1:73200,sl:74200,mfe:0,mae:300,dur:'15m',r:-1.00,pnl:-3.00,touch:'29/05/26 12:00'},
+];
+
+var SETUPS = {
+  'bearish_impulse':  {tp:17,be:10,sl:9},
+  'sell_absorption':  {tp:9, be:1, sl:4},
+  'lower_rejection':  {tp:16,be:15,sl:19},
+  'upper_rejection':  {tp:13,be:5, sl:11},
+  'buy_absorption':   {tp:5, be:2, sl:4},
+  'bullish_impulse':  {tp:21,be:8, sl:31},
 };
-window.initTrades = function() {
-  document.getElementById('t-livePrice') && (document.getElementById('t-livePrice').textContent = 'Conectando...');
-  console.log('[Trades] stub');
-};
-window.cleanupTrades = function() {
-  if (TRADES_WS) { try { TRADES_WS.close(); } catch(e) {} TRADES_WS = null; }
-  console.log('[Trades] cleanup');
-};
+var TFS = {'candles_3m':{tp:43,be:20,sl:38},'candles_5m':{tp:31,be:10,sl:31},'candles_15m':{tp:7,be:0,sl:9}};
+
+(function() {
+  function $(id) { return document.getElementById(id); }
+  function fmtN(n,d) { if (arguments.length<2) d=2; return Number(n).toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+  function wr(tp,be,sl) { var tot=tp+be+sl; return tot ? ((tp/tot)*100).toFixed(1)+'%' : '—'; }
+  function pf(tp,sl) { return sl===0 ? '∞' : (tp/sl).toFixed(2); }
+  function rMed(rArr) { return rArr.length ? (rArr.reduce(function(a,b){return a+b;},0)/rArr.length).toFixed(2)+'R' : '—'; }
+
+  function renderSetupTable() {
+    var b = document.getElementById('setupStatsBody');
+    if (!b) return;
+    b.innerHTML = '';
+    Object.keys(SETUPS).forEach(function(name) {
+      var s = SETUPS[name];
+      var rArr = DEMO_CLOSED.filter(function(t){return t.setup===name;}).map(function(t){return t.r;});
+      var rTot = rArr.reduce(function(a,b){return a+b;},0).toFixed(2);
+      var rCol = parseFloat(rTot) >= 0 ? 'positive' : 'negative';
+      b.innerHTML += '<tr><td>'+name+'</td><td>'+(s.tp+s.be+s.sl)+'</td><td>'+s.tp+' / '+s.be+' / '+s.sl+'</td><td>'+wr(s.tp,s.be,s.sl)+'</td><td class="'+rCol+'">'+rTot+'R</td><td>'+rMed(rArr)+'</td><td>'+pf(s.tp,s.sl)+'</td></tr>';
+    });
+  }
+
+  function renderTFTable() {
+    var b = document.getElementById('tfStatsBody');
+    if (!b) return;
+    b.innerHTML = '';
+    Object.keys(TFS).forEach(function(name) {
+      var s = TFS[name];
+      var rArr = DEMO_CLOSED.filter(function(t){return t.tf===name;}).map(function(t){return t.r;});
+      var rTot = rArr.reduce(function(a,b){return a+b;},0).toFixed(2);
+      var rCol = parseFloat(rTot) >= 0 ? 'positive' : 'negative';
+      b.innerHTML += '<tr><td>'+name+'</td><td>'+(s.tp+s.be+s.sl)+'</td><td>'+s.tp+' / '+s.be+' / '+s.sl+'</td><td>'+wr(s.tp,s.be,s.sl)+'</td><td class="'+rCol+'">'+rTot+'R</td><td>'+rMed(rArr)+'</td><td>'+pf(s.tp,s.sl)+'</td></tr>';
+    });
+  }
+
+  function renderSummary() {
+    var allTP = DEMO_CLOSED.filter(function(t){return t.res==='TP';}).length;
+    var allBE = DEMO_CLOSED.filter(function(t){return t.res==='BE';}).length;
+    var allSL = DEMO_CLOSED.filter(function(t){return t.res==='SL';}).length;
+    var e = document.getElementById('summaryTpSl'); if(e) e.textContent = allTP+' / '+allBE+' / '+allSL;
+    e = document.getElementById('summaryWinrate'); if(e) e.textContent = wr(allTP,allBE,allSL);
+    var rAll = DEMO_CLOSED.map(function(t){return t.r;});
+    var rTot = rAll.reduce(function(a,b){return a+b;},0);
+    e = document.getElementById('summaryRTotal'); if(e) e.textContent = rTot.toFixed(2)+'R';
+    e = document.getElementById('summaryRAvg'); if(e) e.textContent = rMed(rAll);
+    var pnlAll = DEMO_CLOSED.map(function(t){return t.pnl||0;});
+    var pnlTot = pnlAll.reduce(function(a,b){return a+b;},0);
+    e = document.getElementById('summaryPnlTotal'); if(e) e.textContent = fmtN(pnlTot,2)+'$';
+    e = document.getElementById('summaryPnlAvg'); if(e) e.textContent = fmtN(pnlTot/DEMO_CLOSED.length,2)+'$';
+    e = document.getElementById('summaryOpen'); if(e) e.textContent = DEMO_OPEN.length;
+    e = document.getElementById('summaryClosed'); if(e) e.textContent = DEMO_CLOSED.length;
+    var rSorted = rAll.slice().sort(function(a,b){return b-a;});
+    var cum=0, peak=0, maxDD=0;
+    rAll.forEach(function(r){cum+=r;if(cum>peak)peak=cum;if(peak-cum>maxDD)maxDD=peak-cum;});
+    e = document.getElementById('equityMaxDd'); if(e) e.textContent = '-'+maxDD.toFixed(2)+'R';
+    e = document.getElementById('equityProfitFactor'); if(e) e.textContent = pf(allTP,allSL);
+    e = document.getElementById('equityExpectancy'); if(e) e.textContent = rMed(rAll);
+    e = document.getElementById('equityBestR'); if(e) e.textContent = (rSorted[0]||0).toFixed(2)+'R';
+    e = document.getElementById('equityWorstR'); if(e) e.textContent = (rSorted[rSorted.length-1]||0).toFixed(2)+'R';
+  }
+
+  function renderChart() {
+    if (TRADES_EQUITY_CHART) { try { TRADES_EQUITY_CHART.destroy(); } catch(e) {} TRADES_EQUITY_CHART = null; }
+    var ctx = document.getElementById('equityChart');
+    if (!ctx || !window.Chart) return;
+    var cum=0;
+    var data = [0];
+    DEMO_CLOSED.forEach(function(t){cum+=t.r;data.push(parseFloat(cum.toFixed(2)));});
+    TRADES_EQUITY_CHART = new Chart(ctx, {
+      type:'line',
+      data:{labels:['Inicio'].concat(DEMO_CLOSED.map(function(_,i){return '#'+(i+1);})), datasets:[{label:'Equity R',data:data,borderColor:'#2d82f0',backgroundColor:'rgba(45,130,240,0.08)',borderWidth:2,pointRadius:2,tension:0.3,fill:true}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#4a6a8a',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#4a6a8a',font:{size:9},callback:function(v){return v+'R';}},grid:{color:'rgba(255,255,255,0.04)'}}}}
+    });
+  }
+
+  function renderOpenTrades() {
+    var body = document.getElementById('openTradesBody');
+    if (!body) return;
+    var sideEl = document.getElementById('filterSide'); var side = sideEl ? sideEl.value : 'ALL';
+    var setupEl = document.getElementById('filterSetup'); var setup = setupEl ? setupEl.value : '';
+    var filtered = DEMO_OPEN.filter(function(t){ return (side==='ALL'||t.side===side) && (!setup||t.setup.indexOf(setup)>=0); });
+    body.innerHTML = filtered.map(function(t){
+      var rCur = t.side==='LONG' ? (TRADES_LIVE_PRICE-t.entry)/(t.entry-t.sl) : -((TRADES_LIVE_PRICE-t.entry)/(t.sl-t.entry));
+      return '<tr><td>'+t.id+'</td><td><span class="badge-open">OPEN</span></td><td>'+t.tf+'</td><td><span class="badge-side '+t.side+'">'+t.side+'</span></td><td>'+t.setup+'</td><td>'+fmtN(t.entry,2)+'</td><td style="color:var(--red)">'+fmtN(t.sl,2)+'</td><td style="color:var(--green)">'+fmtN(t.tp1,2)+'</td><td style="color:var(--green)">'+fmtN(t.tp2,2)+'</td><td style="color:var(--green)">'+fmtN(t.tp3,2)+'</td><td>'+fmtN(t.mfe,2)+'</td><td>'+fmtN(t.mae,2)+'</td><td>'+t.dur+'</td><td class="'+(rCur>=0?'positive':'negative')+'">'+rCur.toFixed(2)+'R</td><td style="color:var(--tx3);font-size:10px">'+t.opened+'</td></tr>';
+    }).join('');
+  }
+
+  function renderClosedTrades() {
+    var body = document.getElementById('closedTradesBody');
+    if (!body) return;
+    body.innerHTML = DEMO_CLOSED.map(function(t){
+      var rCol = t.r>0 ? 'positive' : t.r<0 ? 'negative' : 'neutral';
+      return '<tr><td>'+t.id+'</td><td><span class="badge-result '+t.res+'">'+t.res+'</span></td><td>'+t.tf+'</td><td><span class="badge-side '+t.side+'">'+t.side+'</span></td><td>'+t.setup+'</td><td>'+fmtN(t.entry,2)+'</td><td>'+fmtN(t.close,2)+'</td><td style="color:var(--green)">'+fmtN(t.tp1,2)+'</td><td style="color:var(--red)">'+fmtN(t.sl,2)+'</td><td>'+fmtN(t.mfe,2)+'</td><td>'+fmtN(t.mae,2)+'</td><td>'+t.dur+'</td><td class="'+rCol+'">'+(t.r>0?'+':'')+t.r+'R</td><td class="'+rCol+'">'+(t.pnl>0?'+':'')+fmtN(t.pnl,2)+'$</td><td style="color:var(--tx3);font-size:10px">'+t.touch+'</td></tr>';
+    }).join('');
+  }
+
+  window.TRADES = {
+    switchTab: function(tab, btn) {
+      document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+      document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+      var panel = document.getElementById('tab-'+tab);
+      if (panel) panel.classList.add('active');
+      if (btn) btn.classList.add('active');
+    },
+    applyFilters: function() {
+      renderOpenTrades();
+    }
+  };
+
+  function connectWS() {
+    try {
+      TRADES_WS = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade');
+      TRADES_WS.onmessage = function(e) {
+        TRADES_LIVE_PRICE = parseFloat(JSON.parse(e.data).p);
+        var lp = document.getElementById('livePrice'); if (lp) lp.textContent = '$'+TRADES_LIVE_PRICE.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+        var wsStatus = document.getElementById('wsStatus'); if (wsStatus) wsStatus.textContent = 'ONLINE';
+        var lat = document.getElementById('wsLatency'); if (lat) lat.textContent = 'Ultimo tick: '+new Date().toLocaleTimeString('es-ES');
+        var lr = document.getElementById('lastRefresh'); if (lr) lr.textContent = 'Actualizado: '+new Date().toLocaleTimeString('es-ES');
+        renderOpenTrades();
+      };
+      TRADES_WS.onclose = function() {
+        var wsStatus = document.getElementById('wsStatus'); if (wsStatus) wsStatus.textContent = 'DESCONECTADO';
+        setTimeout(connectWS, 5000);
+      };
+      TRADES_WS.onerror = function() { TRADES_WS.close(); };
+    } catch(e) { 
+      var wsStatus = document.getElementById('wsStatus');
+      if (wsStatus) wsStatus.textContent = 'ERROR WS';
+    }
+  }
+
+  window.initTrades = function() {
+    renderSummary();
+    renderSetupTable();
+    renderTFTable();
+    renderOpenTrades();
+    renderClosedTrades();
+    renderChart();
+    connectWS();
+    if (TRADES_INTERVAL) clearInterval(TRADES_INTERVAL);
+    TRADES_INTERVAL = setInterval(function() {
+      renderOpenTrades();  // R actual updates based on live price
+      var lr = document.getElementById('lastRefresh');
+      if (lr) lr.textContent = 'Actualizado: '+new Date().toLocaleTimeString('es-ES');
+    }, 3000);
+    console.log('[Trades] iniciado');
+  };
+
+  window.cleanupTrades = function() {
+    if (TRADES_INTERVAL) { clearInterval(TRADES_INTERVAL); TRADES_INTERVAL = null; }
+    if (TRADES_WS) { try { TRADES_WS.close(); } catch(e) {} TRADES_WS = null; }
+    if (TRADES_EQUITY_CHART) { try { TRADES_EQUITY_CHART.destroy(); } catch(e) {} TRADES_EQUITY_CHART = null; }
+    console.log('[Trades] cleanup');
+  };
+})();

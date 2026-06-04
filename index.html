@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="/assets/css/layout.css">
 <link rel="stylesheet" href="/assets/css/components.css">
 <link rel="stylesheet" href="/assets/css/mockup-overrides.css">
-<script src="/assets/vendor/chart.umd.min.js?_v=v1780570965333"></script>
+<script src="/assets/vendor/chart.umd.min.js?_v=v1780575839660"></script>
 <script type="module" src="/app.module.js"></script>
 <style>
 .page-panel{display:none}.page-panel.active{display:block}
@@ -187,77 +187,123 @@
 </div>
 
 <!-- ==================== PAGE 4: TRADES ==================== -->
-<div id="page-trades" class="page-panel">
-  <div class="trades-hero">
-    <article class="card"><div class="label">BTC Live</div><div class="value" id="t-livePrice">—</div><div class="source">Binance aggTrade</div></article>
-    <article class="card"><div class="label">Abiertos</div><div class="value" id="summaryOpen">—</div></article>
-    <article class="card" id="wsCard"><div class="label">Realtime</div><div class="value"><span id="t-wsStatus">Conectando...</span></div><div class="source" id="t-wsLatency">Sin conexión</div></article>
-    <article class="card"><div class="label">Cerrados</div><div class="value" id="summaryClosed">—</div></article>
-  </div>
-  <div class="analytics-grid" style="display:grid;grid-template-columns:1fr 1.5fr;gap:16px;margin-bottom:16px">
-    <section id="tradeSummary" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-      <article class="card"><div class="label">TP / BE / SL</div><div class="value" id="summaryTpSl">—</div></article>
-      <article class="card"><div class="label">Winrate</div><div class="value" id="summaryWinrate">—</div></article>
-      <article class="card"><div class="label">R total</div><div class="value" id="summaryRTotal">—</div></article>
-      <article class="card"><div class="label">R medio</div><div class="value" id="summaryRAvg">—</div></article>
-      <article class="card"><div class="label">PnL total</div><div class="value" id="summaryPnlTotal">—</div></article>
-      <article class="card"><div class="label">PnL medio</div><div class="value" id="summaryPnlAvg">—</div></article>
+<div id="  <section id="page-trades" class="page-panel">
+    <section class="trades-hero">
+      <article class="card">
+        <div class="label">BTC Live</div>
+        <div class="value" id="livePrice">&mdash;</div>
+        <div class="source">Binance aggTrade</div>
+      </article>
+      <article class="card mini">
+        <div class="label">Abiertos</div>
+        <div class="value" id="summaryOpen">&mdash;</div>
+      </article>
+      <article class="card" id="wsCard">
+        <div class="label">Realtime</div>
+        <div class="value">
+          <span class="trade-status-dot"></span>
+          <span id="wsStatus">Conectando...</span>
+        </div>
+        <div class="source" id="wsLatency">Sin conexion</div>
+      </article>
+      <article class="card mini">
+        <div class="label">Cerrados</div>
+        <div class="value" id="summaryClosed">&mdash;</div>
+      </article>
     </section>
-    <section class="tf-panel trade-panel" style="border:1px solid var(--border);border-radius:10px;background:var(--bg-card);padding:12px">
-      <h2 style="font-size:14px;margin:0 0 8px">Equity Curve</h2>
-      <div class="kpi-row" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:8px">
-        <div><span style="font-size:10px;color:var(--text3)">Max DD</span><strong id="equityMaxDd" style="display:block;font-size:12px">—</strong></div>
-        <div><span style="font-size:10px;color:var(--text3)">PF</span><strong id="equityProfitFactor" style="display:block;font-size:12px">—</strong></div>
-        <div><span style="font-size:10px;color:var(--text3)">Expectancy</span><strong id="equityExpectancy" style="display:block;font-size:12px">—</strong></div>
-        <div><span style="font-size:10px;color:var(--text3)">Best R</span><strong id="equityBestR" style="display:block;font-size:12px">—</strong></div>
-        <div><span style="font-size:10px;color:var(--text3)">Worst R</span><strong id="equityWorstR" style="display:block;font-size:12px">—</strong></div>
+
+    <div class="analytics-grid">
+      <section class="trade-summary-grid" id="tradeSummary">
+        <article class="card"><div class="label">TP / BE / SL</div><div class="value" id="summaryTpSl">&mdash;</div></article>
+        <article class="card"><div class="label">Winrate</div><div class="value" id="summaryWinrate">&mdash;</div></article>
+        <article class="card"><div class="label">R gestionado total</div><div class="value" id="summaryRTotal">&mdash;</div></article>
+        <article class="card"><div class="label">R gestionado medio</div><div class="value" id="summaryRAvg">&mdash;</div></article>
+        <article class="card"><div class="label">PnL cierre total</div><div class="value" id="summaryPnlTotal">&mdash;</div></article>
+        <article class="card"><div class="label">PnL cierre medio</div><div class="value" id="summaryPnlAvg">&mdash;</div></article>
+      </section>
+      <section class="tf-panel trades-panel chart-panel">
+        <div class="tf-header">
+          <div><h2>Equity Curve</h2><p class="sub">Evolucion acumulada del sistema en multiplos R.</p></div>
+        </div>
+        <div class="equity-kpis">
+          <div><span>Max DD</span><strong id="equityMaxDd">&mdash;</strong></div>
+          <div><span>Profit Factor</span><strong id="equityProfitFactor">&mdash;</strong></div>
+          <div><span>Expectancy</span><strong id="equityExpectancy">&mdash;</strong></div>
+          <div><span>Mejor R</span><strong id="equityBestR">&mdash;</strong></div>
+          <div><span>Peor R</span><strong id="equityWorstR">&mdash;</strong></div>
+        </div>
+        <div style="padding:0 16px 16px;flex:1;min-height:160px">
+          <canvas id="equityChart" role="img" aria-label="Equity curve"></canvas>
+        </div>
+      </section>
+    </div>
+
+    <section class="tf-panel trades-panel">
+      <div class="tf-header">
+        <div><h2>Rendimiento por Setup</h2><p class="sub">Agrupacion estadistica por estructura detectada.</p></div>
       </div>
-      <div style="min-height:120px"><canvas id="equityChart"></canvas></div>
+      <table class="tf-table">
+        <thead><tr><th>Setup</th><th>Trades</th><th>TP / BE / SL</th><th>Winrate</th><th>R total</th><th>R medio</th><th>Profit Factor</th></tr></thead>
+        <tbody id="setupStatsBody"></tbody>
+      </table>
     </section>
-  </div>
-  <section class="trades-toolbar">
-    <div style="display:flex;gap:8px">
-      <button class="tab-btn active" data-tab="open" onclick="TRADES.switchTab('open',this)">OPEN</button>
-      <button class="tab-btn" data-tab="closed" onclick="TRADES.switchTab('closed',this)">CLOSED</button>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <select id="filterSide" onchange="TRADES.applyFilters()" style="background:var(--bg-elevated);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:6px;font-size:12px">
-        <option value="ALL">Todos</option>
-        <option value="LONG">LONG</option>
-        <option value="SHORT">SHORT</option>
-      </select>
-      <input type="text" id="filterSetup" placeholder="Buscar setup..." oninput="TRADES.applyFilters()" style="background:var(--bg-elevated);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:6px;font-size:12px;width:120px">
-    </div>
-  </section>
-  <section class="tf-panel tab-panel active" id="tab-open" style="border:1px solid var(--border);border-radius:10px;background:var(--bg-card);margin-bottom:12px;padding:12px">
-    <h2 style="font-size:14px;margin:0 0 8px">Trades activos</h2>
-    <div style="overflow-x:auto">
-      <table style="width:100%;border-collapse:collapse;font-size:11px">
-        <thead><tr style="border-bottom:1px solid var(--border)"><th>ID</th><th>Estado</th><th>TF</th><th>Side</th><th>Setup</th><th>Entry</th><th>SL</th><th>TP1</th><th>TP2</th><th>TP3</th><th>MFE</th><th>MAE</th><th>Dur.</th><th>R act.</th><th>Abierto</th></tr></thead>
+
+    <section class="tf-panel trades-panel">
+      <div class="tf-header">
+        <div><h2>Rendimiento por Timeframe</h2><p class="sub">Comparativa de rendimiento segun timeframe.</p></div>
+      </div>
+      <table class="tf-table">
+        <thead><tr><th>Timeframe</th><th>Trades</th><th>TP / BE / SL</th><th>Winrate</th><th>R total</th><th>R medio</th><th>Profit Factor</th></tr></thead>
+        <tbody id="tfStatsBody"></tbody>
+      </table>
+    </section>
+
+    <section class="trades-toolbar">
+      <div class="tabs-row">
+        <button class="tab-btn active" onclick="window.TRADES.switchTab('open',this)">OPEN</button>
+        <button class="tab-btn" onclick="window.TRADES.switchTab('closed',this)">CLOSED</button>
+      </div>
+      <div class="filters-row">
+        <select id="filterSide" onchange="window.TRADES.applyFilters()">
+          <option value="ALL">Todos los lados</option>
+          <option value="LONG">LONG</option>
+          <option value="SHORT">SHORT</option>
+        </select>
+        <input type="text" id="filterSetup" placeholder="Buscar setup..." oninput="window.TRADES.applyFilters()">
+      </div>
+    </section>
+
+    <section class="tf-panel trades-panel tab-panel active" id="tab-open">
+      <div class="tf-header">
+        <div><h2>Trades activos</h2><p class="sub">Operaciones abiertas monitorizadas por BTC websocket.</p></div>
+        <div class="range-refresh-pill" id="lastRefresh">Actualizando...</div>
+      </div>
+      <table class="tf-table">
+        <thead><tr><th>ID</th><th>Estado</th><th>TF</th><th>Side</th><th>Setup</th><th>Entry</th><th>SL</th><th>TP1</th><th>TP2</th><th>TP3</th><th>MFE</th><th>MAE</th><th>Duracion</th><th>R actual</th><th>Abierto</th></tr></thead>
         <tbody id="openTradesBody"></tbody>
       </table>
-    </div>
-  </section>
-  <section class="tf-panel tab-panel" id="tab-closed" style="border:1px solid var(--border);border-radius:10px;background:var(--bg-card);padding:12px">
-    <h2 style="font-size:14px;margin:0 0 8px">Trades cerrados</h2>
-    <div style="overflow-x:auto">
-      <table style="width:100%;border-collapse:collapse;font-size:11px">
-        <thead><tr style="border-bottom:1px solid var(--border)"><th>ID</th><th>Resultado</th><th>TF</th><th>Side</th><th>Setup</th><th>Entry</th><th>Cierre</th><th>TP1</th><th>SL</th><th>MFE</th><th>MAE</th><th>Dur.</th><th>R gest.</th><th>PnL</th><th>Touch</th></tr></thead>
+    </section>
+
+    <section class="tf-panel trades-panel tab-panel" id="tab-closed">
+      <div class="tf-header">
+        <div><h2>Trades cerrados</h2><p class="sub">Primer toque confirmado en realtime.</p></div>
+      </div>
+      <table class="tf-table">
+        <thead><tr><th>ID</th><th>Resultado</th><th>TF</th><th>Side</th><th>Setup</th><th>Entry</th><th>Cierre</th><th>TP1</th><th>SL</th><th>MFE</th><th>MAE</th><th>Duracion</th><th>R gest.</th><th>PnL</th><th>Touch</th></tr></thead>
         <tbody id="closedTradesBody"></tbody>
       </table>
-    </div>
-  </section>
-</div>
-
-<!-- FOOTER global -->
+    </section>
+  </section><!-- FOOTER global -->
 <div class="site-footer" id="globalFooter">
   Sono PRO v6 — <span id="tsEl">--:--:--</span> — <span id="lu">última actualización</span>
 </div>
 
-<script src="/app.js?_v=v1780570965333"></script>
-<script src="/spa-controller.js?_v=v1780570965333"></script>
+<script src="/app.js?_v=v1780575839660"></script>
+<script src="/spa-controller.js?_v=v1780575839660"></script>
 
 
 
+
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/service-worker.js").then(function(r){console.log("[SW] registered");}).catch(function(e){console.warn("[SW] register fail:",e.message);});}</script>
 </body>
 </html>
