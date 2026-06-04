@@ -17,6 +17,17 @@ cp -r assets/css indicador_cloudflare/assets/
 # App JS - logica del dashboard
 cp frontend/app.js indicador_cloudflare/app.js
 
+# JS Modules (ES modules - data layer)
+mkdir -p indicador_cloudflare/js/core indicador_cloudflare/js/data
+cp js/core/cache.js indicador_cloudflare/js/core/
+cp js/data/adapters.js indicador_cloudflare/js/data/
+cp js/data/binance.js indicador_cloudflare/js/data/
+cp js/data/kucoin.js indicador_cloudflare/js/data/
+cp js/data/coingecko.js indicador_cloudflare/js/data/
+cp js/data/alternative.js indicador_cloudflare/js/data/
+cp js/data/vix.js indicador_cloudflare/js/data/
+cp js/data/sonobot.js indicador_cloudflare/js/data/
+
 # Pages
 cp frontend/metodo.html indicador_cloudflare/metodo.html
 cp frontend/range_explorer.html indicador_cloudflare/rangos.html
