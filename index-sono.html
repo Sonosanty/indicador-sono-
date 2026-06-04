@@ -841,7 +841,7 @@ body{background:#060e1a;font-family:'Courier New',monospace;color:#e2e8f0;font-s
   document.querySelectorAll('#page-rangos .tfp').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 
-  const d = COIN[coin];
+  const d = COIN_INIT[coin];
   if (!d) return;
 
   const fmt = (n) => n < 10 ? n.toFixed(4) : n < 100 ? n.toFixed(2) : Math.round(n).toLocaleString();
@@ -1044,3 +1044,4 @@ function setTF(btn) {
 </script>
 </body>
 </html>
+
