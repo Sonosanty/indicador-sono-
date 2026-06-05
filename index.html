@@ -312,9 +312,9 @@ body{background:#060e1a;font-family:'Courier New',monospace;color:#e2e8f0;font-s
  <div class="ind-item" style="margin-top:8px">
  <div class="ind-name">Presión de precio</div>
  <div class="pressure">
- <div class="pbar-fill" id="d-pbar" id="d-pba<div class="pdot" id="d-pdot"></div>pdot"></div>
+ <div class="pbar-fill" id="d-pbar"></div><div class="pdot" id="d-pdot"></div>
  </div>
- <div class="plabels"><span>VENTA</span><span>NEUTRO</span><span>COMPRA</span></div>
+ <div class="plabels" id="d-plabels"><span id="d-plabel-sell">VENTA</span><span id="d-plabel-neu">NEUTRO</span><span id="d-plabel-buy">COMPRA</span></div>
  </div>
  </div>
  </div>
@@ -1281,7 +1281,13 @@ function updateDashboard(ticker, kl15, kl1, kl3, kl5, kl1h, kl3d, fg, global, vi
  safe(vid, '$' + fmt(mv, 0));
  const d = ((price - mv) / mv * 100);
  const de = el(did);
- if (de) { de.textContent = fmtPct(d); de.style.color = d >= 0 ? '#22c55e' : '#ef4444'; }
+ if (de) { de.textContent = fmtPct(d); de.style.color = d >= 0 ? '#22c55e' : '#ef4444'; 
+ // Pressure label
+ const pl = el('d-plabels'); if (pl) { pl.children[0].style.color = ind.rsi < 45 ? '#ef4444' : '#2a5a8a'; pl.children[1].style.color = (ind.rsi >= 45 && ind.rsi <= 55) ? '#f59e0b' : '#2a5a8a'; pl.children[2].style.color = ind.rsi > 55 ? '#22c55e' : '#2a5a8a'; 
+ // Pressure label
+ const pl = el('d-plabels'); if (pl) { pl.children[0].style.color = ind.rsi < 45 ? '#ef4444' : '#2a5a8a'; pl.children[1].style.color = (ind.rsi >= 45 && ind.rsi <= 55) ? '#f59e0b' : '#2a5a8a'; pl.children[2].style.color = ind.rsi > 55 ? '#22c55e' : '#2a5a8a'; }
+ }
+ }
  });
 
  // Score
