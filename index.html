@@ -1370,7 +1370,11 @@ function updateDashboard(ticker, kl15, kl1, kl3, kl5, kl1h, kl3d, fg, global, vi
  if (dot && i < checks.length) dot.style.background = checks[i] ? '#22c55e' : '#1a3352';
  });
  }
-}
+
+ // Sync all d-* to coin-* fallback
+ const syncMap = [['d-score-num','coin-score-num'],['d-score-label','coin-score-label'],['d-rsi','coin-rsi'],['d-adx','coin-adx'],['d-bbp','coin-bb'],['d-ma40','coin-ma40'],['d-p1','coin-p1'],['d-p2','coin-p2'],['d-p3','coin-p3'],['d-vix','coin-vix'],['d-fg','coin-fg'],['d-fg-lbl','coin-fg-label'],['d-dom','coin-dom'],['d-rsi3d','coin-rsi3d'],['d-ma6','coin-ma6'],['d-ma40v','coin-ma40'],['d-ma70','coin-ma70'],['d-ma200','coin-ma200'],['d-rsi-bar','coin-rsi-bar'],['d-adx-bar','coin-adx-bar'],['d-bbp-bar','coin-bb-bar']];
+ syncMap.forEach(function(pair){var src=el(pair[0]),dst=el(pair[1]);if(src&&dst)dst.textContent=src.textContent;});
+ }
 
 async function sonoFetch() {
  if (SP.fetching) return;
