@@ -913,9 +913,44 @@ function setTF(btn) {
 }
 </script>
 
-<script>/* SONO PRO - Spa Controller v7 (mockup UI) */
-"use strict";
-window.SPA=function(){var p=null;function s(page,btn){if(p==='metodo'&&window.cleanupMetodo)cleanupMetodo();else if(p==='rangos'&&window.cleanupRangos)cleanupRangos();else if(p==='trades'&&window.cleanupTrades)cleanupTrades();document.querySelectorAll('.page').forEach(function(x){x.classList.remove('active');});var pn=document.getElementById('page-'+page);if(pn)pn.classList.add('active');document.querySelectorAll('.navbtn').forEach(function(x){x.classList.remove('active');});if(btn)btn.classList.add('active');var f=document.getElementById('globalFooter');if(f)f.style.display=(page==='dashboard')?'block':'none';p=page;if(page==='metodo'&&window.initMetodo)setTimeout(initMetodo,50);else if(page==='rangos'&&window.initRangos)setTimeout(initRangos,50);else if(page==='trades'&&window.initTrades)setTimeout(initTrades,50);else if(page==='dashboard')setTimeout(fetchAll,50);}function ca(asset,btn){window.CA=asset;document.querySelectorAll('.atab').forEach(function(x){x.classList.remove('active');});if(btn)btn.classList.add('active');if(window.fetchAll)fetchAll();}function stf(tf,btn){window.CTF=tf;btn.closest('.tf-row').querySelectorAll('.tfp').forEach(function(x){x.classList.remove('active');});btn.classList.add('active');if(window.fetchAll)fetchAll();}return{show:s,changeAsset:ca,setTF:stf,getPage:function(){return p;}};}();
+<script>
+/* SONO PRO - Global helpers + fetchAll defined before SPA */
+var DA='BTC',DTF='15m',D_F=false,FI=null;
+function $(x){return document.getElementById(x);}
+function fmtN(n,d){if(d==null)d=2;return Number(n).toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fmtP(n){return n==null?'--':'$'+fmtN(n);}
+function fJ(u){return fetch(u,{cache:'no-store'}).then(function(r){if(!r.ok)throw Error('HTTP '+r.status);return r.json();});}
+function sT(i,t){var e=$(i);if(e)e.textContent=t;}
+function sL(a,p){if(a.length<p)return null;return a.slice(-p).reduce(function(x,y){return x+y;},0)/p;}
+function rL(c,p){if(c.length<p+1)return null;var g=0,l=0;for(var i=c.length-p;i<c.length;i++){var d=c[i]-c[i-1];d>0?g+=d:l-=d;}return Math.round(100-100/(1+(g/p)/((l/p)||0.001)));}
+function aL(h,l,c,p){if(c.length<p+2)return null;var pd=0,md=0,tr=0;for(var i=c.length-p;i<c.length;i++){var ph=h[i]-h[i-1],ml=l[i-1]-l[i];pd+=(ph>ml&&ph>0?ph:0);md+=(ml>ph&&ml>0?ml:0);tr+=Math.max(h[i]-l[i],Math.abs(h[i]-c[i-1]),Math.abs(l[i]-c[i-1]));}var pD=100*pd/(tr||1),mD=100*md/(tr||1);return Math.round(100*Math.abs(pD-mD)/((pD+mD)||1));}
+function bL(c,p,k){if(p==null)p=20;if(k==null)k=2;if(c.length<p)return{pb:null,bw:null};var s=c.slice(-p),m=s.reduce(function(x,y){return x+y;},0)/p,sd=Math.sqrt(s.reduce(function(x,y){return x+(y-m)*(y-m);},0)/p),u=m+k*sd,d2=m-k*sd;return{pb:+((c[c.length-1]-d2)/((u-d2)||1)).toFixed(3),bw:+((u-d2)/m*100).toFixed(2)};}
+function cs(c,h,l){var p=c[c.length-1],m6=sL(c,6),m40=sL(c,40),m70=sL(c,70),m200=sL(c,200);var p1=0,p2=0,p3=0;if(m6!=null&&m40!=null)p1+=m6>m40?12:0;if(m6!=null&&m70!=null)p1+=m6>m70?10:0;if(m40!=null&&m200!=null)p1+=m40>m200?13:0;var rv=rL(c),av=aL(h,l,c);if(av!=null)p2+=av>35?15:av>25?10:3;if(rv!=null)p2+=rv>=50&&rv<70?12:rv>=35?7:2;if(m200!=null)p2+=p>m200?8:0;var bb=bL(c);if(bb.pb!=null){p3=bb.pb<0.15?28:bb.pb<0.35?20:bb.pb<0.65?14:bb.pb<0.85?7:2;}return{score:Math.min(100,Math.round(p1+p2+p3)),p1:Math.round(p1),p2:Math.round(p2),p3:Math.round(p3),m6:m6,m40:m40,m70:m70,m200:m200,price:p,rv:rv,av:av,pb:bb.pb};}
+
+window.fetchAll=function(){if(D_F)return;D_F=true;var sy={BTC:'BTCUSDT',ETH:'ETHUSDT',SOL:'SOLUSDT',XRP:'XRPUSDT'}[DA]||'BTCUSDT',ti={1:'1m',3:'3m',5:'5m',15:'15m',30:'30m','1h':'1h'}[DTF]||'15m';var tk=null,kl=null,fn=null,vi=null,g=null;Promise.allSettled([fJ('https://api.binance.com/api/v3/ticker/24hr?symbol='+sy).then(function(d){tk=d;}).catch(function(){}),fJ('https://api.binance.com/api/v3/klines?symbol='+sy+'&interval='+ti+'&limit=220').then(function(d){kl=d;}).catch(function(){}),fJ('https://api.alternative.me/fng/?limit=1').then(function(d){if(d&&d.data&&d.data[0])fn=+d.data[0].value;}).catch(function(){}),fJ('https://vix-proxy.sonosanty.workers.dev/api/vix').then(function(d){if(d&&d.cvi)vi=d.cvi;}).catch(function(){}),fJ('https://sono-bot.sonosanty.workers.dev/api/status').then(function(d){if(d&&d.macro)g=d.macro;}).catch(function(){})]).then(function(){D_F=false;if(!kl){setTimeout(window.fetchAll,10000);return;}rD(tk,kl,fn,vi,g?g.dominance:null);}).catch(function(){D_F=false;setTimeout(window.fetchAll,15000);});};
+
+function rD(t,k,f,v,d){
+  if(!k||!k.length)return;var c=k.map(function(x){return+x[4];}),hi=k.map(function(x){return+x[2];}),lo=k.map(function(x){return+x[3];});
+  var p=c[c.length-1],s=cs(c,hi,lo);
+  sT('dashPrice',fmtP(p));if(t){var cg=+t.priceChangePercent;sT('dashChg',''+(cg>=0?'+':'')+cg.toFixed(2)+'%');sT('dashHigh',fmtP(+t.highPrice));sT('dashLow',fmtP(+t.lowPrice));sT('dashVol','$'+(+t.quoteVolume/1e9).toFixed(1)+'B');}
+  var sc=s.score>=78?'#4f8ef7':s.score>=62?'#22c55e':s.score>=52?'#86efac':s.score>=42?'#64748b':s.score>=30?'#f59e0b':s.score>=18?'#fca5a5':'#ef4444';
+  var ar=document.querySelector('#page-dashboard .ring-ctr circle:nth-child(2)');if(ar){var rt=36,ci=2*Math.PI*rt;ar.style.stroke=sc;ar.style.strokeDasharray=ci;ar.style.strokeDashoffset=ci-ci*s.score/100;}
+  sT('dashScore',Math.round(s.score));
+  var zz=['Compra fuerte','Compra','Acumular','Neutral','Venta','Venta fuerte','Capitulacion'],zi=s.score>=78?0:s.score>=62?1:s.score>=52?2:s.score>=42?3:s.score>=30?4:s.score>=18?5:6;
+  sT('dashScoreLabel',zz[zi]);sT('dashP1',s.p1);sT('dashP2',s.p2);sT('dashP3',s.p3);
+  sT('dashFng',f!=null?f:'--');sT('dashVix',v!=null?v.toFixed(2):'--');sT('dashDom',d!=null?d.toFixed(1)+'%':'--');
+  sT('dashRsi',s.rv!=null?s.rv.toFixed(1):'--');sT('dashAdx',s.av!=null?s.av.toFixed(1):'--');
+  sT('dashBb',s.pb!=null?s.pb.toFixed(2):'--');sT('dashMa40',s.m40!=null?fmtN(s.m40,0):'--');
+  sT('dashMa6v',s.m6!=null?fmtN(s.m6,0):'--');sT('dashMa40v',s.m40!=null?fmtN(s.m40,0):'--');
+  sT('dashMa70v',s.m70!=null?fmtN(s.m70,0):'--');sT('dashMa200v',s.m200!=null?fmtN(s.m200,0):'--');
+  [1,3,5,15].forEach(function(m){var s2=cs(k.slice(-20).map(function(x){return+x[4];}),k.slice(-20).map(function(x){return+x[2];}),k.slice(-20).map(function(x){return+x[3];})).score;sT('dashMtf'+m+'m',s2||'--');});
+}
+
+/* SPA Controller */
+window.SPA=function(){var p=null;function s(page,btn){if(p==='metodo'&&window.cleanupMetodo)cleanupMetodo();else if(p==='rangos'&&window.cleanupRangos)cleanupRangos();else if(p==='trades'&&window.cleanupTrades)cleanupTrades();document.querySelectorAll('.page').forEach(function(x){x.classList.remove('active');});var pn=document.getElementById('page-'+page);if(pn)pn.classList.add('active');document.querySelectorAll('.navbtn').forEach(function(x){x.classList.remove('active');});if(btn)btn.classList.add('active');var f=document.getElementById('globalFooter');if(f)f.style.display=(page==='dashboard')?'block':'none';p=page;if(page==='metodo'&&window.initMetodo)setTimeout(initMetodo,50);else if(page==='rangos'&&window.initRangos)setTimeout(initRangos,50);else if(page==='trades'&&window.initTrades)setTimeout(initTrades,50);else if(page==='dashboard')setTimeout(function(){if(window.fetchAll)window.fetchAll();},50);}function ca(asset,btn){window.CA=asset;document.querySelectorAll('.atab').forEach(function(x){x.classList.remove('active');});if(btn)btn.classList.add('active');if(window.fetchAll)window.fetchAll();}function stf(tf,btn){window.CTF=tf;btn.closest('.tf-row').querySelectorAll('.tfp').forEach(function(x){x.classList.remove('active');});btn.classList.add('active');if(window.fetchAll)window.fetchAll();}return{show:s,changeAsset:ca,setTF:stf,getPage:function(){return p;}};}();
+
+window.fetchAll();if(FI)clearInterval(FI);FI=setInterval(window.fetchAll,30000);
+</script>
 
 function $(x){return document.getElementById(x);}
 function fmtN(n,d){if(d==null)d=2;return Number(n).toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});}
@@ -983,8 +1018,7 @@ window.initTrades=function(){window.TRADES.init();};
 window.cleanupTrades=function(){if(T_WS){try{T_WS.close();}catch(e){}}if(T_INT){clearInterval(T_INT);T_INT=null;}};
 
 </script>
-</body>
-</html><!-- ========== MÉTODO PAGE ========== -->
+<!-- ========== MÉTODO PAGE ========== -->
 <div id="page-metodo" class="page">
 <div class="metodo-layout">
 <div class="sidebar">
@@ -1094,3 +1128,7 @@ window.cleanupTrades=function(){if(T_WS){try{T_WS.close();}catch(e){}}if(T_INT){
  </div>
 </div>
 
+
+</body>
+
+</html>
