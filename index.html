@@ -1420,7 +1420,9 @@ function setAsset(asset, btn) {
  SP.fetching = false;
  ['d-price','d-rsi','d-adx','d-bbp','d-ma40','d-score-num'].forEach(id => safe(id, '--'));
  sonoFetch();
-}
+
+ if(window.ws)try{window.ws.close()}catch(e){}
+ window.startWS();}
 
 // ─── BLOQUE 3: SET TF ─────────────────────────────────
 function setTF(btn, tf) {
@@ -1484,7 +1486,8 @@ function applyTradesFilter() {
 }
 
 // ─── BLOQUE 5: WEBSOCKET ──────────────────────────────
-let ws = null, wsRetries = 0;
+window.ws = null; let wsRetries = 0;
+let ws = window.ws;
 
 function startWS() {
  if (ws && ws.readyState < 2) return;
