@@ -979,8 +979,8 @@ function fmtPct(n) {
  return s + Number(n).toFixed(2) + '%';
 }
 function el(id) { return document.getElementById(id); }
-function safe(id, val) { const e = el(id); if (e) e.textContent = val; }
-function safeStyle(id, prop, val) { const e = el(id); if (e) e.style[prop] = val; }
+function safe(id, val) { const e = el(id); if (e) e.textContent = val; else { const fallbackId = id.replace('d-','coin-'); const e2 = el(fallbackId); if (e2) e2.textContent = val; } }
+function safeStyle(id, prop, val) { const e = el(id); if (e) e.style[prop] = val; else { const fb = document.getElementById(id.replace('d-','coin-')); if (fb) fb.style[prop] = val; } }
 
 async function fetchWithTimeout(url, ms=8000) {
  const ctrl = new AbortController();
