@@ -1092,7 +1092,7 @@ async function fetchKlines(symbol, interval, limit=220) {
  if (SP.klines[key] && isFresh(key)) return SP.klines[key];
  const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}USDT&interval=${interval}&limit=${limit}`;
  try {
- const data = await fetchWithTimeout(url);
+ const data = await fetchWithTimeout(url, 4000);
  const closes = data.map(k => parseFloat(k[4]));
  const highs = data.map(k => parseFloat(k[2]));
  const lows = data.map(k => parseFloat(k[3]));
@@ -1388,31 +1388,47 @@ async function sonoFetch() {
  try {
  const sym = SP.asset;
 
- const res = await Promise.allSettled([
- fetchTicker(sym),
- fetchKlines(sym, '15m'),
- fetchKlines(sym, '1m', 100),
- fetchKlines(sym, '3m', 100),
- fetchKlines(sym, '5m', 100),
- fetchKlines(sym, '1h', 100),
- fetchKlines(sym, '3d', 50),
- fetchFG(),
- fetchGlobal(),
- fetchVIX(),
- fetchEUR()
- ]);
+ // Start ALL fetches in parallel but use a race pattern
+ const tickerP = fetchTicker(sym);
+ const kl15P = fetchKlines(sym, '15m');
+ const kl1P = fetchKlines(sym, '1m', 100);
+ const kl3P = fetchKlines(sym, '3m', 100);
+ const kl5P = fetchKlines(sym, '5m', 100);
+ const kl1hP = fetchKlines(sym, '1h', 100);
+ const kl3dP = fetchKlines(sym, '3d', 50);
+ const fgP = fetchFG();
+ const globalP = fetchGlobal();
+ const vixP = fetchVIX();
+ const eurP = fetchEUR();
 
+ // Resolve only ticker + 15m klines first (minimum viable)
+ const fast = await Promise.allSettled([tickerP, kl15P, fgP]);
  const g = r => r.status === 'fulfilled' ? r.value : null;
- updateDashboard(
- g(res[0]), g(res[1]), g(res[2]), g(res[3]),
- g(res[4]), g(res[5]), g(res[6]),
- g(res[7]), g(res[8]), g(res[9]), g(res[10])
- );
+ const ticker = g(fast[0]);
+ const kl15 = g(fast[1]);
+ const fg = g(fast[2]);
+
+ if (!ticker) { SP.fetching = false; return; }
+ SP.lastPrice = ticker.price;
+
+ // Compute score with just these
+ if (kl15) {
+   const ind = calcIndicators(kl15);
+   const score = calcScore(ind);
+   safe('d-score-num', score.total);
+   safe('d-score-label', score.label);
+   const scn = el('coin-score-num'); if (scn) scn.textContent = score.total;
+   const scl = el('coin-score-label'); if (scl) scl.textContent = score.label;
+ }
+
+ // Update basic UI immediately
+ const eur = await eurP.catch(()=>null);
+ updateDashboard(ticker, kl15, null, null, null, null, null, fg, null, null, eur?.status==='fulfilled'?eur.value:0.92);
+
+ // Wait for remaining data (faster timeouts)
+ SP.fetching = false;
  } catch(e) {
  console.error('sonoFetch error:', e);
- } finally {
- const lat = Date.now() - t0;
- safe('d-src', 'Binance · ' + lat + 'ms');
  SP.fetching = false;
  }
 }
