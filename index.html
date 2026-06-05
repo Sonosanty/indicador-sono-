@@ -1286,6 +1286,35 @@ function updateDashboard(ticker, kl15, kl1, kl3, kl5, kl1h, kl3d, fg, global, vi
  }
  });
 
+ 
+ // Zonas S/R (simplified from MA levels + ATR approximation)
+ if (ind.ma200 != null && ind.ma6 != null && ind.ma70 != null && ind.ma40 != null) {
+   const rangeHigh = Math.max(ind.ma6, ind.ma40, ind.ma70, ind.ma200);
+   const rangeLow = Math.min(ind.ma6, ind.ma40, ind.ma70, ind.ma200);
+   const atrEst = (rangeHigh - rangeLow) / 10;
+   if (atrEst > 1) {
+     safe('d-sr-r2', '$' + fmt(price + atrEst * 2));
+     safe('d-sr-r1', '$' + fmt(price + atrEst));
+     safe('d-sr-now', '$' + fmt(price));
+     safe('d-sr-s1', '$' + fmt(price - atrEst));
+     safe('d-sr-s2', '$' + fmt(price - atrEst * 2));
+   }
+ }
+
+ // Update alerts
+ const alerts = [];
+ if (ind.adx > 25) alerts.push({ text: 'ADX > 25 → tendencia activa', fresh: true });
+ if (ind.rsi < 30) alerts.push({ text: 'RSI < 30 → señal rebote', fresh: true });
+ if (fg != null && fg < 25) alerts.push({ text: 'F&G extremo < 25 macro', fresh: true });
+ if (ind.ma6 != null && ind.ma70 != null && ind.ma6 > ind.ma70) alerts.push({ text: 'MA6 × MA70 (cruce alcista)', fresh: true });
+ if (ind.ma40 != null && price > ind.ma40) alerts.push({ text: 'Precio > MA40', fresh: true });
+ const alertContainer = el('d-alerts-container');
+ if (alertContainer) {
+   alertContainer.innerHTML = alerts.slice(0, 5).map(function(a, i) {
+     return '<div class="alert-item"><span class="adot" style="background:' + (a.fresh ? '#22c55e' : '#1a3352') + '"></span><span class="atxt" style="color:' + (a.fresh ? '#22c55e' : '#2a5a8a') + '">' + a.text + '</span></div>';
+   }).join('');
+ }
+
  // Score
  const score = calcScore(ind);
  safe('d-score-num', score.total); const scn2 = el('coin-score-num'); if (scn2) scn2.textContent = score.total;
