@@ -1,150 +1,68 @@
-/* SONO PRO — SPA Controller for Mockup UI */
+/* SONO PRO — Spa Controller v7 (mockup UI) */
 "use strict";
+window.SPA=function(){var p=null;function s(page,btn){if(p==='metodo'&&window.cleanupMetodo)cleanupMetodo();else if(p==='rangos'&&window.cleanupRangos)cleanupRangos();else if(p==='trades'&&window.cleanupTrades)cleanupTrades();document.querySelectorAll('.page').forEach(function(x){x.classList.remove('active');});var pn=document.getElementById('page-'+page);if(pn)pn.classList.add('active');document.querySelectorAll('.navbtn').forEach(function(x){x.classList.remove('active');});if(btn)btn.classList.add('active');var f=document.getElementById('globalFooter');if(f)f.style.display=(page==='dashboard')?'block':'none';p=page;if(page==='metodo'&&window.initMetodo)setTimeout(initMetodo,50);else if(page==='rangos'&&window.initRangos)setTimeout(initRangos,50);else if(page==='trades'&&window.initTrades)setTimeout(initTrades,50);else if(page==='dashboard')setTimeout(fetchAll,50);}function ca(asset,btn){window.CA=asset;document.querySelectorAll('.atab').forEach(function(x){x.classList.remove('active');});if(btn)btn.classList.add('active');if(window.fetchAll)fetchAll();}function stf(tf,btn){window.CTF=tf;btn.closest('.tf-row').querySelectorAll('.tfp').forEach(function(x){x.classList.remove('active');});btn.classList.add('active');if(window.fetchAll)fetchAll();}return{show:s,changeAsset:ca,setTF:stf,getPage:function(){return p;}};}();
 
-// SPA Navigation
-window.SPA = (function() {
-  var cp = null;
-  function show(page, btn) {
-    if (cp === 'metodo' && window.cleanupMetodo) cleanupMetodo();
-    else if (cp === 'rangos' && window.cleanupRangos) cleanupRangos();
-    else if (cp === 'trades' && window.cleanupTrades) cleanupTrades();
-    document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
-    var pn = document.getElementById('page-' + page);
-    if (pn) pn.classList.add('active');
-    document.querySelectorAll('.navbtn').forEach(function(b){ b.classList.remove('active'); });
-    if (btn) btn.classList.add('active');
-    var f = document.getElementById('globalFooter');
-    if (f) f.style.display = (page === 'dashboard') ? 'block' : 'none';
-    cp = page;
-    if (page === 'metodo' && window.initMetodo) { setTimeout(initMetodo, 50); }
-    else if (page === 'rangos' && window.initRangos) { setTimeout(initRangos, 50); }
-    else if (page === 'trades' && window.initTrades) { setTimeout(initTrades, 50); }
-    else if (page === 'dashboard') { setTimeout(fetchAll, 50); }
-  }
-  function changeAsset(asset, btn) {
-    window.CA = asset;
-    document.querySelectorAll('.atab').forEach(function(t){ t.classList.remove('active'); });
-    if (btn) btn.classList.add('active');
-    if (window.fetchAll) fetchAll();
-  }
-  function setTF(tf, btn) {
-    window.CTF = tf;
-    btn.closest('.tf-row').querySelectorAll('.tfp').forEach(function(b){ b.classList.remove('active'); });
-    btn.classList.add('active');
-    if (window.fetchAll) fetchAll();
-  }
-  return { show: show, changeAsset: changeAsset, setTF: setTF, getPage: function(){ return cp; } };
-})();
+function $(x){return document.getElementById(x);}
+function fmtN(n,d){if(d==null)d=2;return Number(n).toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fmtP(n){return n==null?'--':'$'+fmtN(n);}
+function fJ(u){return fetch(u,{cache:'no-store'}).then(function(r){if(!r.ok)throw Error('HTTP '+r.status);return r.json();});}
+function sT(i,t){var e=$(i);if(e)e.textContent=t;}
+function sS(i,p,v){var e=$(i);if(e)e.style[p]=v;}
 
-// Utils
-function $(id) { return document.getElementById(id); }
-function fmtN(n,d) { if(arguments.length<2)d=2; return Number(n).toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d}); }
-function fmtP(n) { return n==null?'--':'$'+fmtN(n); }
-function fetchJ(url) { return fetch(url,{cache:'no-store'}).then(function(r){if(!r.ok)throw Error('HTTP '+r.status);return r.json();}); }
-function setText(id,txt){var e=$(id);if(e)e.textContent=txt;}
-function setStyle(id,prop,val){var e=$(id);if(e)e.style[prop]=val;}
-function pct(d){return (d>=0?'+':'')+d.toFixed(2)+'%';}
+function sL(a,p){if(a.length<p)return null;return a.slice(-p).reduce(function(x,y){return x+y;},0)/p;}
+function rL(c,p){if(c.length<p+1)return null;var g=0,l=0;for(var i=c.length-p;i<c.length;i++){var d=c[i]-c[i-1];d>0?g+=d:l-=d;}return Math.round(100-100/(1+(g/p)/((l/p)||0.001)));}
+function aL(h,l,c,p){if(c.length<p+2)return null;var pd=0,md=0,tr=0;for(var i=c.length-p;i<c.length;i++){var ph=h[i]-h[i-1],ml=l[i-1]-l[i];pd+=(ph>ml&&ph>0?ph:0);md+=(ml>ph&&ml>0?ml:0);tr+=Math.max(h[i]-l[i],Math.abs(h[i]-c[i-1]),Math.abs(l[i]-c[i-1]));}var pD=100*pd/(tr||1),mD=100*md/(tr||1);return Math.round(100*Math.abs(pD-mD)/((pD+mD)||1));}
+function bL(c,p,k){if(p==null)p=20;if(k==null)k=2;if(c.length<p)return{pb:null,bw:null};var s=c.slice(-p),m=s.reduce(function(x,y){return x+y;},0)/p,sd=Math.sqrt(s.reduce(function(x,y){return x+(y-m)*(y-m);},0)/p),u=m+k*sd,d2=m-k*sd;return{pb:+((c[c.length-1]-d2)/((u-d2)||1)).toFixed(3),bw:+((u-d2)/m*100).toFixed(2)};}
+function cs(c,h,l){var p=c[c.length-1],m6=sL(c,6),m40=sL(c,40),m70=sL(c,70),m200=sL(c,200);var p1=0,p2=0,p3=0;if(m6!=null&&m40!=null)p1+=m6>m40?12:0;if(m6!=null&&m70!=null)p1+=m6>m70?10:0;if(m40!=null&&m200!=null)p1+=m40>m200?13:0;var rv=rL(c),av=aL(h,l,c);if(av!=null)p2+=av>35?15:av>25?10:3;if(rv!=null)p2+=rv>=50&&rv<70?12:rv>=35?7:2;if(m200!=null)p2+=p>m200?8:0;var bb=bL(c);if(bb.pb!=null){p3=bb.pb<0.15?28:bb.pb<0.35?20:bb.pb<0.65?14:bb.pb<0.85?7:2;}return{score:Math.min(100,Math.round(p1+p2+p3)),p1:Math.round(p1),p2:Math.round(p2),p3:Math.round(p3),m6:m6,m40:m40,m70:m70,m200:m200,price:p,rv:rv,av:av,pb:bb.pb};}
 
-// Indicators
-function smaLast(arr,p){if(arr.length<p)return null;return arr.slice(-p).reduce(function(a,b){return a+b;},0)/p;}
-function rsiLast(cl,p){if(cl.length<p+1)return null;var g=0,l=0;for(var i=cl.length-p;i<cl.length;i++){var d=cl[i]-cl[i-1];d>0?g+=d:l-=d;}return Math.round(100-100/(1+(g/p)/((l/p)||0.001)));}
-function adxLast(hi,lo,cl,p){if(cl.length<p+2)return null;var pd=0,md=0,tr=0;for(var i=cl.length-p;i<cl.length;i++){var pH=hi[i]-hi[i-1],mL=lo[i-1]-lo[i];pd+=(pH>mL&&pH>0?pH:0);md+=(mL>pH&&mL>0?mL:0);tr+=Math.max(hi[i]-lo[i],Math.abs(hi[i]-cl[i-1]),Math.abs(lo[i]-cl[i-1]));}var pDI=100*pd/(tr||1),mDI=100*md/(tr||1);return Math.round(100*Math.abs(pDI-mDI)/((pDI+mDI)||1));}
-function bbLast(cl,p,k){if(arguments.length<2)p=20;if(arguments.length<3)k=2;if(cl.length<p)return{pb:null,bw:null};var sl=cl.slice(-p),m=sl.reduce(function(a,b){return a+b;},0)/p;var sd=Math.sqrt(sl.reduce(function(a,b){return a+(b-m)*(b-m);},0)/p);var u=m+k*sd,d2=m-k*sd;return{pb:+((cl[cl.length-1]-d2)/((u-d2)||1)).toFixed(3),bw:+((u-d2)/m*100).toFixed(2)};}
-function computeScore(cl,hi,lo){var price=cl[cl.length-1],ma6=smaLast(cl,6),ma40=smaLast(cl,40),ma70=smaLast(cl,70),ma200=smaLast(cl,200);var p1=0,p2=0,p3=0;if(ma6!=null&&ma40!=null)p1+=ma6>ma40?12:0;if(ma6!=null&&ma70!=null)p1+=ma6>ma70?10:0;if(ma40!=null&&ma200!=null)p1+=ma40>ma200?13:0;var rv=rsiLast(cl),av=adxLast(hi,lo,cl);if(av!=null)p2+=av>35?15:av>25?10:3;if(rv!=null)p2+=rv>=50&&rv<70?12:rv>=35?7:2;if(ma200!=null)p2+=price>ma200?8:0;var bb=bbLast(cl);if(bb.pb!=null){p3=bb.pb<0.15?28:bb.pb<0.35?20:bb.pb<0.65?14:bb.pb<0.85?7:2;}return{score:Math.min(100,Math.round(p1+p2+p3)),p1:Math.round(p1),p2:Math.round(p2),p3:Math.round(p3),ma6:ma6,ma40:ma40,ma70:ma70,ma200:ma200,price:price,rv:rv,av:av,pb:bb.pb};}
-
-// Dashboard
-var DA='BTC',DTF='15m',D_FETCHING=false,FETCH_INTERVAL=null;
-
-function renderDashboard(ticker,klines,fng,vix,dom){
-  if(!klines||!klines.length)return;
-  var cl=klines.map(function(k){return+k[4];}),hi=klines.map(function(k){return+k[2];}),lo=klines.map(function(k){return+k[3];});
-  var price=cl[cl.length-1],sc=computeScore(cl,hi,lo);
-  setText('dashPrice',fmtP(price));
-  if(ticker){var chg=+ticker.priceChangePercent;setText('dashChg',''+(chg>=0?'▲ +':'▼ ')+chg.toFixed(2)+'% · '+pct(chg));setText('dashHigh',fmtP(+ticker.highPrice));setText('dashLow',fmtP(+ticker.lowPrice));setText('dashVol','$'+(+ticker.quoteVolume/1e9).toFixed(1)+'B');}
-  var scCol=sc.score>=78?'#4f8ef7':sc.score>=62?'#22c55e':sc.score>=52?'#86efac':sc.score>=42?'#64748b':sc.score>=30?'#f59e0b':sc.score>=18?'#fca5a5':'#ef4444';
-  var arc=document.querySelector('#page-dashboard .ring-ctr circle:nth-child(2)');
-  if(arc){var r=36,circ=2*Math.PI*r;arc.style.stroke=scCol;arc.style.strokeDasharray=circ;arc.style.strokeDashoffset=circ-circ*sc.score/100;}
-  setText('dashScore',Math.round(sc.score));
-  var zLabels=['Compra fuerte','Compra','Acumular','Neutral','Venta','Venta fuerte','Capitulacion'],zEmojis=['\ud83d\udfe2','\ud83d\udfe2','\ud83d\udd35','\u26aa','\ud83d\udfe1','\ud83d\udd34','\u26ab'];
-  var zIdx=sc.score>=78?0:sc.score>=62?1:sc.score>=52?2:sc.score>=42?3:sc.score>=30?4:sc.score>=18?5:6;
-  setText('dashScoreLabel',zLabels[zIdx]+' '+zEmojis[zIdx]);
-  setText('dashP1',sc.p1);setText('dashP2',sc.p2);setText('dashP3',sc.p3);
-  setText('dashFng',fng!=null?fng:'--');
-  setText('dashVix',vix!=null?vix.toFixed(2):'--');
-  setText('dashDom',dom!=null?dom.toFixed(1)+'%':'--');
-  setText('dashRsi',sc.rv!=null?sc.rv.toFixed(1):'--');
-  setText('dashAdx',sc.av!=null?sc.av.toFixed(1):'--');
-  setText('dashBb',sc.pb!=null?sc.pb.toFixed(2):'--');
-  setText('dashMa40',sc.ma40!=null?fmtN(sc.ma40,0):'--');
-  setText('dashMa6v',sc.ma6!=null?fmtN(sc.ma6,0):'--');
-  setText('dashMa40v',sc.ma40!=null?fmtN(sc.ma40,0):'--');
-  setText('dashMa70v',sc.ma70!=null?fmtN(sc.ma70,0):'--');
-  setText('dashMa200v',sc.ma200!=null?fmtN(sc.ma200,0):'--');
-  // MTF
-  [1,3,5,15].forEach(function(m){var s=computeScore(klines.slice(-Math.max(m*4,20)).map(function(k){return+k[4];}),klines.slice(-Math.max(m*4,20)).map(function(k){return+k[2];}),klines.slice(-Math.max(m*4,20)).map(function(k){return+k[3];})).score;setText('dashMtf'+m+'m',s||'--');});
-  // Signals
-  var sigAdx=sc.av!=null&&sc.av>25,sigRsi=sc.rv!=null&&sc.rv<30,sigFng=fng!=null&&fng<25,sigMa=sc.ma6!=null&&sc.ma70!=null&&sc.ma6>sc.ma70,sigMa40=sc.ma40!=null&&price>sc.ma40;
-  ['sigAdx','sigRsi','sigFng','sigMa','sigMa40'].forEach(function(id){var e=$(id+'Dot');if(e)e.style.background='#1a3352';});
-  // R1/R2/S1/S2
-  if(sc.ma40!=null){setText('dashR2',fmtP(sc.ma70*1.08));setText('dashR1',fmtP(sc.ma40*1.05));setText('dashNow','● '+fmtP(price)+' LIVE');setText('dashS1',fmtP(sc.ma40*0.95));setText('dashS2',fmtP(sc.ma70*0.92));}
+var DA='BTC',DTF='15m',D_F=false,FI=null;
+function rD(t,k,f,v,d){
+  if(!k||!k.length)return;var c=k.map(function(x){return+x[4];}),hi=k.map(function(x){return+x[2];}),lo=k.map(function(x){return+x[3];});
+  var p=c[c.length-1],s=cs(c,hi,lo);
+  sT('dashPrice',fmtP(p));if(t){var cg=+t.priceChangePercent;sT('dashChg',''+(cg>=0?'+':'')+cg.toFixed(2)+'%');sT('dashHigh',fmtP(+t.highPrice));sT('dashLow',fmtP(+t.lowPrice));sT('dashVol','$'+(+t.quoteVolume/1e9).toFixed(1)+'B');}
+  var sc=s.score>=78?'#4f8ef7':s.score>=62?'#22c55e':s.score>=52?'#86efac':s.score>=42?'#64748b':s.score>=30?'#f59e0b':s.score>=18?'#fca5a5':'#ef4444';
+  var ar=document.querySelector('#page-dashboard .ring-ctr circle:nth-child(2)');if(ar){var rt=36,ci=2*Math.PI*rt;ar.style.stroke=sc;ar.style.strokeDasharray=ci;ar.style.strokeDashoffset=ci-ci*s.score/100;}
+  sT('dashScore',Math.round(s.score));
+  var zz=['Compra fuerte','Compra','Acumular','Neutral','Venta','Venta fuerte','Capitulacion'],zi=s.score>=78?0:s.score>=62?1:s.score>=52?2:s.score>=42?3:s.score>=30?4:s.score>=18?5:6;
+  sT('dashScoreLabel',zz[zi]);sT('dashP1',s.p1);sT('dashP2',s.p2);sT('dashP3',s.p3);
+  sT('dashFng',f!=null?f:'--');sT('dashVix',v!=null?v.toFixed(2):'--');sT('dashDom',d!=null?d.toFixed(1)+'%':'--');
+  sT('dashRsi',s.rv!=null?s.rv.toFixed(1):'--');sT('dashAdx',s.av!=null?s.av.toFixed(1):'--');
+  sT('dashBb',s.pb!=null?s.pb.toFixed(2):'--');sT('dashMa40',s.m40!=null?fmtN(s.m40,0):'--');
+  sT('dashMa6v',s.m6!=null?fmtN(s.m6,0):'--');sT('dashMa40v',s.m40!=null?fmtN(s.m40,0):'--');
+  sT('dashMa70v',s.m70!=null?fmtN(s.m70,0):'--');sT('dashMa200v',s.m200!=null?fmtN(s.m200,0):'--');
+  [1,3,5,15].forEach(function(m){var s2=cs(k.slice(-20).map(function(x){return+x[4];}),k.slice(-20).map(function(x){return+x[2];}),k.slice(-20).map(function(x){return+x[3];})).score;sT('dashMtf'+m+'m',s2||'--');});
+  window.fetchAll=function(){
+    if(D_F)return;D_F=true;var sy={BTC:'BTCUSDT',ETH:'ETHUSDT',SOL:'SOLUSDT',XRP:'XRPUSDT'}[DA]||'BTCUSDT',ti={1:'1m',3:'3m',5:'5m',15:'15m',30:'30m','1h':'1h'}[DTF]||'15m';
+    var tk=null,kl=null,fn=null,vi=null,g=null;
+    Promise.allSettled([fJ('https://api.binance.com/api/v3/ticker/24hr?symbol='+sy).then(function(d){tk=d;}).catch(function(){}),fJ('https://api.binance.com/api/v3/klines?symbol='+sy+'&interval='+ti+'&limit=220').then(function(d){kl=d;}).catch(function(){}),fJ('https://api.alternative.me/fng/?limit=1').then(function(d){if(d&&d.data&&d.data[0])fn=+d.data[0].value;}).catch(function(){}),fJ('https://vix-proxy.sonosanty.workers.dev/api/vix').then(function(d){if(d&&d.cvi)vi=d.cvi;}).catch(function(){}),fJ('https://sono-bot.sonosanty.workers.dev/api/status').then(function(d){if(d&&d.macro)g=d.macro;}).catch(function(){})]).then(function(){D_F=false;if(!kl){setTimeout(window.fetchAll,10000);return;}rD(tk,kl,fn,vi,g?g.dominance:null);}).catch(function(){D_F=false;setTimeout(window.fetchAll,15000);});
+  };
+  setTimeout(window.fetchAll,100);if(FI)clearInterval(FI);FI=setInterval(window.fetchAll,30000);
 }
 
-window.fetchAll=function(){
-  if(D_FETCHING)return;D_FETCHING=true;
-  var sym={BTC:'BTCUSDT',ETH:'ETHUSDT',SOL:'SOLUSDT',XRP:'XRPUSDT'}[DA]||'BTCUSDT';
-  var tf={1:'1m',3:'3m',5:'5m',15:'15m',30:'30m','1h':'1h'}[DTF]||'15m';
-  var ticker=null,klines=null,fng=null,vix=null,g=null;
-  Promise.allSettled([
-    fetchJ('https://api.binance.com/api/v3/ticker/24hr?symbol='+sym).then(function(d){ticker=d;}).catch(function(){}),
-    fetchJ('https://api.binance.com/api/v3/klines?symbol='+sym+'&interval='+tf+'&limit=220').then(function(d){klines=d;}).catch(function(){}),
-    fetchJ('https://api.alternative.me/fng/?limit=1').then(function(d){if(d&&d.data&&d.data[0])fng=+d.data[0].value;}).catch(function(){}),
-    fetchJ('https://vix-proxy.sonosanty.workers.dev/api/vix').then(function(d){if(d&&d.cvi)vix=d.cvi;}).catch(function(){}),
-    fetchJ('https://sono-bot.sonosanty.workers.dev/api/status').then(function(d){if(d&&d.macro)g=d.macro;}).catch(function(){})
-  ]).then(function(){D_FETCHING=false;if(!klines){setTimeout(window.fetchAll,10000);return;}renderDashboard(ticker,klines,fng,vix,g?g.dominance:null);}).catch(function(){D_FETCHING=false;setTimeout(window.fetchAll,15000);});
-};
-setTimeout(window.fetchAll,100);if(FETCH_INTERVAL)clearInterval(FETCH_INTERVAL);FETCH_INTERVAL=setInterval(window.fetchAll,30000);
-
-// METODO
-var MET_INTERVAL=null,MET_FETCHING=false;
-(function(){var coin='BTC',tf='15m';
-function fetchMetodo(){if(MET_FETCHING)return;MET_FETCHING=true;
-  var sym={BTC:'BTCUSDT',ETH:'ETHUSDT',SOL:'SOLUSDT',XRP:'XRPUSDT'}[coin]||'BTCUSDT';
-  var bnTF={1:'1m',3:'3m',5:'5m',15:'15m',30:'30m','1h':'1h'}[tf]||'15m';
-  var klines=null,fngData=null,g=null;
-  Promise.allSettled([
-    fetchJ('https://api.binance.com/api/v3/ticker/24hr?symbol='+sym).then(function(d){if(d&&d.lastPrice){setText('metPrice',fmtP(+d.lastPrice));}}).catch(function(){}),
-    fetchJ('https://api.binance.com/api/v3/klines?symbol='+sym+'&interval='+bnTF+'&limit=220').then(function(d){klines=d;}).catch(function(){}),
-    fetchJ('https://api.alternative.me/fng/?limit=1').then(function(d){if(d&&d.data&&d.data[0])fngData=+d.data[0].value;}).catch(function(){}),
-    fetchJ('https://sono-bot.sonosanty.workers.dev/api/status').then(function(d){if(d&&d.macro)g=d.macro;}).catch(function(){})
-  ]).then(function(){MET_FETCHING=false;if(!klines){setTimeout(fetchMetodo,15000);return;}
-    var cl=klines.map(function(k){return+k[4];}),hi=klines.map(function(k){return+k[2];}),lo=klines.map(function(k){return+k[3];});
-    var price=cl[cl.length-1],sc=computeScore(cl,hi,lo);
-    var scCol=sc.score>=78?'#4f8ef7':sc.score>=62?'#22c55e':sc.score>=52?'#86efac':sc.score>=42?'#64748b':sc.score>=30?'#f59e0b':sc.score>=18?'#fca5a5':'#ef4444';
-    var arc=document.querySelector('#page-metodo .ring-ctr circle:nth-child(2)');
-    if(arc){var r=36,circ=2*Math.PI*r;arc.style.stroke=scCol;arc.style.strokeDasharray=circ;arc.style.strokeDashoffset=circ-circ*sc.score/100;}
-    setText('metScore',Math.round(sc.score));
-    var zIdx=sc.score>=78?0:sc.score>=62?1:sc.score>=52?2:sc.score>=42?3:sc.score>=30?4:sc.score>=18?5:6;
-    setText('metScoreLabel',['COMPRA FUERTE','COMPRA','ACUMULAR','NEUTRAL','VENTA','VENTA FUERTE','CAPITULACION'][zIdx]+' ['+['\ud83d\udfe2','\ud83d\udfe2','\ud83d\udd35','\u26aa','\ud83d\udfe1','\ud83d\udd34','\u26ab'][zIdx]+']');
-    setText('metP1',sc.p1+'/35');setText('metP2',sc.p2+'/35');setText('metP3',sc.p3+'/30');
-    setText('metFng',fngData||'--');setText('metDom',g?(g.dominance||0).toFixed(1)+'%':'--');setText('metRsi3d','--');setText('metMcap',g?fmtP(g.mcap||0):'--');
-    var dbg=$( 'metDebug' );if(dbg){dbg.innerHTML='<b>MA6</b> '+fmtN(sc.ma6||0,0)+' vs <b>MA70</b> '+fmtN(sc.ma70||0,0)+' '+(sc.ma6!=null&&sc.ma70!=null&&sc.ma6>sc.ma70?'✓':'✗')+'<br><b>Precio</b> '+fmtP(price)+' vs <b>MA40</b> '+fmtN(sc.ma40||0,0)+' '+(sc.ma40!=null&&price>sc.ma40?'✓':'✗')+'<br><b>ADX</b> '+(sc.av||0).toFixed(1)+'<br><b>RSI</b> '+(sc.rv||0).toFixed(1)+'<br><b>%B</b> '+(sc.pb||0).toFixed(2)+'<br><b>Score</b> = '+sc.p1+'+'+sc.p2+'+'+sc.p3+' = '+sc.score;}
-  }).catch(function(){MET_FETCHING=false;setTimeout(fetchMetodo,15000);});
-}
-window.initMetodo=function(){MET_FETCHING=false;fetchMetodo();if(MET_INTERVAL)clearInterval(MET_INTERVAL);MET_INTERVAL=setInterval(fetchMetodo,30000);};
-window.cleanupMetodo=function(){if(MET_INTERVAL){clearInterval(MET_INTERVAL);MET_INTERVAL=null;}};
+// METODO (IIFE)
+(function(){var c='BTC',t='15m',MI=null,MF=false;
+function fM(){if(MF)return;MF=true;var s={BTC:'BTCUSDT',ETH:'ETHUSDT',SOL:'SOLUSDT',XRP:'XRPUSDT'}[c]||'BTCUSDT',ti={1:'1m',3:'3m',5:'5m',15:'15m',30:'30m','1h':'1h'}[t]||'15m';var kl=null,fn=null,g=null;Promise.allSettled([fJ('https://api.binance.com/api/v3/ticker/24hr?symbol='+s).then(function(d){if(d&&d.lastPrice)sT('metPrice',fmtP(+d.lastPrice));}).catch(function(){}),fJ('https://api.binance.com/api/v3/klines?symbol='+s+'&interval='+ti+'&limit=220').then(function(d){kl=d;}).catch(function(){}),fJ('https://api.alternative.me/fng/?limit=1').then(function(d){if(d&&d.data&&d.data[0])fn=+d.data[0].value;}).catch(function(){}),fJ('https://sono-bot.sonosanty.workers.dev/api/status').then(function(d){if(d&&d.macro)g=d.macro;}).catch(function(){})]).then(function(){MF=false;if(!kl){setTimeout(fM,15000);return;}var cc=kl.map(function(x){return+x[4];}),hi=kl.map(function(x){return+x[2];}),lo=kl.map(function(x){return+x[3];}),pr=cc[cc.length-1],sc=cs(cc,hi,lo);var scC=sc.score>=78?'#4f8ef7':sc.score>=62?'#22c55e':sc.score>=52?'#86efac':sc.score>=42?'#64748b':sc.score>=30?'#f59e0b':sc.score>=18?'#fca5a5':'#ef4444';var ar=document.querySelector('#page-metodo .ring-ctr circle:nth-child(2)');if(ar){var rt=36,ci=2*Math.PI*rt;ar.style.stroke=scC;ar.style.strokeDasharray=ci;ar.style.strokeDashoffset=ci-ci*sc.score/100;}sT('metScore',Math.round(sc.score));var zi=sc.score>=78?0:sc.score>=62?1:sc.score>=52?2:sc.score>=42?3:sc.score>=30?4:sc.score>=18?5:6;sT('metScoreLabel',['COMPRA FUERTE','COMPRA','ACUMULAR','NEUTRAL','VENTA','VENTA FUERTE','CAPITULACION'][zi]);sT('metP1',sc.p1+'/35');sT('metP2',sc.p2+'/35');sT('metP3',sc.p3+'/30');sT('metFng',fn||'--');sT('metDom',g?(g.dominance||0).toFixed(1)+'%':'--');sT('metRsi3d','--');sT('metMcap',g?fmtP(g.mcap||0):'--');var db=$( 'metDebug' );if(db)db.innerHTML='<b>Score</b> = '+sc.p1+'+'+sc.p2+'+'+sc.p3+' = '+sc.score+'<br><b>ADX</b> '+(sc.av||0).toFixed(1)+' <b>RSI</b> '+(sc.rv||0).toFixed(1);}).catch(function(){MF=false;setTimeout(fM,15000);});}
+window.initMetodo=function(){MF=false;fM();if(MI)clearInterval(MI);MI=setInterval(fM,30000);};
+window.cleanupMetodo=function(){if(MI){clearInterval(MI);MI=null;}};
 })();
 
-// RANGOS (stub)
-window.initRangos=function(){console.log('[Rangos] stub');};
-window.cleanupRangos=function(){console.log('[Rangos] cleanup');};
+// RANGOS
+var R_INTERVAL=null,R_WS=null,R_LP=67000,R_TFS=['15m','5m','3m','1m'];
+window.initRangos=function(){fJ('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT').then(function(d){R_LP=+d.price;fetchR();}).catch(function(){fetchR();});try{R_WS=new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade');R_WS.onmessage=function(e){R_LP=parseFloat(JSON.parse(e.data).p);sT('ranPrice','$'+R_LP.toLocaleString('es-ES',{minimumFractionDigits:2}));};R_WS.onclose=function(){setTimeout(function(){try{R_WS=new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade');}catch(e){}},5000);};R_WS.onerror=function(){R_WS.close();};}catch(e){}if(R_INTERVAL)clearInterval(R_INTERVAL);R_INTERVAL=setInterval(fetchR,20000);};
+window.cleanupRangos=function(){if(R_INTERVAL){clearInterval(R_INTERVAL);R_INTERVAL=null;}if(R_WS){try{R_WS.close();}catch(e){}R_WS=null;}};
+function fetchR(){Promise.all(R_TFS.map(function(tf){return fJ('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval='+tf+'&limit=60').then(function(d){return{tf:tf,klines:d.map(function(k){return{o:+k[1],h:+k[2],l:+k[3],c:+k[4]};})};}).catch(function(){return null;});})).then(function(rs){rs.forEach(function(r){if(r)renderRC(r.tf,r.klines);});renderRH();});}
+function renderRH(){var d=R_LP;sT('ranPrice','$'+d.toLocaleString('es-ES',{minimumFractionDigits:2}));var cl=window._rkc||null,pos=50,bias='NEUTRO',conf=50,state='ZONA MEDIA / ESPERA';if(cl&&cl.length>20){var rsi=0,g=0,l=0;for(var j=cl.length-14;j<cl.length;j++){var dd=cl[j]-cl[j-1];dd>0?g+=dd:l-=dd;}rsi=l===0?100:Math.round(100-100/(1+(g/14)/((l/14)||0.001)));var mn=Math.min.apply(null,cl),mx=Math.max.apply(null,cl);pos=Math.round((d-mn)/((mx-mn)||1)*100);bias=rsi>55?'ALCISTA':rsi<45?'BAJISTA':'NEUTRO';conf=Math.round(Math.abs((rsi-50)*2)+30);state=pos<30?'ZONA BAJA / COMPRA':pos>70?'ZONA ALTA / VENTA':'ZONA MEDIA / ESPERA';}sT('ranBias',bias);sT('ranConf',conf+'/100');sT('ranState',state);sT('ranPill','>> '+state);}
+function renderRC(tf,klines){if(!klines||klines.length<10)return;var cl=klines.map(function(k){return k.c;});if(!window._rkc||tf==='15m')window._rkc=cl;if(tf==='15m'){var mn=Math.min.apply(null,cl),mx=Math.max.apply(null,cl),rr=mx-mn||1,pos=Math.round((R_LP-mn)/rr*100);sT('ran15mZone',pos>70?'ZONA ALTA / VENTA':pos<30?'ZONA BAJA / COMPRA':'ZONA MEDIA / ESPERA');}}
 
-// TRADES (stub con WS)
-var TRADES_WS=null,TRADES_INTERVAL=null;
-window.initTrades=function(){
-  try{TRADES_WS=new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade');
-  TRADES_WS.onmessage=function(e){var p=parseFloat(JSON.parse(e.data).p);setText('tradesPrice',fmtP(p));setText('tradesWsStatus','\u25cf ONLINE');};
-  TRADES_WS.onclose=function(){setTimeout(function(){try{TRADES_WS=new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade');}catch(e){}},5000);};
-  TRADES_WS.onerror=function(){TRADES_WS.close();};}catch(e){}
-  console.log('[Trades] stub');
-};
-window.cleanupTrades=function(){if(TRADES_WS){try{TRADES_WS.close();}catch(e){}}if(TRADES_INTERVAL){clearInterval(TRADES_INTERVAL);TRADES_INTERVAL=null;}console.log('[Trades] cleanup');};
+// TRADES
+var T_WS=null,T_INT=null,T_LP=67000,T_SIDE='ALL',T_TAB='open';
+var T_OPEN=[{id:233,tf:'3m',side:'LONG',setup:'lower_l',entry:73948.13,sl:73840.81,tp1:74014.30,mfe:0,mae:0,dur:'9m'},{id:232,tf:'15m',side:'LONG',setup:'lower_l',entry:73989.03,sl:73517.19,tp1:74249.47,mfe:0,mae:0,dur:'57m'},{id:220,tf:'5m',side:'LONG',setup:'bullish',entry:74030.01,sl:73755.20,tp1:74198.12,mfe:0,mae:0,dur:'1h57m'}];
+var T_CLOSED=[{id:219,res:'TP',tf:'3m',side:'LONG',entry:73500,close:74014,tp1:74014,sl:73200,mfe:514,mae:0,dur:'22m',pnl:5.13},{id:218,res:'SL',tf:'5m',side:'SHORT',entry:74200,close:73800,tp1:73800,sl:74500,mfe:400,mae:0,dur:'1h',pnl:-3.00},{id:217,res:'TP',tf:'3m',side:'LONG',entry:72800,close:73500,tp1:73500,sl:72400,mfe:700,mae:0,dur:'45m',pnl:7.00},{id:216,res:'BE',tf:'5m',side:'LONG',entry:73100,close:73100,tp1:73600,sl:72700,mfe:300,mae:0,dur:'30m',pnl:0.00},{id:215,res:'TP',tf:'15m',side:'LONG',entry:71000,close:72500,tp1:72500,sl:70200,mfe:1500,mae:0,dur:'3h',pnl:15.00},{id:214,res:'SL',tf:'3m',side:'SHORT',entry:73900,close:74200,tp1:73200,sl:74200,mfe:0,mae:300,dur:'15m',pnl:-3.00}];
+
+window.TRADES=(function(){
+function rs(){var tp=0,be=0,sl=0;T_CLOSED.forEach(function(t){if(t.res==='TP')tp++;else if(t.res==='BE')be++;else sl++;});sT('tradesOpen',T_OPEN.length);sT('tradesClosed',T_CLOSED.length);sT('tradesTpSl',tp+'/'+be+'/'+sl);sT('tradesWr',Math.round(tp/T_CLOSED.length*100)+'%');var pa=T_CLOSED.map(function(t){return t.pnl||0;}),pt=pa.reduce(function(x,y){return x+y;},0);sT('tradesPnl',''+(pt>=0?'+':'')+fmtN(pt,2)+'$');var pa2=pa.length?pt/pa.length:0;sT('tradesRAvg',''+(pa2>=0?'+':'')+fmtN(pa2,2)+'$');var c=0,p=0,dd=0;pa.forEach(function(x){c+=x;if(c>p)p=c;if(p-c>dd)dd=p-c;});sT('tradesMaxDd','-'+fmtN(dd,2)+'$');sT('tradesRTotal',''+(pt>=0?'+':'')+fmtN(pt,2)+'$');sT('tradesPf',sl?((tp||0)/sl).toFixed(2):'inf');sT('tradesExp',''+(pa2>=0?'+':'')+fmtN(pa2,2)+'$');var sr=pa.slice().sort(function(a,b){return b-a;});sT('tradesBest',(sr[0]||0).toFixed(2)+'$');}
+function rt(){var data=T_TAB==='open'?T_OPEN:T_CLOSED;if(T_SIDE!=='ALL')data=data.filter(function(t){return t.side===T_SIDE;});var html=data.map(function(t){var sts=t.res?'<span class="status-'+t.res.toLowerCase()+'">'+(t.res==='TP'?'TP':t.res==='SL'?'SL':'BE')+'</span>':'<span class="status-open">OPEN</span>';var sc='side-'+t.side.toLowerCase();if(T_TAB==='open'){var r=t.side==='LONG'?(T_LP-t.entry)/((t.entry-t.sl)||1):-((T_LP-t.entry)/((t.sl-t.entry)||1));return '<tr class="tr-row"><td>'+t.id+'</td><td>'+sts+'</td><td>'+t.tf+'</td><td><span class="'+sc+'">'+t.side+'</span></td><td>'+t.setup+'</td><td>$'+fmtN(t.entry,0)+'</td><td>$'+fmtN(t.sl,0)+'</td><td>$'+fmtN(t.tp1,0)+'</td><td>'+(r>=0?'+':'')+r.toFixed(2)+'R</td><td>'+fmtN(t.mae,0)+'</td><td>'+t.dur+'</td><td>'+(r>=0?'+':'')+r.toFixed(2)+'R</td></tr>';}else{return '<tr class="tr-row"><td>'+t.id+'</td><td>'+sts+'</td><td>'+t.tf+'</td><td><span class="'+sc+'">'+t.side+'</span></td><td>'+t.setup+'</td><td>$'+fmtN(t.entry,0)+'</td><td>$'+fmtN(t.close||0,0)+'</td><td>$'+fmtN(t.tp1,0)+'</td><td>'+fmtN(t.mfe,0)+'</td><td>'+fmtN(t.mae,0)+'</td><td>'+t.dur+'</td><td>'+(t.pnl>=0?'+':'')+fmtN(t.pnl,2)+'$</td></tr>';}}).join('');var tb=$( 'tradesTable' );if(tb)tb.innerHTML='<div class="th-row"><div>ID</div><div>EST</div><div>TF</div><div>SIDE</div><div>SETUP</div><div>ENTRY</div><div>SL</div><div>TP1</div><div>MFE</div><div>MAE</div><div>DUR</div><div>'+(T_TAB==='open'?'R':'PNL')+'</div></div>'+html;}
+return{switchTab:function(t,b){T_TAB=t;document.querySelectorAll('#page-trades .ftab').forEach(function(x){x.classList.remove('active');});if(b)b.classList.add('active');rt();},filterSide:function(s,b){T_SIDE=s;var p=b.closest('.filter-tabs');if(p){p.querySelectorAll('.ftab').forEach(function(x){x.classList.remove('active');});}if(b)b.classList.add('active');rt();},applyFilters:function(){rt();},init:function(){rs();rt();try{T_WS=new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade');T_WS.onmessage=function(e){T_LP=parseFloat(JSON.parse(e.data).p);sT('tradesPrice',fmtP(T_LP));sT('tradesWsStatus','ONLINE');sT('tradesWsLatency','Tick: '+new Date().toLocaleTimeString('es-ES'));rt();};T_WS.onclose=function(){setTimeout(function(){try{T_WS=new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade');}catch(e){}},5000);};T_WS.onerror=function(){T_WS.close();};}catch(e){sT('tradesWsStatus','WS ERROR');}}};
+})();
+window.initTrades=function(){window.TRADES.init();};
+window.cleanupTrades=function(){if(T_WS){try{T_WS.close();}catch(e){}}if(T_INT){clearInterval(T_INT);T_INT=null;}};
