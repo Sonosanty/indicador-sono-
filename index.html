@@ -1148,20 +1148,6 @@ window.COIN_INIT = {
     ],
     trp:1.17,trc:-3.97
   }
-};
-
-function showPage(id, btn) {
- document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
- document.querySelectorAll('.navbtn').forEach(b => b.classList.remove('active'));
- document.getElementById('page-' + id).classList.add('active');
- if (btn) btn.classList.add('active');
- window.scrollTo(0,0);
-}
-function setTF(btn) {
- const parent = btn.closest('.tf-row') || btn.parentElement;
- parent.querySelectorAll('.tfp').forEach(b => b.classList.remove('active'));
- btn.classList.add('active');
-}
 </script>
 </body>
 <script>
@@ -1194,8 +1180,9 @@ function rD(t,k,f,v,d){
   sT('dashMa70v',s.m70!=null?fmtN(s.m70,0):'--');sT('dashMa200v',s.m200!=null?fmtN(s.m200,0):'--');
   [1,3,5,15].forEach(function(m){var s2=cs(k.slice(-20).map(function(x){return+x[4];}),k.slice(-20).map(function(x){return+x[2];}),k.slice(-20).map(function(x){return+x[3];})).score;sT('dashMtf'+m+'m',s2||'--');});
 }
-window.SPA=function(){var p=null;function s(page,btn){if(p==='metodo'&&window.cleanupMetodo)cleanupMetodo();else if(p==='rangos'&&window.cleanupRangos)cleanupRangos();else if(p==='trades'&&window.cleanupTrades)cleanupTrades();document.querySelectorAll('.page').forEach(function(x){x.classList.remove('active');});var pn=document.getElementById('page-'+page);if(pn)pn.classList.add('active');document.querySelectorAll('.navbtn').forEach(function(x){x.classList.remove('active');});if(btn)btn.classList.add('active');var f=document.getElementById('globalFooter');if(f)f.style.display=(page==='dashboard')?'block':'none';p=page;if(page==='metodo'&&window.initMetodo)setTimeout(initMetodo,50);else if(page==='rangos'&&window.initRangos)setTimeout(initRangos,50);else if(page==='trades'&&window.initTrades)setTimeout(initTrades,50);else if(page==='dashboard')setTimeout(function(){if(window.fetchAll)window.fetchAll();},50);}function ca(asset,btn){window.CA=asset;document.querySelectorAll('.atab').forEach(function(x){x.classList.remove('active');});if(btn)btn.classList.add('active');if(window.fetchAll)window.fetchAll();}function stf(tf,btn){window.CTF=tf;btn.closest('.tf-row').querySelectorAll('.tfp').forEach(function(x){x.classList.remove('active');});btn.classList.add('active');if(window.fetchAll)window.fetchAll();}return{show:s,changeAsset:ca,setTF:stf,getPage:function(){return p;}};}();
+function showPage(p,b){var s=window.SPA;s?s.show(p,b):void 0;}function setCoin(b,a){var s=window.SPA;s?s.changeAsset(a,b):void 0;}function setTF(b){var s=window.SPA,tf=b.textContent.trim().replace('m','');s?s.setTF(tf,b):void 0;}window.SPA=function(){var p=null;function s(page,btn){if(p==='metodo'&&window.cleanupMetodo)cleanupMetodo();else if(p==='rangos'&&window.cleanupRangos)cleanupRangos();else if(p==='trades'&&window.cleanupTrades)cleanupTrades();document.querySelectorAll('.page').forEach(function(x){x.classList.remove('active');});var pn=document.getElementById('page-'+page);if(pn)pn.classList.add('active');document.querySelectorAll('.navbtn').forEach(function(x){x.classList.remove('active');});if(btn)btn.classList.add('active');var f=document.getElementById('globalFooter');if(f)f.style.display=(page==='dashboard')?'block':'none';p=page;if(page==='metodo'&&window.initMetodo)setTimeout(initMetodo,50);else if(page==='rangos'&&window.initRangos)setTimeout(initRangos,50);else if(page==='trades'&&window.initTrades)setTimeout(initTrades,50);else if(page==='dashboard')setTimeout(function(){if(window.fetchAll)window.fetchAll();},50);}function ca(asset,btn){window.CA=asset;document.querySelectorAll('.atab').forEach(function(x){x.classList.remove('active');});if(btn)btn.classList.add('active');if(window.fetchAll)window.fetchAll();}function stf(tf,btn){window.CTF=tf;btn.closest('.tf-row').querySelectorAll('.tfp').forEach(function(x){x.classList.remove('active');});btn.classList.add('active');if(window.fetchAll)window.fetchAll();}return{show:s,changeAsset:ca,setTF:stf,getPage:function(){return p;}};}();
 setTimeout(function(){if(window.fetchAll)window.fetchAll();},100);if(FI)clearInterval(FI);FI=setInterval(function(){if(window.fetchAll)window.fetchAll();},30000);
 </script>
 </html>
+
 
