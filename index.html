@@ -1201,7 +1201,7 @@ function rsiColor(r) {
 }
 
 function updateDashboard(ticker, kl15, kl1, kl3, kl5, kl1h, kl3d, fg, global, vix, eurRate) {
- if (!ticker) return;
+ if (!ticker) { if (SP.lastPrice) { ticker = { price: SP.lastPrice, change: 0, high: SP.lastPrice, low: SP.lastPrice, vol: 0 }; } else { return; } }
  const price = ticker.price;
  SP.lastPrice = price;
 
@@ -1291,9 +1291,9 @@ function updateDashboard(ticker, kl15, kl1, kl3, kl5, kl1h, kl3d, fg, global, vi
 
  // Score
  const score = calcScore(ind);
- safe('d-score-num', score.total);
+ safe('d-score-num', score.total); const scn2 = el('coin-score-num'); if (scn2) scn2.textContent = score.total;
  safeStyle('d-score-num', 'color', scoreColor(score.total));
- safe('d-score-label', score.label);
+ safe('d-score-label', score.label); const scl2 = el('coin-score-label'); if (scl2) scl2.textContent = score.label;
  safe('d-p1', score.p1); safe('d-p2', score.p2); safe('d-p3', score.p3);
  // Also update coin-* originals
  const scn = el('coin-score-num');
