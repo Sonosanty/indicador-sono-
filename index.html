@@ -1578,30 +1578,73 @@ let ws = window.ws;
 
 function startWS() {
  if (ws && ws.readyState < 2) return;
- const sym = SP.asset.toLowerCase();
- if (ws) ws.close();
+ var sym = SP.asset.toLowerCase();
+ if (ws) try { ws.close(); } catch(e) {}
+ // Reset retry counter if previously connected successfully
+ if (SP.wsEverConnected) wsRetries = 0;
  ws = new WebSocket('wss://stream.binance.com:9443/ws/' + sym + 'usdt@aggTrade');
+ // Heartbeat: track last message time
+ SP.wsLastMsg = Date.now();
+ // Update status badges
+ var statusEl = el('d-status');
+ if (statusEl) statusEl.textContent = 'CONECTANDO';
+ ws.onopen = function() {
+  wsRetries = 0;
+  SP.wsEverConnected = true;
+  if (statusEl) statusEl.textContent = 'LIVE';
+  var tickEl = el('d-last-tick');
+  if (tickEl) tickEl.textContent = 'conectado';
+ };
  ws.onmessage = function(e) {
- try {
- const d = JSON.parse(e.data);
- const price = parseFloat(d.p);
- if (!price || isNaN(price)) return;
- SP.lastPrice = price;
- safe('d-price', '$' + fmt(price, 2));
- safe('d-price-sr', '$' + fmt(price, 2));
- const sp = el('coin-price-main');
- if (sp) sp.textContent = '$' + fmt(price, 2);
- const dot = document.querySelector('.dot');
- if (dot) { dot.style.background = '#00c8f0'; setTimeout(function(){ dot.style.background = '#22c55e'; }, 200); }
- // Update R for OPEN trades
- updateOpenTradesR(price);
- } catch(e) {}
+  try {
+   var d = JSON.parse(e.data);
+   var price = parseFloat(d.p);
+   if (!price || isNaN(price)) return;
+   SP.wsLastMsg = Date.now();
+   SP.lastPrice = price;
+   safe('d-price', '$' + fmt(price, 2));
+   safe('d-price-sr', '$' + fmt(price, 2));
+   var sp = el('coin-price-main');
+   if (sp) sp.textContent = '$' + fmt(price, 2);
+   var dot = document.querySelector('.dot');
+   if (dot) { dot.style.background = '#00c8f0'; setTimeout(function(){ dot.style.background = '#22c55e'; }, 200); }
+   var tickEl = el('d-last-tick');
+   if (tickEl) {
+    var now = new Date();
+    var hh = ('0' + now.getHours()).slice(-2);
+    var mm = ('0' + now.getMinutes()).slice(-2);
+    var ss = ('0' + now.getSeconds()).slice(-2);
+    tickEl.textContent = hh + ':' + mm + ':' + ss;
+   }
+   // Update R for OPEN trades
+   updateOpenTradesR(price);
+  } catch(e) {}
  };
- ws.onerror = function() { if (ws) ws.close(); };
+ ws.onerror = function() {
+  if (statusEl) statusEl.textContent = 'ERROR';
+  if (ws) try { ws.close(); } catch(e) {}
+ };
  ws.onclose = function() {
- wsRetries++;
- if (wsRetries < 10) setTimeout(startWS, Math.min(wsRetries * 2000, 30000));
+  if (statusEl) statusEl.textContent = 'DESCONECTADO';
+  var dot2 = document.querySelector('.dot');
+  if (dot2) dot2.style.background = '#ef4444';
+  var backoff = Math.min(1000 + wsRetries * 3000, 60000);
+  wsRetries++;
+  setTimeout(startWS, backoff);
  };
+}
+// Heartbeat monitor: check every 5 seconds if WS is alive
+if (!window._wsHeartbeat) {
+ window._wsHeartbeat = true;
+ setInterval(function() {
+  var elapsed = Date.now() - (SP.wsLastMsg || 0);
+  if (elapsed > 15000 && ws) {
+   // No message in 15 seconds - force reconnect
+   try { ws.close(); } catch(e) {}
+   var statusEl2 = el('d-status');
+   if (statusEl2) statusEl2.textContent = 'STALLED';
+  }
+ }, 5000);
 }
 
 // ─── BLOQUE 6: SKELETON LOADER ────────────────────────
