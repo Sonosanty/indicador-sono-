@@ -1544,37 +1544,32 @@ function applyTradesFilter() {
 
 // ─── FUNCION: Recalcular R de trades OPEN contra precio live
 function updateOpenTradesR(livePrice) {
- if (!livePrice) return;
- const rows = document.querySelectorAll('#page-trades .tr-row');
- rows.forEach(function(row) {
- // Try to find status element
- const cells = row.querySelectorAll('div');
- if (cells.length < 12) return;
- const estado = cells[1].textContent.trim().toUpperCase();
- if (!estado.includes('OPEN')) return;
- // Parse side, entry and SL from cells
- const side = cells[3].textContent.trim();
- const entryText = cells[5].textContent.trim().replace(/[$,]/g,'');
- const slText = cells[7].textContent.trim().replace(/[$,]/g,'');
- const entry = parseFloat(entryText);
- const sl = parseFloat(slText);
- if (isNaN(entry) || isNaN(sl)) return;
- const riskPerR = Math.abs(entry - sl);
- if (riskPerR === 0) return;
- let rActual;
- if (side === 'LONG' || side === 'L') {
- rActual = (livePrice - entry) / riskPerR;
- } else {
- rActual = (entry - livePrice) / riskPerR;
- }
- // Update the R column (index 10 based on 12-column grid)
- const rEl = cells[10];
- if (rEl) {
- const rStr = (rActual >= 0 ? '+' : '') + rActual.toFixed(2) + 'R';
- rEl.textContent = rStr;
- rEl.style.color = rActual >= 0 ? '#22c55e' : '#ef4444';
- }
- });
+ if (!livePrice) { livePrice = SP.lastPrice; if (!livePrice) return; }
+ var doUpdate = function() {
+  var rows = document.querySelectorAll('#page-trades .tr-row');
+  if (rows.length === 0) { setTimeout(doUpdate, 1500); return; }
+  rows.forEach(function(row) {
+   var cells = row.querySelectorAll('div');
+   if (cells.length < 12) return;
+   var estado = cells[1].textContent.trim().toUpperCase();
+   if (!estado.includes('OPEN')) return;
+   var side = cells[3].textContent.trim();
+   var entryText = cells[5].textContent.trim().replace(/[$,]/g,'');
+   var slText = cells[7].textContent.trim().replace(/[$,]/g,'');
+   var entry = parseFloat(entryText);
+   var sl = parseFloat(slText);
+   if (isNaN(entry) || isNaN(sl)) return;
+   var riskPerR = Math.abs(entry - sl);
+   if (riskPerR === 0) return;
+   var rActual = (side.indexOf('LONG') >= 0 || side === 'L') ? (livePrice - entry) / riskPerR : (entry - livePrice) / riskPerR;
+   var rEl = cells[10];
+   if (rEl) {
+    rEl.textContent = (rActual >= 0 ? '+' : '') + rActual.toFixed(2) + 'R';
+    rEl.style.color = rActual >= 0 ? '#22c55e' : '#ef4444';
+   }
+  });
+ };
+ doUpdate();
 }
 
 // ─── BLOQUE 5: WEBSOCKET ──────────────────────────────
@@ -1637,6 +1632,90 @@ setInterval(sonoFetch, 30000);
 
 // Alias: old fetchAll -> sonoFetch
 if(window.sonoFetch)window.fetchAll=window.sonoFetch;
+
+// === ADDITIONAL FIXES (6 jun 2026) ===
+// BUG 3: Force H24/L24/Vol update after each ticker fetch
+var _origFetchAll = window.fetchAll || function(){};
+window._fixTicker = function(ticker, price) {
+  if (!ticker) ticker = SP.lastTicker;
+  if (!ticker) return;
+  var h = ticker.highPrice || ticker.high;
+  var l = ticker.lowPrice || ticker.low;
+  var v = ticker.volume || ticker.vol || ticker.quoteVolume;
+  if (h > 0) safe('d-high', '$' + fmt(h, 2));
+  if (l > 0) safe('d-low', '$' + fmt(l, 2));
+  if (v > 0) safe('d-vol', fmt(v, 0) + ' BTC');
+};
+// Hook into existing ticker data
+if (SP.lastTicker) setTimeout(function() { window._fixTicker(SP.lastTicker, SP.lastPrice); }, 500);
+
+// BUG 4: Force MA table update
+window._fixMA = function(ind, price) {
+  if (!ind || !price) return;
+  if (ind.ma6 != null) { safe('d-ma6', '$' + fmt(ind.ma6, 0)); safe('d-ma6d', fmtPct((price - ind.ma6) / ind.ma6 * 100)); }
+  if (ind.ma40 != null) { safe('d-ma40v', '$' + fmt(ind.ma40, 0)); safe('d-ma40d', fmtPct((price - ind.ma40) / ind.ma40 * 100)); }
+  if (ind.ma70 != null) { safe('d-ma70', '$' + fmt(ind.ma70, 0)); safe('d-ma70d', fmtPct((price - ind.ma70) / ind.ma70 * 100)); }
+  if (ind.ma200 != null) { safe('d-ma200', '$' + fmt(ind.ma200, 0)); safe('d-ma200d', fmtPct((price - ind.ma200) / ind.ma200 * 100)); }
+};
+
+// BUG 5: Force S/R zones update  
+window._fixSR = function(ind, price) {
+  if (!ind || !price) return;
+  var s = ind.srHigh || ind.rangeHigh || (ind.ma6 || 0);
+  var b = ind.srLow || ind.rangeLow || (ind.ma70 || 0);
+  if (s > 0 && b > 0 && s > b) {
+    var r2 = s + (s - b) * 0.382;
+    var s2 = b - (s - b) * 0.382;
+    safe('d-sr-r2', '$' + fmt(r2, 0));
+    safe('d-sr-r1', '$' + fmt(s, 0));
+    safe('d-sr-s1', '$' + fmt(b, 0));
+    safe('d-sr-s2', '$' + fmt(s2, 0));
+    var live = el('d-sr-live');
+    if (live) live.textContent = '$' + fmt(price, 0);
+  }
+};
+
+// BUG 2: Remove loading texts
+setTimeout(function() {
+  var els = document.querySelectorAll('[class*="loading"], [class*="cargando"]');
+  for (var i = 0; i < els.length; i++) { var t = els[i].textContent; if (t.indexOf('Cargando') >= 0 || t.indexOf('cargando') >= 0) els[i].textContent = ''; }
+}, 1000);
+setTimeout(function() {
+  var els2 = document.querySelectorAll('.asset-selector button, .asset-selector a');
+  for (var j = 0; j < els2.length; j++) { els2[j].style.display = ''; }
+}, 1500);
+
+// BUG 7: MTF score note  
+setTimeout(function() {
+  var mn = el('d-mtf-note');
+  if (mn) mn.textContent = 'Score 15m base | MTF multi-timeframe';
+}, 2000);
+
+// Hook into updateDashboard to apply fixes  
+var _origUD = window.updateDashboard;
+if (_origUD) {
+  window.updateDashboard = function() {
+    _origUD.apply(this, arguments);
+    var args = arguments;
+    setTimeout(function() {
+      // Apply all fixes after updateDashboard completes
+      var ticker = args[0];
+      var price = ticker ? ticker.price : SP.lastPrice;
+      var ind = SP.lastIndicators;
+      if (!ind) { 
+        ind = { ma6: SP.ma6, ma40: SP.ma40, ma70: SP.ma70, ma200: SP.ma200 };
+      }
+      // Re-run all visual updates
+      setTimeout(function() {
+        // Give DOM time to update
+        if (price) window._fixTicker(null, price);
+        if (ind && price) window._fixMA(ind, price);
+        if (ind && price) window._fixSR(ind, price);
+        updateOpenTradesR(price);
+      }, 100);
+    }, 100);
+  };
+}
 </script>
 </html>
 
