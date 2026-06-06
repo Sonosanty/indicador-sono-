@@ -190,7 +190,7 @@ body{background:#060e1a;font-family:'Courier New',monospace;color:#e2e8f0;font-s
 <!-- DASHBOARD -->
 <div id="page-dashboard" class="page active">
  <div class="hbar">
- <div class="src"><span id="d-src">Conectando...</span></div>
+ <div class="src"><span id="d-src">···</span></div>
  <span style="color:#1a3352">·</span>
  <span>fresh · hace 28s</span>
  <span style="color:#1a3352">·</span>
@@ -199,7 +199,7 @@ body{background:#060e1a;font-family:'Courier New',monospace;color:#e2e8f0;font-s
  <span>CoinGecko ✓</span>
  <span style="color:#1a3352">·</span>
  <span>F&G ✓</span>
- <div class="stalert"><span id="d-alert-badge">Cargando...</span></div>
+ <div class="stalert"><span id="d-alert-badge">···</span></div>
  </div>
 
  <div class="atabs">
@@ -330,6 +330,7 @@ id="d-p3"
  <div class="mtf-item"><div class="mtf-tf">15m</div><div class="mtf-sc" style="color:#00c8f0" id="coin-mtf54" id="d-mtf15m">54</div></div>
  </div>
  <div style="text-align:center;margin-top:8px;font-size:10px;color:#2a5a8a">MTF Score total: <b style="color:#7aaad0"><span id="coin-mtf-total">48</span>/100</b></div>
+ <div style="font-size:9px;color:#2a5a8a;margin-top:3px">* MTF promedio 1m·3m·5m·15m. Score principal usa 15m como TF base.</div>
  </div>
  <div class="card">
  <div class="ctitle">Señales activas</div>
@@ -1390,6 +1391,9 @@ function updateDashboard(ticker, kl15, kl1, kl3, kl5, kl1h, kl3d, fg, global, vi
  // Health bar
  safe('d-src', 'Binance · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit',second:'2-digit'}));
 
+ // Update d-alert-badge
+ safe('d-alert-badge', '✓ ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'}));
+
  // Signals
  if (ind.adx != null || fg != null) {
  const sigs = document.querySelectorAll('#page-dashboard .sig');
@@ -1536,6 +1540,41 @@ function applyTradesFilter() {
  });
 }
 
+// ─── FUNCION: Recalcular R de trades OPEN contra precio live
+function updateOpenTradesR(livePrice) {
+ if (!livePrice) return;
+ const rows = document.querySelectorAll('#page-trades .tr-row');
+ rows.forEach(function(row) {
+ // Try to find status element
+ const cells = row.querySelectorAll('div');
+ if (cells.length < 12) return;
+ const estado = cells[1].textContent.trim().toUpperCase();
+ if (!estado.includes('OPEN')) return;
+ // Parse side, entry and SL from cells
+ const side = cells[3].textContent.trim();
+ const entryText = cells[5].textContent.trim().replace(/[$,]/g,'');
+ const slText = cells[7].textContent.trim().replace(/[$,]/g,'');
+ const entry = parseFloat(entryText);
+ const sl = parseFloat(slText);
+ if (isNaN(entry) || isNaN(sl)) return;
+ const riskPerR = Math.abs(entry - sl);
+ if (riskPerR === 0) return;
+ let rActual;
+ if (side === 'LONG' || side === 'L') {
+ rActual = (livePrice - entry) / riskPerR;
+ } else {
+ rActual = (entry - livePrice) / riskPerR;
+ }
+ // Update the R column (index 10 based on 12-column grid)
+ const rEl = cells[10];
+ if (rEl) {
+ const rStr = (rActual >= 0 ? '+' : '') + rActual.toFixed(2) + 'R';
+ rEl.textContent = rStr;
+ rEl.style.color = rActual >= 0 ? '#22c55e' : '#ef4444';
+ }
+ });
+}
+
 // ─── BLOQUE 5: WEBSOCKET ──────────────────────────────
 window.ws = null; let wsRetries = 0;
 let ws = window.ws;
@@ -1557,6 +1596,8 @@ function startWS() {
  if (sp) sp.textContent = '$' + fmt(price, 2);
  const dot = document.querySelector('.dot');
  if (dot) { dot.style.background = '#00c8f0'; setTimeout(function(){ dot.style.background = '#22c55e'; }, 200); }
+ // Update R for OPEN trades
+ updateOpenTradesR(price);
  } catch(e) {}
  };
  ws.onerror = function() { if (ws) ws.close(); };
@@ -1571,8 +1612,11 @@ function showSkeletons() {
  const ids = ['d-price','d-eur','d-chg','d-high','d-low','d-vol',
  'd-score-num','d-score-label','d-rsi','d-adx','d-bbp',
  'd-ma40','d-fg','d-vix','d-dom','d-rsi3d',
- 'd-ma6','d-ma40v','d-ma70','d-ma200'];
+ 'd-ma6','d-ma40v','d-ma70','d-ma200','d-sr-r2','d-sr-r1','d-sr-now','d-sr-s1','d-sr-s2'];
  ids.forEach(id => { const e = el(id); if (e) e.textContent = '···'; });
+ // Limpiar Conectando
+ safe('d-src', '···');
+ safe('d-alert-badge', '···');
 }
 
 // ─── BLOQUE 7: HEALTH BAR ─────────────────────────────
