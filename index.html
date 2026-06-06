@@ -1555,14 +1555,14 @@ function updateOpenTradesR(livePrice) {
    if (!estado.includes('OPEN')) return;
    var side = cells[3].textContent.trim();
    var entryText = cells[5].textContent.trim().replace(/[$,]/g,'');
-   var slText = cells[7].textContent.trim().replace(/[$,]/g,'');
+   var slText = cells[6].textContent.trim().replace(/[$,]/g,'');
    var entry = parseFloat(entryText);
    var sl = parseFloat(slText);
    if (isNaN(entry) || isNaN(sl)) return;
    var riskPerR = Math.abs(entry - sl);
    if (riskPerR === 0) return;
    var rActual = (side.indexOf('LONG') >= 0 || side === 'L') ? (livePrice - entry) / riskPerR : (entry - livePrice) / riskPerR;
-   var rEl = cells[10];
+   var rEl = cells[11];
    if (rEl) {
     rEl.textContent = (rActual >= 0 ? '+' : '') + rActual.toFixed(2) + 'R';
     rEl.style.color = rActual >= 0 ? '#22c55e' : '#ef4444';
