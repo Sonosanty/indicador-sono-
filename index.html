@@ -1283,11 +1283,9 @@ function updateDashboard(ticker, kl15, kl1, kl3, kl5, kl1h, kl3d, fg, global, vi
  const d = ((price - mv) / mv * 100);
  const de = el(did);
  if (de) { de.textContent = fmtPct(d); de.style.color = d >= 0 ? '#22c55e' : '#ef4444'; 
- // Pressure label
- const pl = el('d-plabels'); if (pl) { pl.children[0].style.color = ind.rsi < 45 ? '#ef4444' : '#2a5a8a'; pl.children[1].style.color = (ind.rsi >= 45 && ind.rsi <= 55) ? '#f59e0b' : '#2a5a8a'; pl.children[2].style.color = ind.rsi > 55 ? '#22c55e' : '#2a5a8a'; 
- // Pressure label
- const pl = el('d-plabels'); if (pl) { pl.children[0].style.color = ind.rsi < 45 ? '#ef4444' : '#2a5a8a'; pl.children[1].style.color = (ind.rsi >= 45 && ind.rsi <= 55) ? '#f59e0b' : '#2a5a8a'; pl.children[2].style.color = ind.rsi > 55 ? '#22c55e' : '#2a5a8a'; }
  }
+ // Pressure label
+ const plEl = el('d-plabels'); if (plEl && ind.rsi != null) { plEl.children[0].style.color = ind.rsi < 45 ? '#ef4444' : '#2a5a8a'; plEl.children[1].style.color = (ind.rsi >= 45 && ind.rsi <= 55) ? '#f59e0b' : '#2a5a8a'; plEl.children[2].style.color = ind.rsi > 55 ? '#22c55e' : '#2a5a8a'; }
  }
  });
 
