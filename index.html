@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SONO PRO ÔÇö Dashboard V7</title>
+<title>SONO PRO — Dashboard V7</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}body{background:#060e1a;font-family:'Courier New',monospace;color:#e2e8f0;font-size:13px}
 .topnav{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:#0a1628;border-bottom:1px solid #1a3352;position:sticky;top:0;z-index:100}
@@ -180,7 +180,7 @@
  <div class="logo">SONO PRO V7</div>
  <div class="nav-links">
  <button class="navbtn active" onclick="SPA.show('dashboard',this)">Dashboard</button>
- <button class="navbtn" onclick="SPA.show('metodo',this)">M├®todo</button>
+ <button class="navbtn" onclick="SPA.show('metodo',this)">Método</button>
  <button class="navbtn" onclick="SPA.show('rangos',this)">Rangos</button>
  <button class="navbtn" onclick="SPA.show('trades',this)">Trades</button>
  </div>
@@ -189,16 +189,16 @@
 <!-- DASHBOARD -->
 <div id="page-dashboard" class="page active">
  <div class="hbar">
- <div class="src"><span id="d-src">┬À┬À┬À</span></div>
- <span style="color:#1a3352">┬À</span>
- <span>fresh ┬À hace 28s</span>
- <span style="color:#1a3352">┬À</span>
- <span>Worker VIX Ô£ô</span>
- <span style="color:#1a3352">┬À</span>
- <span>CoinGecko Ô£ô</span>
- <span style="color:#1a3352">┬À</span>
- <span>F&G Ô£ô</span>
- <div class="stalert"><span id="d-alert-badge">┬À┬À┬À</span></div>
+ <div class="src"><span id="d-src">···</span></div>
+ <span style="color:#1a3352">·</span>
+ <span>fresh · hace 28s</span>
+ <span style="color:#1a3352">·</span>
+ <span>Worker VIX ✓</span>
+ <span style="color:#1a3352">·</span>
+ <span>CoinGecko ✓</span>
+ <span style="color:#1a3352">·</span>
+ <span>F&G ✓</span>
+ <div class="stalert"><span id="d-alert-badge">···</span></div>
  </div>
 
  <div class="atabs">
@@ -210,10 +210,10 @@
 
  <div class="row2">
  <div class="card">
- <div class="ctitle"><span id="coin-pair-main">BTC</span> / USDT ┬À Tiempo real</div>
+ <div class="ctitle"><span id="coin-pair-main">BTC</span> / USDT · Tiempo real</div>
  <div class="price-big" id="d-price"><span id="coin-price-main">--</span></div>
- <div class="price-eur"><span id="coin-price-eur">Ôëê 59,097 EUR</span></div>
- <div class="price-chg"><span id="coin-price-chg">Ôû╝ ÔêÆ3.03% ┬À ÔêÆ$2,010 vs ayer</span></div>
+ <div class="price-eur"><span id="coin-price-eur">≈ 59,097 EUR</span></div>
+ <div class="price-chg"><span id="coin-price-chg">▼ −3.03% · −$2,010 vs ayer</span></div>
  <div class="hl">
  <div><span>H 24h</span> <b id="d-high" coin-high>--</b></div>
  <div><span>L 24h</span> <b id="d-low" coin-low>--</b></div>
@@ -230,7 +230,7 @@
  </svg>
  <div class="rscore"><div class="rscore-num"><span id="coin-score-num">54</span></div><div class="rscore-den">/100</div></div>
  </div>
- <div class="score-label"><span id="coin-score-label">ACUMULAR ­ƒöÁ</span></div>
+ <div class="score-label"><span id="coin-score-label">ACUMULAR 🔵</span></div>
  <div class="pillars">
  <div class="pillar">
  <div class="plabel">P1 MAs</div>
@@ -249,7 +249,7 @@ id="d-p3"
  <div class="pbar-bg"><div class="bar-fill" id="coin-p3-bar" style="width:60%;background:#8b5cf6"></div></div>
  </div>
  </div>
- <div class="regime"><span id="coin-regime">CONSOLIDACI├ôN ┬À NEUTRAL ┬À RIESGO MEDIO</span></div>
+ <div class="regime"><span id="coin-regime">CONSOLIDACIÓN · NEUTRAL · RIESGO MEDIO</span></div>
  </div>
  </div>
 
@@ -257,7 +257,7 @@ id="d-p3"
  <div class="card-sm">
  <div class="ctitle">Fear & Greed</div>
  <div class="kpi-val" id="coin-fg" id="d-fg" style="color:#ef4444">12</div>
- <div class="kpi-sub" id="coin-fg-label" id="d-fg-lbl" style="color:#ef4444">­ƒÿ▒ Miedo extremo</div>
+ <div class="kpi-sub" id="coin-fg-label" id="d-fg-lbl" style="color:#ef4444">😱 Miedo extremo</div>
  </div>
  <div class="card-sm">
  <div class="ctitle">VIX</div>
@@ -279,7 +279,7 @@ id="d-p3"
  <div class="fullrow">
  <div class="card">
  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
- <div class="ctitle" style="margin:0">Indicadores t├®cnicos</div>
+ <div class="ctitle" style="margin:0">Indicadores técnicos</div>
  <div class="tf-row" style="margin:0">
  <button class="tfp" onclick="setTF(this,'1m')">1m</button>
  <button class="tfp" onclick="setTF(this,'3m')">3m</button>
@@ -306,11 +306,11 @@ id="d-p3"
  <div class="ind-item">
  <div class="ind-name">MA40</div>
  <div class="ind-val" id="coin-ma40" id="d-ma40v" style="color:#f59e0b">64,850</div>
- <div style="font-size:9px;color:#ef4444;margin-top:2px"><span id="coin-ma40-chg">precio ÔêÆ0.95% bajo MA40</span></div>
+ <div style="font-size:9px;color:#ef4444;margin-top:2px"><span id="coin-ma40-chg">precio −0.95% bajo MA40</span></div>
  </div>
  </div>
  <div class="ind-item" style="margin-top:8px">
- <div class="ind-name">Presi├│n de precio</div>
+ <div class="ind-name">Presión de precio</div>
  <div class="pressure">
  <div class="pbar-fill" id="d-pbar"></div><div class="pdot" id="d-pdot"></div>
  </div>
@@ -329,18 +329,18 @@ id="d-p3"
  <div class="mtf-item"><div class="mtf-tf">15m</div><div class="mtf-sc" style="color:#00c8f0" id="coin-mtf54" id="d-mtf15m">54</div></div>
  </div>
  <div style="text-align:center;margin-top:8px;font-size:10px;color:#2a5a8a">MTF Score total: <b style="color:#7aaad0"><span id="coin-mtf-total">48</span>/100</b></div>
- <div style="font-size:9px;color:#2a5a8a;margin-top:3px">* MTF promedio 1m┬À3m┬À5m┬À15m. Score principal usa 15m como TF base.</div>
+ <div style="font-size:9px;color:#2a5a8a;margin-top:3px">* MTF promedio 1m·3m·5m·15m. Score principal usa 15m como TF base.</div>
  </div>
  <div class="card">
- <div class="ctitle">Se├▒ales activas</div>
- <div class="sig"><div class="sdot" style="background:#22c55e"></div><div class="stext">ADX > 25 ÔåÆ tendencia activa</div><div class="spts">+15pts</div></div>
- <div class="sig"><div class="sdot" style="background:#22c55e"></div><div class="stext">RSI < 30 ÔåÆ se├▒al rebote</div><div class="spts">+18pts</div></div>
+ <div class="ctitle">Señales activas</div>
+ <div class="sig"><div class="sdot" style="background:#22c55e"></div><div class="stext">ADX > 25 → tendencia activa</div><div class="spts">+15pts</div></div>
+ <div class="sig"><div class="sdot" style="background:#22c55e"></div><div class="stext">RSI < 30 → señal rebote</div><div class="spts">+18pts</div></div>
  <div class="sig"><div class="sdot" style="background:#22c55e"></div><div class="stext">F&G extremo < 25</div><div class="spts">macro</div></div>
- <div class="sig"><div class="sdot" style="background:#1a3352"></div><div class="stext">MA6 ├ù MA70 (cruce)</div><div class="spts">ÔÇö</div></div>
- <div class="sig"><div class="sdot" style="background:#1a3352"></div><div class="stext">Precio > MA40</div><div class="spts">ÔÇö</div></div>
+ <div class="sig"><div class="sdot" style="background:#1a3352"></div><div class="stext">MA6 × MA70 (cruce)</div><div class="spts">—</div></div>
+ <div class="sig"><div class="sdot" style="background:#1a3352"></div><div class="stext">Precio > MA40</div><div class="spts">—</div></div>
  </div>
  
- Medias M├│viles</div>
+ Medias Móviles</div>
  <div class="ma-grid">
  <div class="ma-item"><div class="ma-l">MA6</div><div class="ma-p" id="d-ma6">--</div><div class="ma-d" id="d-ma6d" style="color:#ef4444">--</div></div>
  <div class="ma-item"><div class="ma-l">MA40</div><div class="ma-p" id="d-ma40v">--</div><div class="ma-d" id="d-ma40d" style="color:#ef4444">--</div></div>
@@ -356,13 +356,13 @@ id="d-p3"
  <div class="ctitle">Zonas S/R
  R2 <span id="d-sr-r2">--</span> <span style="color:#2a5a8a">weak</span>
  R1 <span id="d-sr-r1">--</span> <span style="color:#2a5a8a">med</span>
- ÔùÅ <span id="d-sr-now">--</span> LIVE
+ ● <span id="d-sr-now">--</span> LIVE
  S1 <span id="d-sr-s1">--</span> <span style="color:#2a5a8a">strong</span>
  S2 <span id="d-sr-s2">--</span> <span style="color:#2a5a8a">weak</span>Macro Global</div>
- <div style="font-size:12px;font-weight:700;margin-bottom:8px"><span id="coin-macro">­ƒƒó MACRO ALCISTA</span></div>
+ <div style="font-size:12px;font-weight:700;margin-bottom:8px"><span id="coin-macro">🟢 MACRO ALCISTA</span></div>
  <div style="font-size:10px;color:#3a6a9a;line-height:2">
  Score: <span style="color:#7aaad0"><span id="coin-macro-score">4</span> / 6</span><br>
- R├®gimen: <span style="color:#7aaad0"><span id="coin-macro-regime">CONSOLIDACI├ôN</span></span><br>
+ Régimen: <span style="color:#7aaad0"><span id="coin-macro-regime">CONSOLIDACIÓN</span></span><br>
  Sesgo: <span style="color:#7aaad0"><span id="coin-macro-bias">NEUTRAL</span></span><br>
  Riesgo: <span style="color:#f59e0b"><span id="coin-macro-risk">MEDIO</span></span>
  </div>
@@ -372,18 +372,18 @@ id="d-p3"
  <div class="fullrow" style="margin-top:2px">
  <div class="alert-box">
  <div class="alert-hd">Alert feed</div>
- <div class="alert-row"><div class="alert-time">14:32</div><span class="atag">ADX</span><span>ADX super├│ 25 en 15m ÔåÆ tendencia activa</span></div>
- <div class="alert-row"><div class="alert-time">13:18</div><span class="atag atag-w">SCORE</span><span>Score subi├│ 26ÔåÆ54 (+28pts desde m├¡nimos del 27 may)</span></div>
- <div class="alert-row"><div class="alert-time">11:45</div><span class="atag atag-b">F&G</span><span>Fear & Greed en zona extrema (12) ÔÇö se├▒al macro activa</span></div>
+ <div class="alert-row"><div class="alert-time">14:32</div><span class="atag">ADX</span><span>ADX superó 25 en 15m → tendencia activa</span></div>
+ <div class="alert-row"><div class="alert-time">13:18</div><span class="atag atag-w">SCORE</span><span>Score subió 26→54 (+28pts desde mínimos del 27 may)</span></div>
+ <div class="alert-row"><div class="alert-time">11:45</div><span class="atag atag-b">F&G</span><span>Fear & Greed en zona extrema (12) — señal macro activa</span></div>
  </div>
  </div>
 
- <div class="footer">Binance ┬À CoinGecko ┬À Alternative.me ┬À Proxy VIX ┬À No es consejo financiero</div>
+ <div class="footer">Binance · CoinGecko · Alternative.me · Proxy VIX · No es consejo financiero</div>
 </div>
-<!-- M├ëTODO -->
+<!-- MÉTODO -->
 <div id="page-metodo" class="page">
  <div class="hbar">
- <div class="src">KuCoin ÔåÆ mapper v2 ┬À 380ms</div>
+ <div class="src">KuCoin → mapper v2 · 380ms</div>
  <div class="atabs">
  <div class="atab active" onclick="setAsset('BTC',this)">BTC</div>
  <div class="atab" onclick="setAsset('ETH',this)">ETH</div>
@@ -391,8 +391,8 @@ id="d-p3"
  <div class="atab" onclick="setAsset('XRP',this)">XRP</div>
  </div>
 
- <span style="color:#1a3352">┬À</span>
- <span>fresh ┬À hace 22s</span>
+ <span style="color:#1a3352">·</span>
+ <span>fresh · hace 22s</span>
  <div class="stalert" style="background:#1a0a0a;border-color:#ef444433;color:#ef4444">RSI 3D real: 27 (antes: promedio artificial)</div>
  </div>
  <div class="metodo-layout">
@@ -407,34 +407,34 @@ id="d-p3"
  </svg>
  <div class="rscore"><div class="rscore-num"><span id="coin-score-num">54</span></div><div class="rscore-den">/100</div></div>
  </div>
- <div class="score-label"><span id="coin-score-label">ACUMULAR ­ƒöÁ</span></div>
- <div class="regime"><span id="coin-rm-metodo">CONSOLIDACI├ôN ┬À NEUTRAL</span></div>
+ <div class="score-label"><span id="coin-score-label">ACUMULAR 🔵</span></div>
+ <div class="regime"><span id="coin-rm-metodo">CONSOLIDACIÓN · NEUTRAL</span></div>
  </div>
  <div class="pilar-card">
- <div class="p-header"><div class="p-title">P1 ┬À Tendencia</div><div class="p-score" id="coin-p1sc" style="color:#3a8ab0">12/35</div></div>
- <div class="p-item"><div class="p-icon" style="background:#1a3352"></div><div class="p-text">MA6 ├ù MA70</div><div class="p-pts">0pts</div></div>
+ <div class="p-header"><div class="p-title">P1 · Tendencia</div><div class="p-score" id="coin-p1sc" style="color:#3a8ab0">12/35</div></div>
+ <div class="p-item"><div class="p-icon" style="background:#1a3352"></div><div class="p-text">MA6 × MA70</div><div class="p-pts">0pts</div></div>
  <div class="p-item"><div class="p-icon" style="background:#1a3352"></div><div class="p-text">Precio > MA40</div><div class="p-pts">0pts</div></div>
  <div class="p-item"><div class="p-icon" style="background:#22c55e"></div><div class="p-text">Precio > MA200</div><div class="p-pts">+10pts</div></div>
  </div>
  <div class="pilar-card">
- <div class="p-header"><div class="p-title">P2 ┬À Momentum</div><div class="p-score" id="coin-p2sc" style="color:#00c8f0">24/35</div></div>
+ <div class="p-header"><div class="p-title">P2 · Momentum</div><div class="p-score" id="coin-p2sc" style="color:#00c8f0">24/35</div></div>
  <div class="p-item"><div class="p-icon" style="background:#22c55e"></div><div class="p-text">ADX 36.1 > 25</div><div class="p-pts">+15pts</div></div>
  <div class="p-item"><div class="p-icon" style="background:#22c55e"></div><div class="p-text">RSI 27 < 30 (rebote)</div><div class="p-pts">+18pts</div></div>
  </div>
  <div class="pilar-card">
- <div class="p-header"><div class="p-title">P3 ┬À Bollinger</div><div class="p-score" id="coin-p3sc" style="color:#8b5cf6">18/30</div></div>
- <div class="p-item"><div class="p-icon" style="background:#8b5cf6"></div><div class="p-text">%B 0.18 ÔåÆ zona 0ÔÇô0.20</div><div class="p-pts">+18pts</div></div>
+ <div class="p-header"><div class="p-title">P3 · Bollinger</div><div class="p-score" id="coin-p3sc" style="color:#8b5cf6">18/30</div></div>
+ <div class="p-item"><div class="p-icon" style="background:#8b5cf6"></div><div class="p-text">%B 0.18 → zona 0–0.20</div><div class="p-pts">+18pts</div></div>
  </div>
- <button class="debug-toggle" onclick="this.nextSibling.classList.toggle('open');this.lastChild.textContent=this.nextSibling.classList.contains('open')?'Ôû▓':'Ôû╝'">
- <span>Panel t├®cnico (inputs)</span><span>Ôû╝</span>
+ <button class="debug-toggle" onclick="this.nextSibling.classList.toggle('open');this.lastChild.textContent=this.nextSibling.classList.contains('open')?'▲':'▼'">
+ <span>Panel técnico (inputs)</span><span>▼</span>
  </button>
  <div class="debug-panel" id="coin-debug">
- <b>MA6</b> 64,100 &lt; <b>MA70</b> 65,220 Ô£ù<br>
- <b>Precio</b> 64,236 &lt; <b>MA40</b> 64,850 Ô£ù<br>
- <b>Precio</b> 64,236 &lt; <b>MA200</b> 67,150 Ô£ù<br>
- <b>ADX</b> 36.1 ÔåÆ +15pts Ô£ô<br>
- <b>RSI</b> 27 &lt; 30 ÔåÆ +18pts Ô£ô<br>
- <b>%B</b> 0.18 ÔåÆ zona [0ÔÇô0.20] ÔåÆ +18pts<br>
+ <b>MA6</b> 64,100 &lt; <b>MA70</b> 65,220 ✗<br>
+ <b>Precio</b> 64,236 &lt; <b>MA40</b> 64,850 ✗<br>
+ <b>Precio</b> 64,236 &lt; <b>MA200</b> 67,150 ✗<br>
+ <b>ADX</b> 36.1 → +15pts ✓<br>
+ <b>RSI</b> 27 &lt; 30 → +18pts ✓<br>
+ <b>%B</b> 0.18 → zona [0–0.20] → +18pts<br>
  <b>Score</b> = 12+24+18 = 54
  </div>
  <div style="margin-top:auto">
@@ -447,9 +447,9 @@ id="d-p3"
  </div>
  </div>
  <div style="font-size:8px;color:#1a3352;border-top:1px solid #1a3352;padding-top:6px;line-height:1.7">
- 78ÔÇô100 Compra fuerte<br>62ÔÇô77 Compra<br>
- <b style="color:#00c8f0">52ÔÇô61 Acumular Ôùä</b><br>
- 42ÔÇô51 Neutral<br>30ÔÇô41 Venta<br>18ÔÇô29 Venta fuerte<br>0ÔÇô17 Capitulaci├│n
+ 78–100 Compra fuerte<br>62–77 Compra<br>
+ <b style="color:#00c8f0">52–61 Acumular ◄</b><br>
+ 42–51 Neutral<br>30–41 Venta<br>18–29 Venta fuerte<br>0–17 Capitulación
  </div>
  </div>
  <div class="main-area">
@@ -472,7 +472,7 @@ id="d-p3"
  </div>
  </div>
  <div class="chart-body">
- <div style="font-size:9px;color:#2a5a8a;padding:4px 0;letter-spacing:1px;text-transform:uppercase">Precio ┬À MA6 ┬À MA40 ┬À MA70 ┬À MA200 ┬À Bollinger</div>
+ <div style="font-size:9px;color:#2a5a8a;padding:4px 0;letter-spacing:1px;text-transform:uppercase">Precio · MA6 · MA40 · MA70 · MA200 · Bollinger</div>
  <div class="chart-line-price">
  <svg viewBox="0 0 400 100" preserveAspectRatio="none" style="width:100%;height:100%">
  <polyline points="0,40 40,38 80,50 120,60 160,55 200,65 240,70 280,60 320,72 360,78 400,75" fill="none" stroke="#2a5a8a" stroke-width="0.5"/>
@@ -484,13 +484,13 @@ id="d-p3"
  </svg>
  </div>
  <div style="display:flex;gap:10px;font-size:8px;margin-bottom:8px;flex-wrap:wrap">
- <span style="color:#00c8f0">ÔöÇÔöÇ Precio</span>
+ <span style="color:#00c8f0">── Precio</span>
  <span style="color:#3a8ab0">-- MA6</span>
- <span style="color:#f59e0b">ÔöÇÔöÇ MA40</span>
- <span style="color:#8b5cf6">ÔöÇÔöÇ MA70</span>
- <span style="color:#ef4444">ÔöÇÔöÇ MA200</span>
+ <span style="color:#f59e0b">── MA40</span>
+ <span style="color:#8b5cf6">── MA70</span>
+ <span style="color:#ef4444">── MA200</span>
  </div>
- <div style="font-size:8px;color:#2a5a8a;padding:4px 0 2px;letter-spacing:1px;text-transform:uppercase;border-top:1px solid #1a3352">RSI (14) ÔÇö Sobreventa &lt;30 ┬À Sobrecompra &gt;70</div>
+ <div style="font-size:8px;color:#2a5a8a;padding:4px 0 2px;letter-spacing:1px;text-transform:uppercase;border-top:1px solid #1a3352">RSI (14) — Sobreventa &lt;30 · Sobrecompra &gt;70</div>
  <div class="chart-line">
  <svg viewBox="0 0 400 60" preserveAspectRatio="none" style="width:100%;height:100%">
  <line x1="0" y1="18" x2="400" y2="18" stroke="#1a3352" stroke-width="0.5"/>
@@ -498,14 +498,14 @@ id="d-p3"
  <polyline points="0,20 50,25 100,30 150,35 200,40 250,42 300,46 350,50 400,52" fill="none" stroke="#8b5cf6" stroke-width="1.5"/>
  </svg>
  </div>
- <div style="font-size:8px;color:#2a5a8a;padding:4px 0 2px;letter-spacing:1px;text-transform:uppercase;border-top:1px solid #1a3352">ADX (14) ÔÇö Tendencia fuerte &gt;25</div>
+ <div style="font-size:8px;color:#2a5a8a;padding:4px 0 2px;letter-spacing:1px;text-transform:uppercase;border-top:1px solid #1a3352">ADX (14) — Tendencia fuerte &gt;25</div>
  <div class="chart-line">
  <svg viewBox="0 0 400 60" preserveAspectRatio="none" style="width:100%;height:100%">
  <line x1="0" y1="35" x2="400" y2="35" stroke="#1a3352" stroke-width="0.5"/>
  <polyline points="0,50 50,48 100,45 150,42 200,38 250,32 300,28 350,25 400,22" fill="none" stroke="#00c8f0" stroke-width="1.5"/>
  </svg>
  </div>
- <div style="font-size:8px;color:#2a5a8a;padding:4px 0 2px;letter-spacing:1px;text-transform:uppercase;border-top:1px solid #1a3352">Bollinger %B ÔÇö Sobreventa &lt;0.2 ┬À Sobrecompra &gt;0.8</div>
+ <div style="font-size:8px;color:#2a5a8a;padding:4px 0 2px;letter-spacing:1px;text-transform:uppercase;border-top:1px solid #1a3352">Bollinger %B — Sobreventa &lt;0.2 · Sobrecompra &gt;0.8</div>
  <div class="chart-line">
  <svg viewBox="0 0 400 60" preserveAspectRatio="none" style="width:100%;height:100%">
  <line x1="0" y1="12" x2="400" y2="12" stroke="#1a3352" stroke-width="0.5"/>
@@ -515,7 +515,7 @@ id="d-p3"
  </div>
  </div>
  </div>
- <div style="font-size:9px;color:#1a3352;text-align:center;padding:4px">ÔÜá M├®todo cuantitativo y mec├ínico. No es consejo financiero.</div>
+ <div style="font-size:9px;color:#1a3352;text-align:center;padding:4px">⚠ Método cuantitativo y mecánico. No es consejo financiero.</div>
  </div>
  </div>
 </div>
@@ -524,7 +524,7 @@ id="d-p3"
 <div id="page-rangos" class="page">
  <div class="rangos-hero">
  <div>
- <div style="font-size:9px;color:#2a5a8a;letter-spacing:1.5px;text-transform:uppercase">Market Structure Radar ┬À <span id="coin-pair-rangos">BTC</span>/USDT</div>
+ <div style="font-size:9px;color:#2a5a8a;letter-spacing:1.5px;text-transform:uppercase">Market Structure Radar · <span id="coin-pair-rangos">BTC</span>/USDT</div>
  <div class="hero-price"><span id="coin-price-rangos">$64,236</span></div>
  <div style="display:flex;gap:3px;margin-top:4px">
   <div class="tfp active" onclick="SPA.changeAsset('BTC',this)">BTC</div>
@@ -533,7 +533,7 @@ id="d-p3"
   <div class="tfp" onclick="SPA.changeAsset('XRP',this)">XRP</div>
  </div>
  </div>
- <div class="hero-pill pill-buy">Ô¼å ZONA BAJA ┬À Presi├│n compradora</div>
+ <div class="hero-pill pill-buy">⬆ ZONA BAJA · Presión compradora</div>
  <div class="hero-kpis">
  <div class="hkpi"><div class="hkpi-label">Bias</div><div class="hkpi-val" id="coin-rg-bias" style="color:#22c55e">ALCISTA</div></div>
  <div class="hkpi"><div class="hkpi-label">Confianza</div><div class="hkpi-val" id="coin-rg-conf" style="color:#00c8f0">70/100</div></div>
@@ -542,9 +542,9 @@ id="d-p3"
  </div>
  </div>
  <div class="hbar">
- <div class="src">Binance WS ┬À real-time</div>
- <span style="color:#1a3352">┬À</span>
- <span>Sin cach├® ┬À recalcula en cada ciclo ┬À 60 velas por TF</span>
+ <div class="src">Binance WS · real-time</div>
+ <span style="color:#1a3352">·</span>
+ <span>Sin caché · recalcula en cada ciclo · 60 velas por TF</span>
  </div>
  <div class="rangos-grid">
  <div class="rango-card">
@@ -552,18 +552,18 @@ id="d-p3"
  <div class="rc-tf">15 MINUTOS</div>
  <span class="rc-badge rc-dom">DOMINANTE</span>
  </div>
- <div class="rc-zone" style="color:#22c55e">Ô¼å ZONA BAJA / ESPERA</div>
+ <div class="rc-zone" style="color:#22c55e">⬆ ZONA BAJA / ESPERA</div>
  <div>
  <div class="rc-sr-row"><span style="color:#ef4444">RES 3</span><span style="color:#7aaad0">$65,400</span><span class="badge b-w">weak</span></div>
  <div class="rc-sr-row"><span style="color:#ef4444">RES 2</span><span style="color:#7aaad0">$65,100</span><span class="badge b-s">med</span></div>
  <div class="rc-sr-row"><span style="color:#ef4444">RES 1</span><span style="color:#7aaad0">$64,700</span><span class="badge b-s">strong</span></div>
- <div class="rc-current">ÔùÅ <span id="d-price-sr">--</span> LIVE</div>
+ <div class="rc-current">● <span id="d-price-sr">--</span> LIVE</div>
  <div class="rc-sr-row"><span style="color:#22c55e">SUP 1</span><span style="color:#7aaad0">$63,900</span><span class="badge b-s">strong</span></div>
  <div class="rc-sr-row"><span style="color:#22c55e">SUP 2</span><span style="color:#7aaad0">$63,400</span><span class="badge b-w">med</span></div>
  <div class="rc-sr-row"><span style="color:#22c55e">SUP 3</span><span style="color:#7aaad0">$62,800</span><span class="badge b-w">weak</span></div>
  </div>
  <div class="gauge-wrap">
- <div class="gauge-label">Presi├│n compradora</div>
+ <div class="gauge-label">Presión compradora</div>
  <div class="gauge-bar">
  <div class="gauge-fill" style="width:72%;background:#22c55e66;border-radius:3px"></div>
  <div class="gauge-pos" style="left:70%"></div>
@@ -572,7 +572,7 @@ id="d-p3"
  </div>
  <div class="rc-context">
  <div class="rc-ctx-label">Contexto accionable</div>
- <div class="rc-ctx-text">Nivel cr├¡tico: $63,900 (SUP 1)<br>Riesgo: bajo mientras mantiene SUP1<br>Reacci├│n esperada: rebote t├®cnico posible</div>
+ <div class="rc-ctx-text">Nivel crítico: $63,900 (SUP 1)<br>Riesgo: bajo mientras mantiene SUP1<br>Reacción esperada: rebote técnico posible</div>
  </div>
  <div class="sparkline">
  <svg viewBox="0 0 200 30" preserveAspectRatio="none" style="width:100%;height:100%">
@@ -582,16 +582,16 @@ id="d-p3"
  </div>
  <div class="rango-card">
  <div class="rc-header"><div class="rc-tf">5 MINUTOS</div></div>
- <div class="rc-zone" style="color:#f59e0b">Ôùå ZONA MEDIA / COMPRESI├ôN</div>
+ <div class="rc-zone" style="color:#f59e0b">◆ ZONA MEDIA / COMPRESIÓN</div>
  <div>
  <div class="rc-sr-row"><span style="color:#ef4444">RES 2</span><span style="color:#7aaad0">$64,600</span><span class="badge b-s">strong</span></div>
  <div class="rc-sr-row"><span style="color:#ef4444">RES 1</span><span style="color:#7aaad0">$64,450</span><span class="badge b-w">weak</span></div>
- <div class="rc-current">ÔùÅ <span id="d-price-sr">--</span> LIVE</div>
+ <div class="rc-current">● <span id="d-price-sr">--</span> LIVE</div>
  <div class="rc-sr-row"><span style="color:#22c55e">SUP 1</span><span style="color:#7aaad0">$64,050</span><span class="badge b-s">med</span></div>
  <div class="rc-sr-row"><span style="color:#22c55e">SUP 2</span><span style="color:#7aaad0">$63,800</span><span class="badge b-w">weak</span></div>
  </div>
  <div class="gauge-wrap">
- <div class="gauge-label">Presi├│n neutra</div>
+ <div class="gauge-label">Presión neutra</div>
  <div class="gauge-bar">
  <div class="gauge-fill" style="width:50%;background:#f59e0b66;border-radius:3px"></div>
  <div class="gauge-pos" style="left:48%"></div>
@@ -600,7 +600,7 @@ id="d-p3"
  </div>
  <div class="rc-context">
  <div class="rc-ctx-label">Contexto accionable</div>
- <div class="rc-ctx-text">Nivel cr├¡tico: $64,600 (RES 1)<br>Riesgo: medio, sin direcci├│n clara<br>Reacci├│n esperada: lateralizaci├│n</div>
+ <div class="rc-ctx-text">Nivel crítico: $64,600 (RES 1)<br>Riesgo: medio, sin dirección clara<br>Reacción esperada: lateralización</div>
  </div>
  <div class="sparkline">
  <svg viewBox="0 0 200 30" preserveAspectRatio="none" style="width:100%;height:100%">
@@ -610,15 +610,15 @@ id="d-p3"
  </div>
  <div class="rango-card">
  <div class="rc-header"><div class="rc-tf">3 MINUTOS</div></div>
- <div class="rc-zone" style="color:#ef4444">Ô¼ç ZONA ALTA / DISTRIBUCI├ôN</div>
+ <div class="rc-zone" style="color:#ef4444">⬇ ZONA ALTA / DISTRIBUCIÓN</div>
  <div>
  <div class="rc-sr-row"><span style="color:#ef4444">RES 1</span><span style="color:#7aaad0">$64,380</span><span class="badge b-s">strong</span></div>
- <div class="rc-current">ÔùÅ $64,236 LIVE</div>
+ <div class="rc-current">● $64,236 LIVE</div>
  <div class="rc-sr-row"><span style="color:#22c55e">SUP 1</span><span style="color:#7aaad0">$64,100</span><span class="badge b-s">med</span></div>
  <div class="rc-sr-row"><span style="color:#22c55e">SUP 2</span><span style="color:#7aaad0">$63,950</span><span class="badge b-w">weak</span></div>
  </div>
  <div class="gauge-wrap">
- <div class="gauge-label">Presi├│n vendedora</div>
+ <div class="gauge-label">Presión vendedora</div>
  <div class="gauge-bar">
  <div class="gauge-fill" style="width:28%;background:#ef444466;border-radius:3px"></div>
  <div class="gauge-pos" style="left:26%"></div>
@@ -627,7 +627,7 @@ id="d-p3"
  </div>
  <div class="rc-context">
  <div class="rc-ctx-label">Contexto accionable</div>
- <div class="rc-ctx-text">Nivel cr├¡tico: $64,100 (SUP 1)<br>Riesgo: alto si pierde SUP1<br>Reacci├│n esperada: presi├│n bajista corto</div>
+ <div class="rc-ctx-text">Nivel crítico: $64,100 (SUP 1)<br>Riesgo: alto si pierde SUP1<br>Reacción esperada: presión bajista corto</div>
  </div>
  <div class="sparkline">
  <svg viewBox="0 0 200 30" preserveAspectRatio="none" style="width:100%;height:100%">
@@ -637,15 +637,15 @@ id="d-p3"
  </div>
  <div class="rango-card">
  <div class="rc-header"><div class="rc-tf">1 MINUTO</div></div>
- <div class="rc-zone" style="color:#22c55e">Ô¼å ZONA BAJA / REBOTE</div>
+ <div class="rc-zone" style="color:#22c55e">⬆ ZONA BAJA / REBOTE</div>
  <div>
  <div class="rc-sr-row"><span style="color:#ef4444">RES 1</span><span style="color:#7aaad0">$64,280</span><span class="badge b-w">weak</span></div>
- <div class="rc-current">ÔùÅ $64,236 LIVE</div>
+ <div class="rc-current">● $64,236 LIVE</div>
  <div class="rc-sr-row"><span style="color:#22c55e">SUP 1</span><span style="color:#7aaad0">$64,180</span><span class="badge b-s">strong</span></div>
  <div class="rc-sr-row"><span style="color:#22c55e">SUP 2</span><span style="color:#7aaad0">$64,050</span><span class="badge b-w">weak</span></div>
  </div>
  <div class="gauge-wrap">
- <div class="gauge-label">Presi├│n compradora</div>
+ <div class="gauge-label">Presión compradora</div>
  <div class="gauge-bar">
  <div class="gauge-fill" style="width:68%;background:#22c55e66;border-radius:3px"></div>
  <div class="gauge-pos" style="left:66%"></div>
@@ -654,7 +654,7 @@ id="d-p3"
  </div>
  <div class="rc-context">
  <div class="rc-ctx-label">Contexto accionable</div>
- <div class="rc-ctx-text">Nivel cr├¡tico: $64,180 (SUP 1)<br>Riesgo: bajo, momentum positivo<br>Reacci├│n esperada: continuaci├│n alcista 1m</div>
+ <div class="rc-ctx-text">Nivel crítico: $64,180 (SUP 1)<br>Riesgo: bajo, momentum positivo<br>Reacción esperada: continuación alcista 1m</div>
  </div>
  <div class="sparkline">
  <svg viewBox="0 0 200 30" preserveAspectRatio="none" style="width:100%;height:100%">
@@ -663,12 +663,12 @@ id="d-p3"
  </div>
  </div>
  </div>
- <div class="footer">Binance ┬À WS aggTrade ┬À An├ílisis autom├ítico de rangos ┬À No es consejo financiero</div>
+ <div class="footer">Binance · WS aggTrade · Análisis automático de rangos · No es consejo financiero</div>
 </div>
 <!-- TRADES -->
 <div id="page-trades" class="page">
  <div class="hbar">
- <div class="src">trades.json ┬À Worker real ┬À actualizado</div>
+ <div class="src">trades.json · Worker real · actualizado</div>
  <div class="atabs">
  <div class="atab active" onclick="setAsset('BTC',this)">BTC</div>
  <div class="atab" onclick="setAsset('ETH',this)">ETH</div>
@@ -676,42 +676,42 @@ id="d-p3"
  <div class="atab" onclick="setAsset('XRP',this)">XRP</div>
  </div>
 
- <span style="color:#1a3352">┬À</span>
- <span style="color:#22c55e">Ô£ô Sin datos demo hardcodeados</span>
+ <span style="color:#1a3352">·</span>
+ <span style="color:#22c55e">✓ Sin datos demo hardcodeados</span>
  <div class="stalert">WS BTC precio live activo</div>
  </div>
  <div class="trades-kpis">
  <div class="tcard">
  <div class="tcard-label">BTC Live</div>
  <div class="tcard-val" id="coin-tr-price" style="color:#f0f8ff">$64,236</div>
- <div class="tcard-sub" id="coin-tr-chg">Ôû╝ ÔêÆ3.03%</div>
+ <div class="tcard-sub" id="coin-tr-chg">▼ −3.03%</div>
  </div>
  <div class="tcard">
  <div class="tcard-label">Abiertos</div>
  <div class="tcard-val" style="color:#22c55e">3</div>
- <div class="tcard-sub">LONG ├ù 3</div>
+ <div class="tcard-sub">LONG × 3</div>
  </div>
  <div class="tcard">
  <div class="tcard-label">Realtime</div>
- <div class="tcard-val" style="color:#00c8f0;font-size:12px">ÔùÅ ONLINE</div>
- <div class="tcard-sub">├Ültimo tick: 14:33:21</div>
+ <div class="tcard-val" style="color:#00c8f0;font-size:12px">● ONLINE</div>
+ <div class="tcard-sub">Último tick: 14:33:21</div>
  </div>
  <div class="tcard">
  <div class="tcard-label">Cerrados</div>
  <div class="tcard-val" style="color:#7aaad0">6</div>
- <div class="tcard-sub">TP:3 ┬À BE:1 ┬À SL:2</div>
+ <div class="tcard-sub">TP:3 · BE:1 · SL:2</div>
  </div>
  </div>
  <div class="analytics-row">
  <div class="analytics-card">
- <div class="ctitle">Estad├¡sticas de rendimiento</div>
+ <div class="ctitle">Estadísticas de rendimiento</div>
  <div class="analytics-stats">
  <div class="astat"><div class="astat-l">TP/BE/SL</div><div class="astat-v" style="color:#7aaad0">3/1/2</div></div>
  <div class="astat"><div class="astat-l">Winrate</div><div class="astat-v" style="color:#22c55e">50.0%</div></div>
  <div class="astat"><div class="astat-l">R Total</div><div class="astat-v" style="color:#22c55e">+3.34R</div></div>
  <div class="astat"><div class="astat-l">R Medio</div><div class="astat-v" style="color:#7aaad0">+0.56R</div></div>
  <div class="astat"><div class="astat-l">PnL</div><div class="astat-v" style="color:#22c55e">+$21.13</div></div>
- <div class="astat"><div class="astat-l">Max DD</div><div class="astat-v" style="color:#ef4444">ÔêÆ1.00R</div></div>
+ <div class="astat"><div class="astat-l">Max DD</div><div class="astat-v" style="color:#ef4444">−1.00R</div></div>
  </div>
  <div class="equity-chart">
  <svg viewBox="0 0 300 70" preserveAspectRatio="none" style="width:100%;height:100%">
@@ -740,7 +740,7 @@ id="d-p3"
  <td style="padding:4px 0;color:#7aaad0">bull_flag</td><td style="color:#e2e8f0">2</td><td style="color:#f59e0b">50%</td><td style="color:#7aaad0">+0.88R</td>
  </tr>
  <tr>
- <td style="padding:4px 0;color:#7aaad0">breakout</td><td style="color:#e2e8f0">1</td><td style="color:#ef4444">0%</td><td style="color:#ef4444">ÔêÆ1.00R</td>
+ <td style="padding:4px 0;color:#7aaad0">breakout</td><td style="color:#e2e8f0">1</td><td style="color:#ef4444">0%</td><td style="color:#ef4444">−1.00R</td>
  </tr>
  </table>
  <div class="ctitle" style="margin-top:10px">Rendimiento por TF</div>
@@ -755,7 +755,7 @@ id="d-p3"
  <td style="padding:4px 0;color:#7aaad0">5m</td><td style="color:#e2e8f0">2</td><td style="color:#f59e0b">50%</td><td style="color:#7aaad0">+1.00R</td>
  </tr>
  <tr>
- <td style="padding:4px 0;color:#7aaad0">3m</td><td style="color:#e2e8f0">1</td><td style="color:#ef4444">0%</td><td style="color:#ef4444">ÔêÆ1.00R</td>
+ <td style="padding:4px 0;color:#7aaad0">3m</td><td style="color:#e2e8f0">1</td><td style="color:#ef4444">0%</td><td style="color:#ef4444">−1.00R</td>
  </tr>
  </table>
  </div>
@@ -782,7 +782,7 @@ id="d-p3"
  <div style="color:#7aaad0">3m</div><div class="side-long">LONG</div>
  <div style="color:#5a8ab0">lower_l</div><div style="color:#e2e8f0">$73,948</div>
  <div style="color:#ef4444">$73,200</div><div style="color:#22c55e">$75,100</div>
- <div style="color:#22c55e">0</div><div style="color:#ef4444">ÔêÆ$148</div>
+ <div style="color:#22c55e">0</div><div style="color:#ef4444">−$148</div>
  <div style="color:#3a6a9a">9m</div><div style="color:#3a6a9a">0R</div>
  </div>
  <div class="tr-row">
@@ -790,27 +790,27 @@ id="d-p3"
  <div style="color:#7aaad0">15m</div><div class="side-long">LONG</div>
  <div style="color:#5a8ab0">lower_l</div><div style="color:#e2e8f0">$73,989</div>
  <div style="color:#ef4444">$73,100</div><div style="color:#22c55e">$75,500</div>
- <div style="color:#22c55e">+$120</div><div style="color:#ef4444">ÔêÆ$80</div>
+ <div style="color:#22c55e">+$120</div><div style="color:#ef4444">−$80</div>
  <div style="color:#3a6a9a">57m</div><div style="color:#3a6a9a">0R</div>
  </div>
  <div class="tr-row" style="background:#0a1a0a">
- <div style="color:#3a6a9a">231</div><div><span class="status-tp">TP Ô£ô</span></div>
+ <div style="color:#3a6a9a">231</div><div><span class="status-tp">TP ✓</span></div>
  <div style="color:#7aaad0">15m</div><div class="side-long">LONG</div>
  <div style="color:#5a8ab0">bull_flag</div><div style="color:#e2e8f0">$72,400</div>
  <div style="color:#ef4444">$71,800</div><div style="color:#22c55e">$73,900</div>
- <div style="color:#22c55e">+$520</div><div style="color:#ef4444">ÔêÆ$210</div>
+ <div style="color:#22c55e">+$520</div><div style="color:#ef4444">−$210</div>
  <div style="color:#3a6a9a">2h15m</div><div style="color:#22c55e">+1.88R</div>
  </div>
  <div class="tr-row">
- <div style="color:#3a6a9a">230</div><div><span class="status-sl">SL Ô£ù</span></div>
+ <div style="color:#3a6a9a">230</div><div><span class="status-sl">SL ✗</span></div>
  <div style="color:#7aaad0">5m</div><div class="side-long">LONG</div>
  <div style="color:#5a8ab0">breakout</div><div style="color:#e2e8f0">$74,200</div>
  <div style="color:#ef4444">$73,600</div><div style="color:#22c55e">$75,400</div>
- <div style="color:#22c55e">+$80</div><div style="color:#ef4444">ÔêÆ$600</div>
- <div style="color:#3a6a9a">45m</div><div style="color:#ef4444">ÔêÆ1.00R</div>
+ <div style="color:#22c55e">+$80</div><div style="color:#ef4444">−$600</div>
+ <div style="color:#3a6a9a">45m</div><div style="color:#ef4444">−1.00R</div>
  </div>
  <div class="tr-row" style="background:#0a1a0a">
- <div style="color:#3a6a9a">229</div><div><span class="status-be">BE ÔÇö</span></div>
+ <div style="color:#3a6a9a">229</div><div><span class="status-be">BE —</span></div>
  <div style="color:#7aaad0">3m</div><div class="side-long">LONG</div>
  <div style="color:#5a8ab0">lower_l</div><div style="color:#e2e8f0">$73,100</div>
  <div style="color:#ef4444">$73,100</div><div style="color:#22c55e">$74,200</div>
@@ -818,7 +818,7 @@ id="d-p3"
  <div style="color:#3a6a9a">1h30m</div><div style="color:#f59e0b">0R</div>
  </div>
  </div>
- <div class="footer">Binance WS ┬À trades.json real ┬À No es consejo financiero</div>
+ <div class="footer">Binance WS · trades.json real · No es consejo financiero</div>
 </div>
 
 <script>window.COIN = window.COIN || {};
@@ -955,9 +955,9 @@ window.SPA=function(){var p=null;function s(page,btn){if(p==='metodo'&&window.cl
 
 
 
-// ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
-// SONO PRO ÔÇö MOTOR DE DATOS REALES V2
-// ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
+// ═══════════════════════════════════════════════════════
+// SONO PRO — MOTOR DE DATOS REALES V2
+// ═══════════════════════════════════════════════════════
 
 window.SP = {
  asset: 'BTC',
@@ -1078,13 +1078,13 @@ function calcScore(ind) {
  else if (bbp > 0) p3 = 18;
  else p3 = 5;
  const total = p1 + p2 + p3;
- let label = 'CAPITULACI├ôN ­ƒö┤';
- if (total >= 78) label = 'COMPRA FUERTE ­ƒƒó';
- else if (total >= 62) label = 'COMPRA ­ƒƒó';
- else if (total >= 52) label = 'ACUMULAR ­ƒöÁ';
- else if (total >= 42) label = 'NEUTRAL ÔÜ¬';
- else if (total >= 30) label = 'VENTA ­ƒƒí';
- else if (total >= 18) label = 'VENTA FUERTE ­ƒö┤';
+ let label = 'CAPITULACIÓN 🔴';
+ if (total >= 78) label = 'COMPRA FUERTE 🟢';
+ else if (total >= 62) label = 'COMPRA 🟢';
+ else if (total >= 52) label = 'ACUMULAR 🔵';
+ else if (total >= 42) label = 'NEUTRAL ⚪';
+ else if (total >= 30) label = 'VENTA 🟡';
+ else if (total >= 18) label = 'VENTA FUERTE 🔴';
  return { total: Math.min(100, total), p1, p2, p3, label };
 }
 
@@ -1165,11 +1165,11 @@ async function fetchVIX() {
 }
 
 function fgLabel(v) {
- if (v <= 25) return { txt: '­ƒÿ▒ Miedo extremo', color: '#ef4444' };
- if (v <= 45) return { txt: '­ƒÿƒ Miedo', color: '#f97316' };
- if (v <= 55) return { txt: '­ƒÿÉ Neutral', color: '#f59e0b' };
- if (v <= 75) return { txt: '­ƒÿè Codicia', color: '#22c55e' };
- return { txt: '­ƒñæ Codicia extrema', color: '#22c55e' };
+ if (v <= 25) return { txt: '😱 Miedo extremo', color: '#ef4444' };
+ if (v <= 45) return { txt: '😟 Miedo', color: '#f97316' };
+ if (v <= 55) return { txt: '😐 Neutral', color: '#f59e0b' };
+ if (v <= 75) return { txt: '😊 Codicia', color: '#22c55e' };
+ return { txt: '🤑 Codicia extrema', color: '#22c55e' };
 }
 
 function calcIndicators(kl) {
@@ -1208,10 +1208,10 @@ function updateDashboard(ticker, kl15, kl1, kl3, kl5, kl1h, kl3d, fg, global, vi
 
  // Price
  safe('d-price', '$' + fmt(price, 2));
- safe('d-eur', 'Ôëê ' + fmt(price * (eurRate || 0.92), 0) + ' EUR');
+ safe('d-eur', '≈ ' + fmt(price * (eurRate || 0.92), 0) + ' EUR');
  const pct = ticker.change, abs = (price * pct / 100);
- const dir = pct >= 0 ? 'Ôû▓' : 'Ôû╝', sign = pct >= 0 ? '+' : '';
- safe('d-chg', dir + ' ' + sign + pct.toFixed(2) + '% ┬À ' + sign + '$' + Math.abs(abs).toFixed(0) + ' vs ayer');
+ const dir = pct >= 0 ? '▲' : '▼', sign = pct >= 0 ? '+' : '';
+ safe('d-chg', dir + ' ' + sign + pct.toFixed(2) + '% · ' + sign + '$' + Math.abs(abs).toFixed(0) + ' vs ayer');
  safeStyle('d-chg', 'color', pct >= 0 ? '#22c55e' : '#ef4444');
  safe('d-high', '$' + fmt(ticker.high, 2));
  safe('d-low', '$' + fmt(ticker.low, 2));
@@ -1223,9 +1223,9 @@ function updateDashboard(ticker, kl15, kl1, kl3, kl5, kl1h, kl3d, fg, global, vi
  const sp = el('coin-price-main');
  if (sp) sp.textContent = '$' + fmt(price, 2);
  const se = el('coin-price-eur');
- if (se) se.textContent = 'Ôëê ' + fmt(price * (eurRate || 0.92), 0) + ' EUR';
+ if (se) se.textContent = '≈ ' + fmt(price * (eurRate || 0.92), 0) + ' EUR';
  const sc = el('coin-price-chg');
- if (sc) sc.textContent = ' ' + dir + ' ' + sign + pct.toFixed(2) + '% ┬À ' + sign + '$' + Math.abs(abs).toFixed(0) + ' vs ayer';
+ if (sc) sc.textContent = ' ' + dir + ' ' + sign + pct.toFixed(2) + '% · ' + sign + '$' + Math.abs(abs).toFixed(0) + ' vs ayer';
  const sh = el('coin-high');
  if (sh) sh.textContent = '$' + fmt(ticker.high, 2);
  const sl = el('coin-low');
@@ -1305,10 +1305,10 @@ function updateDashboard(ticker, kl15, kl1, kl3, kl5, kl1h, kl3d, fg, global, vi
 
  // Update alerts
  const alerts = [];
- if (ind.adx > 25) alerts.push({ text: 'ADX > 25 ÔåÆ tendencia activa', fresh: true });
- if (ind.rsi < 30) alerts.push({ text: 'RSI < 30 ÔåÆ se├▒al rebote', fresh: true });
+ if (ind.adx > 25) alerts.push({ text: 'ADX > 25 → tendencia activa', fresh: true });
+ if (ind.rsi < 30) alerts.push({ text: 'RSI < 30 → señal rebote', fresh: true });
  if (fg != null && fg < 25) alerts.push({ text: 'F&G extremo < 25 macro', fresh: true });
- if (ind.ma6 != null && ind.ma70 != null && ind.ma6 > ind.ma70) alerts.push({ text: 'MA6 ├ù MA70 (cruce alcista)', fresh: true });
+ if (ind.ma6 != null && ind.ma70 != null && ind.ma6 > ind.ma70) alerts.push({ text: 'MA6 × MA70 (cruce alcista)', fresh: true });
  if (ind.ma40 != null && price > ind.ma40) alerts.push({ text: 'Precio > MA40', fresh: true });
  const alertContainer = el('d-alerts-container');
  if (alertContainer) {
@@ -1379,17 +1379,17 @@ function updateDashboard(ticker, kl15, kl1, kl3, kl5, kl1h, kl3d, fg, global, vi
  // Regime
  const regEl = document.querySelector('#page-dashboard .regime');
  if (regEl) {
- const regime = score.total >= 62 ? 'TENDENCIA ALCISTA' : score.total >= 42 ? 'CONSOLIDACI├ôN' : 'TENDENCIA BAJISTA';
+ const regime = score.total >= 62 ? 'TENDENCIA ALCISTA' : score.total >= 42 ? 'CONSOLIDACIÓN' : 'TENDENCIA BAJISTA';
  const bias = ind.rsi > 55 ? 'ALCISTA' : ind.rsi < 45 ? 'BAJISTA' : 'NEUTRAL';
  const risk = ind.adx > 35 ? 'ALTO' : ind.adx > 25 ? 'MEDIO' : 'BAJO';
- regEl.textContent = regime + ' ┬À ' + bias + ' ┬À RIESGO ' + risk;
+ regEl.textContent = regime + ' · ' + bias + ' · RIESGO ' + risk;
  }
 
  // Health bar
- safe('d-src', 'Binance ┬À ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+ safe('d-src', 'Binance · ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit',second:'2-digit'}));
 
  // Update d-alert-badge
- safe('d-alert-badge', 'Ô£ô ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'}));
+ safe('d-alert-badge', '✓ ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'}));
 
  // Signals
  if (ind.adx != null || fg != null) {
@@ -1464,7 +1464,7 @@ async function sonoFetch() {
  }
 }
 
-// ÔöÇÔöÇÔöÇ BLOQUE 2: SET ASSET ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ─── BLOQUE 2: SET ASSET ──────────────────────────────
 function setAsset(asset, btn) {
  document.querySelectorAll('.atab').forEach(b => b.classList.remove('active'));
  btn.classList.add('active');
@@ -1476,7 +1476,7 @@ function setAsset(asset, btn) {
  if(window.ws)try{window.ws.close()}catch(e){}
  window.startWS();}
 
-// ÔöÇÔöÇÔöÇ BLOQUE 3: SET TF ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ─── BLOQUE 3: SET TF ─────────────────────────────────
 function setTF(btn, tf) {
  const parent = btn.closest('.tf-row') || btn.parentElement;
  if (parent) parent.querySelectorAll('.tfp').forEach(b => b.classList.remove('active'));
@@ -1501,7 +1501,7 @@ function setTF(btn, tf) {
  }
 }
 
-// ÔöÇÔöÇÔöÇ BLOQUE 4: TRADES FILTERS ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ─── BLOQUE 4: TRADES FILTERS ─────────────────────────
 let tradesFilter = { estado: 'ALL', side: 'ALL', setup: '' };
 
 function filterTrades(type, val, btn) {
@@ -1537,7 +1537,7 @@ function applyTradesFilter() {
  });
 }
 
-// ÔöÇÔöÇÔöÇ FUNCION: Recalcular R de trades OPEN contra precio live
+// ─── FUNCION: Recalcular R de trades OPEN contra precio live
 function updateOpenTradesR(livePrice) {
  if (!livePrice) return;
  const rows = document.querySelectorAll('#page-trades .tr-row');
@@ -1572,7 +1572,7 @@ function updateOpenTradesR(livePrice) {
  });
 }
 
-// ÔöÇÔöÇÔöÇ BLOQUE 5: WEBSOCKET ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ─── BLOQUE 5: WEBSOCKET ──────────────────────────────
 window.ws = null; let wsRetries = 0;
 let ws = window.ws;
 
@@ -1604,31 +1604,31 @@ function startWS() {
  };
 }
 
-// ÔöÇÔöÇÔöÇ BLOQUE 6: SKELETON LOADER ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ─── BLOQUE 6: SKELETON LOADER ────────────────────────
 function showSkeletons() {
  const ids = ['d-price','d-eur','d-chg','d-high','d-low','d-vol',
  'd-score-num','d-score-label','d-rsi','d-adx','d-bbp',
  'd-ma40','d-fg','d-vix','d-dom','d-rsi3d',
  'd-ma6','d-ma40v','d-ma70','d-ma200','d-sr-r2','d-sr-r1','d-sr-now','d-sr-s1','d-sr-s2'];
- ids.forEach(id => { const e = el(id); if (e) e.textContent = '┬À┬À┬À'; });
+ ids.forEach(id => { const e = el(id); if (e) e.textContent = '···'; });
  // Limpiar Conectando
- safe('d-src', '┬À┬À┬À');
- safe('d-alert-badge', '┬À┬À┬À');
+ safe('d-src', '···');
+ safe('d-alert-badge', '···');
 }
 
-// ÔöÇÔöÇÔöÇ BLOQUE 7: HEALTH BAR ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ─── BLOQUE 7: HEALTH BAR ─────────────────────────────
 function updateHealthBar(src, latency, status) {
- safe('d-src', src + ' ┬À ' + latency + 'ms');
+ safe('d-src', src + ' · ' + latency + 'ms');
  safeStyle('d-src', 'color', status === 'fresh' ? '#22c55e' : status === 'stale' ? '#f59e0b' : '#ef4444');
 }
 
-// ÔöÇÔöÇÔöÇ ARRANQUE ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ─── ARRANQUE ─────────────────────────────────────────
 showSkeletons();
 sonoFetch();
 setTimeout(startWS, 3000);
 setInterval(sonoFetch, 30000);
 // Also keep the old SPA for navigation compatibility
-// (SPA.show already exists from earlier code ÔÇö it handles page navigation)
+// (SPA.show already exists from earlier code — it handles page navigation)
 
 // Alias: old fetchAll -> sonoFetch
 if(window.sonoFetch)window.fetchAll=window.sonoFetch;
