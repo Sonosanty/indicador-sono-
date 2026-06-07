@@ -374,7 +374,7 @@ function renderTrades(list,px){
   const tp=closed.filter(t=>(t.estado||'').toUpperCase().startsWith('TP')).length;
   const sl=closed.filter(t=>(t.estado||'').toUpperCase().startsWith('SL')).length;
   const be=closed.filter(t=>(t.estado||'').toUpperCase().startsWith('BE')).length;
-  const rs=closed.map(t=>parseFloat(t.r)||0),rt=rs.reduce((a,b)=>a+b,0);
+  const rs=closed.map(t=>parseFloat(t.r||t.r_actual)||0),rt=rs.reduce((a,b)=>a+b,0);
   const wins=rs.filter(r=>r>0).length,wr=closed.length>0?(wins/closed.length*100).toFixed(1):'0.0';
   const wA=rs.filter(r=>r>0).reduce((a,b)=>a+b,0),lA=Math.abs(rs.filter(r=>r<0).reduce((a,b)=>a+b,0));
   const pf=lA>0?(wA/lA).toFixed(2):'∞',pnl=closed.reduce((a,t)=>a+(parseFloat(t.pnl)||0),0),dd=Math.min(0,...rs);
@@ -390,7 +390,7 @@ function renderTrades(list,px){
     tbody.innerHTML='';
     [...list].reverse().forEach(t=>{
       const est=(t.estado||'').toUpperCase(),isOpen=est==='OPEN';
-      const r=isOpen?calcR(t,px):parseFloat(t.r);
+      const r=isOpen?calcR(t,px):parseFloat(t.r||t.r_actual);
       let bc='b-open',bt=t.estado;
       if(est.startsWith('TP')){bc='b-tp';bt='TP ✓';}
       else if(est.startsWith('SL')){bc='b-sl';bt='SL ✗';}
