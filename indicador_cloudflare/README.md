@@ -48,3 +48,4 @@ Build output: `output`
 - Producción: https://indicador-sono.pages.dev
 - Preview: https://[hash].indicador-sono.pages.dev
 - VIX Worker: https://vix-proxy.sonosanty.workers.dev
+# touch to force deploy after build command fix
