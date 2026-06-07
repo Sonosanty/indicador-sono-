@@ -642,7 +642,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 </div><!-- /page -->
 
 <div class="foot">
-  SONO PRO V8 · Binance WS · Alternative.me · CoinGecko · open.er-api.com · No es consejo financiero
+  SONO PRO V8 · Binance WS · Alternative.me · CoinGecko · EUR via Worker · No es consejo financiero
 </div>
 
 <!-- ══════════════════════════════════════════════
@@ -656,7 +656,7 @@ const BINANCE_WS  = 'wss://stream.binance.com:9443/ws';
 const BINANCE_API = 'https://api.binance.com/api/v3';
 const FNG_API     = 'https://api.alternative.me/fng/?limit=1';
 const CG_API      = 'https://api.coingecko.com/api/v3/global';
-const EUR_API     = 'https://open.er-api.com/v6/latest/USD';
+const EUR_API     = 'https://vix-proxy.sonosanty.workers.dev/eur';
 
 // IDs de las monedas
 const COINS = { BTC:'BTCUSDT', ETH:'ETHUSDT', SOL:'SOLUSDT', XRP:'XRPUSDT' };
@@ -1294,7 +1294,7 @@ async function loadCoinGecko() {
 async function loadEurRate() {
   try {
     const d  = await fetchJSON(EUR_API);
-    eurRate  = d.rates?.EUR || 0.92;
+    eurRate  = d.eur ?? 0.92;
     $('mEUR').textContent  = eurRate.toFixed(4);
     $('mEURl').textContent = 'EUR/USD live';
   } catch(e) {
