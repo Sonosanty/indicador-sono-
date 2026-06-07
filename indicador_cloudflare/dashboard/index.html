@@ -230,11 +230,11 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <header class="topbar">
   <div class="brand">SONO<span>X</span></div>
   <nav class="nav" id="nav">
-    <button class="nb ac" data-page="dashboard" onclick="go('dashboard',this)">Dashboard</button>
-    <button class="nb" data-page="metodo"    onclick="go('metodo',this)">Método</button>
-    <button class="nb" data-page="rangos"    onclick="go('rangos',this)">Rangos</button>
-    <button class="nb" data-page="trades"    onclick="go('trades',this)">Trades</button>
-    <button class="nb" data-page="sistema"   onclick="go('sistema',this)">Sistema</button>
+    <button class="nb ac" data-page="dashboard" >Dashboard</button>
+    <button class="nb" data-page="metodo"    >Método</button>
+    <button class="nb" data-page="rangos"    >Rangos</button>
+    <button class="nb" data-page="trades"    >Trades</button>
+    <button class="nb" data-page="sistema"   >Sistema</button>
   </nav>
   <div class="topbar-r">
     <div class="ws-badge" id="wsBadge">
@@ -253,10 +253,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <section class="hero-bar">
     <div class="coin-row">
       <div class="cbtn-wrap">
-        <button class="cbtn ac" data-coin="BTC" onclick="setCoin('BTC')">BTC</button>
-        <button class="cbtn" data-coin="ETH" onclick="setCoin('ETH')">ETH</button>
-        <button class="cbtn" data-coin="SOL" onclick="setCoin('SOL')">SOL</button>
-        <button class="cbtn" data-coin="XRP" onclick="setCoin('XRP')">XRP</button>
+        <button class="cbtn ac" data-coin="BTC" >BTC</button>
+        <button class="cbtn" data-coin="ETH" >ETH</button>
+        <button class="cbtn" data-coin="SOL" >SOL</button>
+        <button class="cbtn" data-coin="XRP" >XRP</button>
       </div>
       <div class="price-group">
         <span class="price-big" id="priceUSD">---</span>
@@ -498,7 +498,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 </div>
 </div>
 
-<footer class="foot">SONO TERMINAL X · Binance WS · Alternative.me · CoinGecko · Binance EURUSDT · No es consejo financiero</footer>
+<footer class="foot">SONO TERMINAL X · Binance WS · Alternative.me · CoinGecko · VIX Proxy v4.0 · No es consejo financiero</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
@@ -522,10 +522,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
 /* ── CONFIGURACIÓN ── */
 const CFG = {
   BINANCE_WS:  'wss://stream.binance.com:9443/ws',
-  BINANCE_API: 'https://api.binance.com/api/v3',
+  BINANCE_API: 'https://vix-proxy.sonosanty.workers.dev',
   FNG_URL:     'https://api.alternative.me/fng/?limit=1',
   CG_URL:      'https://api.coingecko.com/api/v3/global',
-  EUR_URL: 'https://api.binance.com/api/v3/ticker/price?symbol=EURUSDT',
+  EUR_URL: 'https://vix-proxy.sonosanty.workers.dev/eur',
   TRADES_URL:  '/trades.json',
   WS_TIMEOUT:  15000,  // 15s sin datos → reconectar
   TICK_PRICE:  30000,  // ticker 24h cada 30s
@@ -854,7 +854,7 @@ async function loadCG(){
 async function loadEUR(){
   try{
     const d=await fetchJ(CFG.EUR_URL);
-    S.eurRate=parseFloat(d.price)||0.865;
+    S.eurRate=parseFloat(d.rate)||0.92;
     $('mEUR').textContent=S.eurRate.toFixed(4);
     $('mEURb').style.width=(S.eurRate*100)+'%';
     updSys('sysEUR','OK '+S.eurRate.toFixed(4),'var(--green)');
@@ -974,13 +974,25 @@ function updateMetodoPage(){if(!S.livePx)return;var el=$('metodoChart');if(!el)r
    NAVEGACIÓN SPA
 ══════════════════════════════════════════════ */
 function go(page,btn){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('ac'));
-  const p=$('page-'+page);if(p)p.classList.add('active');
+  var p=page==='dashboard'?'/':'/'+page;
+  if(window.location.pathname!==p)history.pushState({page:page},'',p);
+  renderPage(page,btn);
+}
+function renderPage(page,btn){
+  document.querySelectorAll('.page').forEach(function(el){el.classList.remove('active');});
+  document.querySelectorAll('.nb').forEach(function(el){el.classList.remove('ac');});
+  var el=$('page-'+page);if(el)el.classList.add('active');
   if(btn)btn.classList.add('ac');
   if(page==='rangos')refreshRangos();
   if(page==='trades'&&S.trades)renderTrades(S.trades,S.livePx);
   if(page==='metodo')updateMetodoPage();
+}
+window.addEventListener('popstate',function(e){
+  var pg=(e.state&&e.state.page)||routeFromPath();renderPage(pg);
+});
+function routeFromPath(){
+  var p=window.location.pathname.replace(/^\//,'').replace(/\/$/,'');
+  return['dashboard','metodo','rangos','trades','sistema'].includes(p)?p:'dashboard';
 }
 
 /* ══════════════════════════════════════════════
@@ -1029,7 +1041,7 @@ setInterval(()=>{ $('clockEl').textContent=now(); },1000);
   setInterval(loadEUR,          CFG.TICK_EUR);
   setInterval(loadTrades,       CFG.TICK_TRADES);
   addAlert('SISTEMA','teal','SONO TERMINAL X iniciado · datos reales · sin hardcoded');
-  var ip=location.pathname.replace(/^\//,'')||'dashboard';var vp=['dashboard','metodo','rangos','trades','sistema'];if(vp.includes(ip))setTimeout(function(){go(ip);},50);log('Init completado');
+  setTimeout(function(){var pg=routeFromPath();go(pg);var btns=document.querySelectorAll('.nb');btns.forEach(function(b){if(b.dataset.page===pg)b.classList.add('ac');});},50);log('Init completado — route: '+routeFromPath());
 })();
 
 </script>
