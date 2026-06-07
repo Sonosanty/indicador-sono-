@@ -764,6 +764,11 @@ function startWS() {
       updatePriceUI(priceLive);
       updateTradesR(priceLive);    // ← R en tiempo real
       updateSRLive(priceLive);     // ← S/R en tiempo real
+      // Sync trades page price display
+      const tpPx = document.getElementById('tpBTCPrice');
+      const tpLx = document.getElementById('tpLivePx');
+      if (tpPx) tpPx.textContent = fmtUSD(priceLive, 0);
+      if (tpLx) tpLx.textContent = fmtUSD(priceLive, 0);
     } catch(err) {
       console.error('WS parse error:', err);
     }
@@ -1285,6 +1290,8 @@ async function loadTrades() {
     allTrades = Array.isArray(d) ? d : (d.trades || []);
     renderTrades(allTrades, priceLive);
     $('tradesStatus').textContent = 'trades.json · ' + allTrades.length + ' trades';
+    // Actualizar página /trades si está activa
+    if (typeof renderTradesPage === 'function') renderTradesPage();
     addAlert('TRADES', 'green', allTrades.length + ' trades cargados');
   } catch(e) {
     console.error('trades.json error:', e);
@@ -1449,18 +1456,210 @@ function setCoin(coin) {
 })();
 </script>
 
+<!-- ══ PAGE: TRADES ══ -->
+<div id="page-trades" style="display:none;padding:1.5rem">
+  <div style="max-width:1100px;margin:0 auto">
+    <!-- Header bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:8px">
+      <div style="font-size:11px;color:var(--tx3)" id="tradesPageStatus">trades.json · cargando</div>
+      <div style="font-size:11px;color:var(--tx3)" id="tradesPageTs"></div>
+    </div>
+
+    <!-- KPI row -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem">
+      <div style="background:var(--bg1);border:1px solid var(--b2);border-radius:10px;padding:.8rem 1rem">
+        <div style="font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">BTC Live</div>
+        <div style="font-size:20px;font-weight:700;color:var(--tx)" id="tpBTCPrice">---</div>
+        <div style="font-size:9px;color:var(--tx3)" id="tpBTCChg">--</div>
+      </div>
+      <div style="background:var(--bg1);border:1px solid var(--b2);border-radius:10px;padding:.8rem 1rem">
+        <div style="font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Abiertos</div>
+        <div style="font-size:20px;font-weight:700;color:var(--green)" id="tpOpen">--</div>
+        <div style="font-size:9px;color:var(--tx3)" id="tpOpenSub">--</div>
+      </div>
+      <div style="background:var(--bg1);border:1px solid var(--b2);border-radius:10px;padding:.8rem 1rem">
+        <div style="font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Winrate</div>
+        <div style="font-size:20px;font-weight:700;color:var(--cyan)" id="tpWinrate">--</div>
+        <div style="font-size:9px;color:var(--tx3)" id="tpTPBESL">--</div>
+      </div>
+      <div style="background:var(--bg1);border:1px solid var(--b2);border-radius:10px;padding:.8rem 1rem">
+        <div style="font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">R Total</div>
+        <div style="font-size:20px;font-weight:700" id="tpRTotal" style="color:var(--tx)">--</div>
+        <div style="font-size:9px;color:var(--tx3)" id="tpPnL">--</div>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem">
+      <div style="background:var(--bg1);border:1px solid var(--b2);border-radius:10px;padding:.8rem 1rem;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;color:var(--tx3)">Profit Factor</span>
+        <span style="font-size:14px;font-weight:700;color:var(--tx)" id="tpPF">--</span>
+      </div>
+      <div style="background:var(--bg1);border:1px solid var(--b2);border-radius:10px;padding:.8rem 1rem;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;color:var(--tx3)">Max Drawdown</span>
+        <span style="font-size:14px;font-weight:700;color:var(--red)" id="tpMaxDD">--</span>
+      </div>
+      <div style="background:var(--bg1);border:1px solid var(--b2);border-radius:10px;padding:.8rem 1rem;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;color:var(--tx3)">R Medio por trade</span>
+        <span style="font-size:14px;font-weight:700;color:var(--tx)" id="tpRMedio">--</span>
+      </div>
+    </div>
+
+    <!-- Trades table -->
+    <div style="background:var(--bg1);border:1px solid var(--b2);border-radius:10px;overflow:hidden">
+      <div style="padding:.6rem 1rem;border-bottom:1px solid var(--b2);font-size:10px;color:var(--tx3);display:flex;justify-content:space-between">
+        <span>Historial completo · <span id="tpCount">0</span> trades</span>
+        <span>Precio live: <span id="tpLivePx">---</span></span>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead>
+            <tr style="color:var(--tx3);border-bottom:1px solid var(--b2)">
+              <th style="padding:.5rem .8rem;text-align:left">ID</th>
+              <th style="padding:.5rem .8rem;text-align:left">Estado</th>
+              <th style="padding:.5rem .8rem;text-align:left">TF</th>
+              <th style="padding:.5rem .8rem;text-align:left">Side</th>
+              <th style="padding:.5rem .8rem;text-align:left">Setup</th>
+              <th style="padding:.5rem .8rem;text-align:right">Entry</th>
+              <th style="padding:.5rem .8rem;text-align:right">SL</th>
+              <th style="padding:.5rem .8rem;text-align:right">TP1</th>
+              <th style="padding:.5rem .8rem;text-align:right">MFE</th>
+              <th style="padding:.5rem .8rem;text-align:right">MAE</th>
+              <th style="padding:.5rem .8rem;text-align:right">Dur</th>
+              <th style="padding:.5rem .8rem;text-align:right">R actual</th>
+            </tr>
+          </thead>
+          <tbody id="tpTbody">
+            <tr><td colspan="12" style="text-align:center;color:var(--tx3);padding:1.5rem">Cargando trades...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+
+/* ═══════════════════════════════════════════════
+   TRADES PAGE — render dedicado con KPIs completos
+═══════════════════════════════════════════════ */
+function renderTradesPage() {
+  const trades = allTrades || [];
+  const px = priceLive || 0;
+
+  // Actualizar price en página trades
+  if (px > 0) {
+    const priceEl = document.getElementById('tpBTCPrice');
+    const liveEl  = document.getElementById('tpLivePx');
+    if (priceEl) priceEl.textContent = fmtUSD(px, 0);
+    if (liveEl)  liveEl.textContent  = fmtUSD(px, 0);
+  }
+
+  const open   = trades.filter(t => (t.estado||t.status||'').toUpperCase() === 'OPEN');
+  const closed = trades.filter(t => (t.estado||t.status||'').toUpperCase() !== 'OPEN');
+  const tp     = closed.filter(t => ['TP','TP_V'].includes((t.estado||t.status||'').toUpperCase()));
+  const sl     = closed.filter(t => (t.estado||t.status||'').toUpperCase() === 'SL');
+  const be     = closed.filter(t => (t.estado||t.status||'').toUpperCase() === 'BE');
+
+  const winrate = closed.length > 0 ? Math.round(tp.length / closed.length * 100) : 0;
+  const rTotal  = trades.reduce((s,t) => s + (parseFloat(t.r_actual)||0), 0);
+  const rMedio  = closed.length > 0 ? (rTotal / closed.length) : 0;
+  const wins    = tp.map(t => parseFloat(t.r_actual)||0).reduce((a,b)=>a+b,0);
+  const losses  = Math.abs(sl.map(t => parseFloat(t.r_actual)||0).reduce((a,b)=>a+b,0));
+  const pf      = losses > 0 ? (wins/losses).toFixed(2) : wins > 0 ? '∞' : '--';
+  const maxDD   = sl.length > 0 ? Math.min(...sl.map(t=>parseFloat(t.r_actual)||0)) : 0;
+
+  const set = (id, val, color) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = val;
+    if (color) el.style.color = color;
+  };
+
+  set('tpOpen',    open.length, open.length > 0 ? 'var(--green)' : 'var(--tx3)');
+  set('tpOpenSub', open.length > 0 ? open.map(t=>(t.side||'?').toUpperCase()).join(' · ') : 'Sin posiciones');
+  set('tpWinrate', winrate + '%', winrate >= 50 ? 'var(--cyan)' : 'var(--amber)');
+  set('tpTPBESL',  `TP:${tp.length} · BE:${be.length} · SL:${sl.length}`);
+  set('tpRTotal',  (rTotal >= 0 ? '+' : '') + rTotal.toFixed(2) + 'R', rTotal >= 0 ? 'var(--green)' : 'var(--red)');
+  set('tpPnL',     'R medio: ' + (rMedio >= 0 ? '+' : '') + rMedio.toFixed(2) + 'R');
+  set('tpPF',      pf, parseFloat(pf) >= 1.5 ? 'var(--green)' : parseFloat(pf) >= 1 ? 'var(--amber)' : 'var(--red)');
+  set('tpMaxDD',   maxDD !== 0 ? maxDD.toFixed(1) + 'R' : '--');
+  set('tpRMedio',  (rMedio >= 0 ? '+' : '') + rMedio.toFixed(2) + 'R', rMedio >= 0 ? 'var(--green)' : 'var(--red)');
+  set('tpCount',   trades.length);
+  set('tradesPageStatus', `trades.json · ${trades.length} trades · ${open.length} abiertos`);
+  set('tradesPageTs', new Date().toLocaleTimeString('es-ES'));
+
+  // Render tabla
+  const tbody = document.getElementById('tpTbody');
+  if (!tbody) return;
+  if (trades.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;color:var(--tx3);padding:1.5rem">Sin trades</td></tr>';
+    return;
+  }
+
+  const estadoBadge = (raw) => {
+    const e = (raw||'').toUpperCase();
+    const map = {TP:'#22c55e',TP_V:'#22c55e',SL:'#ef4444',BE:'#f59e0b',OPEN:'#3b82f6'};
+    const col = map[e] || '#7a90aa';
+    return `<span style="background:${col}22;color:${col};padding:1px 6px;border-radius:4px;font-size:10px">${e||'?'}</span>`;
+  };
+  const sideBadge = (s) => {
+    const up = (s||'').toUpperCase();
+    return `<span style="color:${up==='LONG'?'var(--green)':'var(--red)'};">${up}</span>`;
+  };
+  const calcR = (t) => {
+    const status = (t.estado||t.status||'').toUpperCase();
+    if (status === 'OPEN' && px > 0) {
+      const r = (px - t.entry) / (t.entry - t.sl);
+      return (r >= 0 ? '+' : '') + r.toFixed(2) + 'R';
+    }
+    const r = parseFloat(t.r_actual);
+    return isNaN(r) ? '--' : (r >= 0 ? '+' : '') + r.toFixed(2) + 'R';
+  };
+  const rColor = (t) => {
+    const status = (t.estado||t.status||'').toUpperCase();
+    if (status === 'OPEN' && px > 0) {
+      return (px - t.entry) >= 0 ? 'var(--green)' : 'var(--red)';
+    }
+    const r = parseFloat(t.r_actual);
+    return r >= 0 ? 'var(--green)' : 'var(--red)';
+  };
+
+  tbody.innerHTML = [...trades].reverse().map(t => `
+    <tr style="border-bottom:1px solid var(--b);color:var(--tx2)">
+      <td style="padding:.45rem .8rem;color:var(--tx3)">#${t.id}</td>
+      <td style="padding:.45rem .8rem">${estadoBadge(t.estado||t.status)}</td>
+      <td style="padding:.45rem .8rem;color:var(--tx3)">${t.tf||'--'}</td>
+      <td style="padding:.45rem .8rem">${sideBadge(t.side)}</td>
+      <td style="padding:.45rem .8rem;color:var(--tx3)">${t.setup||'--'}</td>
+      <td style="padding:.45rem .8rem;text-align:right">${t.entry ? fmtUSD(t.entry,0) : '--'}</td>
+      <td style="padding:.45rem .8rem;text-align:right;color:var(--red)">${t.sl ? fmtUSD(t.sl,0) : '--'}</td>
+      <td style="padding:.45rem .8rem;text-align:right;color:var(--green)">${t.tp1 ? fmtUSD(t.tp1,0) : '--'}</td>
+      <td style="padding:.45rem .8rem;text-align:right">${t.mfe != null ? (t.mfe >= 0 ? '+' : '') + fmtUSD(Math.abs(t.mfe),0).replace('$','') : '--'}</td>
+      <td style="padding:.45rem .8rem;text-align:right;color:var(--red)">${t.mae != null ? fmtUSD(t.mae,0) : '--'}</td>
+      <td style="padding:.45rem .8rem;text-align:right;color:var(--tx3)">${t.duration||t.dur||'--'}</td>
+      <td style="padding:.45rem .8rem;text-align:right;color:${rColor(t)}">${calcR(t)}</td>
+    </tr>`).join('');
+}
+
+
+</script>
+
 <script>
 /* === SPA ROUTER === */
+document.addEventListener('DOMContentLoaded', function() {
 (function() {
   // Mapeo de rutas a IDs de página
   const routes = {
     '/':        'page-dashboard',
     '/metodo':  'page-metodo',
     '/rangos':  'page-rangos',
-    '/trades':  'page-dashboard',  // trades está en el dashboard
+    '/trades':  'page-trades',
   };
 
-  const pageIds = Object.values(routes);
+  // Unique page IDs (avoid duplicates in hide loop)
+  const pageIds = [...new Set(Object.values(routes))];
   const navLinks = document.querySelectorAll('.nav a[data-page]');
 
   function showPage(path) {
@@ -1480,9 +1679,11 @@ function setCoin(coin) {
       a.classList.toggle('ac', a.getAttribute('data-page') === path);
     });
 
-    // Si es /trades, asegurar que la tabla de trades se renderice
-    if (path === '/trades' && typeof renderTrades === 'function' && window.allTrades) {
-      setTimeout(() => renderTrades(window.allTrades, window.priceLive || 0), 100);
+    // Si es /trades, actualizar la página de trades con datos actuales
+    if (path === '/trades') {
+      setTimeout(() => {
+        if (typeof renderTradesPage === 'function') renderTradesPage();
+      }, 80);
     }
   }
 
@@ -1511,6 +1712,7 @@ function setCoin(coin) {
   // Exponer router para uso desde otros scripts
   window.router = showPage;
 })();
+}); // DOMContentLoaded
 </script>
 
 </body>
