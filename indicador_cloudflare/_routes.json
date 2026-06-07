@@ -1,1 +1,5 @@
-{"version":1,"include":["/*"],"exclude":["/trades.json","/favicon.svg","/css/*","/js/*","/_headers"],"rules":[{"url":"/*","status":200,"path":"/index.html"}]}
+{
+  "version": 1,
+  "include": ["/*"],
+  "exclude": ["/js/*", "/trades.json", "/_headers", "/*.svg", "/*.ico", "/*.png"]
+}
