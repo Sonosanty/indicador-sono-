@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   SONO TERMINAL X — Core JavaScript
+   SONO TERMINAL X — Core JavaScript v1.0
    Una sola fuente de verdad. Sin duplicados. Sin hardcoded.
    Arquitecto: Full Stack Senior + Trading Analyst
    ═══════════════════════════════════════════════════════════
