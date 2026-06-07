@@ -1,0 +1,27 @@
+# ── Git ignore rules ──
+node_modules/
+.env
+.env.*
+*.rar
+*.zip
+*.tar.gz
+*.log
+.DS_Store
+Thumbs.db
+
+# ── Debug/test scripts legacy ──
+*.mjs
+*.py
+fix_*
+bloque*
+test_*
+find_*
+
+# ── Build artifacts ──
+output/
+
+# ── Editor/IDE ──
+.idea/
+.vscode/
+*.swp
+*.swo
