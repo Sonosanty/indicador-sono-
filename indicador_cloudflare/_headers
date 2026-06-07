@@ -1,6 +1,21 @@
+# SONO TERMINAL X — Cloudflare Pages _headers
+
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.binance.com https://fapi.binance.com wss://stream.binance.com:9443 https://api.coingecko.com https://api.alternative.me https://indicador-sono.pages.dev https://vix-proxy.sonosanty.workers.dev; img-src 'self' data:; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'none'
-  X-Frame-Options: DENY
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
   X-Content-Type-Options: nosniff
-  Referrer-Policy: no-referrer
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://api.binance.com wss://stream.binance.com:9443 https://api.alternative.me https://api.coingecko.com https://vix-proxy.sonosanty.workers.dev; img-src 'self' data: blob:; frame-ancestors 'none'; base-uri 'self'
+
+/js/*
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/css/*
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/trades.json
+  Cache-Control: no-cache, no-store, must-revalidate
+  Content-Type: application/json; charset=utf-8
