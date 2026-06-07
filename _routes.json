@@ -3,6 +3,6 @@
   "include": ["/*"],
   "exclude": ["/api/*", "/favicon.svg", "/manifest.json"],
   "fallback": {
-    "/": "/index.html"
+    "/*": "/index.html"
   }
 }
