@@ -255,10 +255,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <!-- COIN BAR -->
   <div class="coin-bar">
     <div class="coin-btns" id="coinBtns">
-      <button class="cb ac" data-coin="BTC" onclick="setCoin('BTC')">BTC</button>
-      <button class="cb" data-coin="ETH"    onclick="setCoin('ETH')">ETH</button>
-      <button class="cb" data-coin="SOL"    onclick="setCoin('SOL')">SOL</button>
-      <button class="cb" data-coin="XRP"    onclick="setCoin('XRP')">XRP</button>
+      <button class="cb ac" data-coin="BTC" >BTC</button>
+      <button class="cb" data-coin="ETH"    >ETH</button>
+      <button class="cb" data-coin="SOL"    >SOL</button>
+      <button class="cb" data-coin="XRP"    >XRP</button>
     </div>
     <div class="price-big" id="priceUSD">---</div>
     <span class="price-eur" id="priceEUR"></span>
@@ -707,12 +707,13 @@ function startWS() {
 
   wsConn.onopen = () => {
     console.log('WS conectado:', symbol);
-    wsLastMsg = Date.now();
-    setBadge(true);
+    // Badge stays grey until first actual message arrives
   };
 
   wsConn.onmessage = e => {
+    const isFirst = wsLastMsg === 0;
     wsLastMsg = Date.now();
+    if (isFirst) setBadge(true); // badge turns LIVE only on first real tick
 
     // Actualizar timestamp visible
     const now = new Date();
@@ -983,17 +984,16 @@ async function refreshIndicators() {
 
 async function refreshMTF() {
   const tfs = ['1m', '3m', '5m', '15m'];
-  const scores = [];
-  for (const tf of tfs) {
+  // Parallelized with Promise.allSettled — ~4x faster than sequential await
+  const results = await Promise.allSettled(tfs.map(tf => loadKlines(tf, 220)));
+  const scores = results.map(r => {
+    if (r.status === 'rejected') return 0;
     try {
-      const c = await loadKlines(tf, 220);
+      const c = r.value;
       const cl = c.map(x => x.c), hi = c.map(x => x.h), lo = c.map(x => x.l);
-      const sc = computeScore(cl, hi, lo);
-      scores.push(sc.score);
-    } catch(e) {
-      scores.push(0);
-    }
-  }
+      return computeScore(cl, hi, lo).score;
+    } catch(e) { return 0; }
+  });
   const ids = ['mtf1m','mtf3m','mtf5m','mtf15m'];
   scores.forEach((s, i) => {
     const el = $(ids[i]);
@@ -1084,20 +1084,20 @@ function renderSignals({ ma6, ma40, ma70, ma200, price, rv, av, pb }) {
 }
 
 function renderIndicators(rv, av, pb, ma40, price) {
-  // RSI
+  // RSI — null-safe
   $('indRSI').textContent = rv != null ? rv : '--';
-  $('indRSI').style.color = rv < 30 ? 'var(--green)' : rv > 70 ? 'var(--red)' : 'var(--cyan)';
-  $('indRSIl').textContent = rv < 30 ? 'Sobreventa' : rv > 70 ? 'Sobrecompra' : 'Neutral';
+  $('indRSI').style.color = rv != null ? (rv < 30 ? 'var(--green)' : rv > 70 ? 'var(--red)' : 'var(--cyan)') : 'var(--tx3)';
+  $('indRSIl').textContent = rv != null ? (rv < 30 ? 'Sobreventa' : rv > 70 ? 'Sobrecompra' : 'Neutral') : '--';
 
-  // ADX
+  // ADX — null-safe
   $('indADX').textContent = av != null ? av : '--';
-  $('indADX').style.color = av > 30 ? 'var(--green)' : av > 25 ? '#a855f7' : 'var(--tx3)';
-  $('indADXl').textContent = av > 30 ? 'Tendencia fuerte' : av > 25 ? 'Tendencia activa' : 'Sin tendencia';
+  $('indADX').style.color = av != null ? (av > 30 ? 'var(--green)' : av > 25 ? '#a855f7' : 'var(--tx3)') : 'var(--tx3)';
+  $('indADXl').textContent = av != null ? (av > 30 ? 'Tendencia fuerte' : av > 25 ? 'Tendencia activa' : 'Sin tendencia') : '--';
 
-  // BB %B
+  // BB %B — null-safe
   $('indBB').textContent = pb != null ? pb.toFixed(2) : '--';
-  $('indBB').style.color = pb < 0.2 ? 'var(--green)' : pb > 0.8 ? 'var(--red)' : 'var(--cyan)';
-  $('indBBl').textContent = pb < 0.2 ? 'Sobreventa' : pb > 0.8 ? 'Sobrecompra' : 'Zona media';
+  $('indBB').style.color = pb != null ? (pb < 0.2 ? 'var(--green)' : pb > 0.8 ? 'var(--red)' : 'var(--cyan)') : 'var(--tx3)';
+  $('indBBl').textContent = pb != null ? (pb < 0.2 ? 'Sobreventa' : pb > 0.8 ? 'Sobrecompra' : 'Zona media') : '--';
 
   // MA40 distancia
   if (ma40 && price) {
@@ -1353,15 +1353,16 @@ function setCoin(coin) {
 /* ═══════════════════════════════════════════════
    TIMESTAMP GLOBAL
 ═══════════════════════════════════════════════ */
-setInterval(() => {
-  $('tsEl').textContent = new Date().toLocaleTimeString('es-ES');
-}, 1000);
-
 /* ═══════════════════════════════════════════════
    INIT — ARRANQUE COMPLETO
 ═══════════════════════════════════════════════ */
 (async function init() {
   console.log('SONO PRO V8 — Iniciando...');
+
+  // Timestamp global — inside init so DOM is guaranteed ready
+  setInterval(() => {
+    $('tsEl').textContent = new Date().toLocaleTimeString('es-ES');
+  }, 1000);
 
   // 1. Tipo EUR real primero
   await loadEurRate();
@@ -1392,6 +1393,11 @@ setInterval(() => {
   setInterval(loadTrades,         120_000);   // 2min
 
   addAlert('SISTEMA', 'green', 'Dashboard V8 iniciado · Datos reales activos');
+
+  // Coin buttons — CSP-safe addEventListener instead of inline onclick
+  document.querySelectorAll('.cb[data-coin]').forEach(btn => {
+    btn.addEventListener('click', () => setCoin(btn.dataset.coin));
+  });
 })();
 </script>
 </body>
