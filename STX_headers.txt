@@ -1,0 +1,23 @@
+# SONO TERMINAL X — Cloudflare Pages _headers
+# Nombre del archivo en el repo: _headers (sin extensión)
+# Debe estar en el directorio output del build
+
+/*
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com data:; connect-src 'self' https://api.binance.com wss://stream.binance.com:9443 https://api.alternative.me https://api.coingecko.com https://open.er-api.com https://vix-proxy.sonosanty.workers.dev; img-src 'self' data: blob:; frame-ancestors 'none'; base-uri 'self'
+
+/js/*
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/css/*
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/trades.json
+  Cache-Control: no-cache, no-store, must-revalidate
+  Content-Type: application/json; charset=utf-8
