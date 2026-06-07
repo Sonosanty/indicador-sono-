@@ -871,12 +871,12 @@ function calcR(t,px){
   return((t.side||'LONG').toUpperCase()==='LONG'?px-e:e-px)/r;
 }
 function renderTrades(list,px){
-  const closed=list.filter(t=>(t.estado||'').toUpperCase()!=='OPEN');
-  const open=list.filter(t=>(t.estado||'').toUpperCase()==='OPEN');
-  const tp=closed.filter(t=>(t.estado||'').toUpperCase().startsWith('TP')).length;
-  const sl=closed.filter(t=>(t.estado||'').toUpperCase().startsWith('SL')).length;
-  const be=closed.filter(t=>(t.estado||'').toUpperCase().startsWith('BE')).length;
-  const rs=closed.map(t=>parseFloat(t.r)||0),rt=rs.reduce((a,b)=>a+b,0);
+  const closed=list.filter(t=>((t.estado||t.status)||'').toUpperCase()!=='OPEN');
+  const open=list.filter(t=>((t.estado||t.status)||'').toUpperCase()==='OPEN');
+  const tp=closed.filter(t=>((t.estado||t.status)||'').toUpperCase().startsWith('TP')).length;
+  const sl=closed.filter(t=>((t.estado||t.status)||'').toUpperCase().startsWith('SL')).length;
+  const be=closed.filter(t=>((t.estado||t.status)||'').toUpperCase().startsWith('BE')).length;
+  const rs=closed.map(t=>parseFloat(t.r_actual||t.r)||0),rt=rs.reduce((a,b)=>a+b,0);
   const wins=rs.filter(r=>r>0).length,wr=closed.length>0?(wins/closed.length*100).toFixed(1):'0.0';
   const wA=rs.filter(r=>r>0).reduce((a,b)=>a+b,0),lA=Math.abs(rs.filter(r=>r<0).reduce((a,b)=>a+b,0));
   const pf=lA>0?(wA/lA).toFixed(2):'∞',pnl=closed.reduce((a,t)=>a+(parseFloat(t.pnl)||0),0),dd=Math.min(0,...rs);
@@ -891,9 +891,9 @@ function renderTrades(list,px){
   function buildRows(tbody,cols){
     tbody.innerHTML='';
     [...list].reverse().forEach(t=>{
-      const est=(t.estado||'').toUpperCase(),isOpen=est==='OPEN';
-      const r=isOpen?calcR(t,px):parseFloat(t.r);
-      let bc='b-open',bt=t.estado;
+      const est=((t.estado||t.status)||'').toUpperCase(),isOpen=est==='OPEN';
+      const r=isOpen?calcR(t,px):parseFloat(t.r_actual||t.r);
+      let bc='b-open',bt=(t.estado||t.status||'');
       if(est.startsWith('TP')){bc='b-tp';bt='TP ✓';}
       else if(est.startsWith('SL')){bc='b-sl';bt='SL ✗';}
       else if(est.startsWith('BE')){bc='b-be';bt='BE —';}
@@ -966,9 +966,7 @@ async function refreshRangos(){
 /* ══════════════════════════════════════════════
    MÉTODO PAGE
 ══════════════════════════════════════════════ */
-function updateMetodoPage(){
-  // Score ya se actualiza en renderScore
-}
+function updateMetodoPage(){if(!S.livePx)return;var el=$('metodoChart');if(!el)return;el.innerHTML='<div style=font-size:22px;font-weight:700;font-family:var(--mono)>'+fU(S.livePx,2)+'</div><div style=font-size:12px;color:var(--text3);margin:4px 0>Precio en vivo - MA6 y MA70 proximamente con Chart.js</div>';}
 
 /* ══════════════════════════════════════════════
    NAVEGACIÓN SPA
@@ -979,6 +977,8 @@ function go(page,btn){
   const p=$('page-'+page);if(p)p.classList.add('active');
   if(btn)btn.classList.add('ac');
   if(page==='rangos')refreshRangos();
+  if(page==='trades'&&S.trades)renderTrades(S.trades,S.livePx);
+  if(page==='metodo')updateMetodoPage();
 }
 
 /* ══════════════════════════════════════════════
@@ -1027,7 +1027,7 @@ setInterval(()=>{ $('clockEl').textContent=now(); },1000);
   setInterval(loadEUR,          CFG.TICK_EUR);
   setInterval(loadTrades,       CFG.TICK_TRADES);
   addAlert('SISTEMA','teal','SONO TERMINAL X iniciado · datos reales · sin hardcoded');
-  log('Init completado');
+  var ip=location.pathname.replace(/^\//,'')||'dashboard';var vp=['dashboard','metodo','rangos','trades','sistema'];if(vp.includes(ip))setTimeout(function(){go(ip);},50);log('Init completado');
 })();
 
 </script>

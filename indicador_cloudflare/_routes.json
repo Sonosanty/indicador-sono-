@@ -1,7 +1,13 @@
 {
   "version": 1,
-  "include": ["/*"],
-  "exclude": ["/api/*", "/favicon.svg", "/manifest.json"],
+  "include": [
+    "/*"
+  ],
+  "exclude": [
+    "/trades.json",
+    "/favicon.svg",
+    "/robots.txt"
+  ],
   "fallback": {
     "/*": "/index.html"
   }
