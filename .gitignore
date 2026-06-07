@@ -2,8 +2,8 @@
 node_modules/
 .wrangler/
 
-# Build output
-indicador_cloudflare/
+# Build output (maintained in repo for Cloudflare Pages deploy)
+# indicador_cloudflare/
 
 # Environment
 .env
