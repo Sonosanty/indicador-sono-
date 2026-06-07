@@ -1,4 +1,4 @@
-<!-- Force-redeploy 2026-06-07 17:00 -->`r`n<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -496,7 +496,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 </div>
 </div>
 
-<footer class="foot">SONO TERMINAL X · Binance WS · Alternative.me · CoinGecko · EUR: Worker Proxy · No es consejo financiero</footer>
+<footer class="foot">SONO TERMINAL X · Binance WS · Alternative.me · CoinGecko · Binance EURUSDT · No es consejo financiero</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
@@ -523,7 +523,7 @@ const CFG = {
   BINANCE_API: 'https://api.binance.com/api/v3',
   FNG_URL:     'https://api.alternative.me/fng/?limit=1',
   CG_URL:      'https://api.coingecko.com/api/v3/global',
-  EUR_URL: 'https://vix-proxy.sonosanty.workers.dev/eur',
+  EUR_URL: 'https://api.binance.com/api/v3/ticker/price?symbol=EURUSDT',
   TRADES_URL:  '/trades.json',
   WS_TIMEOUT:  15000,  // 15s sin datos → reconectar
   TICK_PRICE:  30000,  // ticker 24h cada 30s
@@ -550,20 +550,8 @@ const S = {
 
 /* ── HELPERS ── */
 const $  = id => document.getElementById(id);
-const fU = (n, d=0) => '
-</body>
-</html>
- + n.toLocaleString('en-US', {minimumFractionDigits:d, maximumFractionDigits:d});
-const fK = n => n>=1e12?'
-</body>
-</html>
-+(n/1e12).toFixed(2)+'T':n>=1e9?'
-</body>
-</html>
-+(n/1e9).toFixed(1)+'B':'
-</body>
-</html>
-+n.toFixed(0);
+const fU = (n, d=0) => '$' + n.toLocaleString('en-US', {minimumFractionDigits:d, maximumFractionDigits:d});
+const fK = n => n>=1e12?'$'+(n/1e12).toFixed(2)+'T':n>=1e9?'$'+(n/1e9).toFixed(1)+'B':'$'+n.toFixed(0);
 const fP = n => (n>=0?'+':'')+n.toFixed(2)+'%';
 const fR = n => (n>=0?'+':'')+n.toFixed(2)+'R';
 const cG = n => n>=0?'var(--green)':'var(--red)';
@@ -864,7 +852,7 @@ async function loadCG(){
 async function loadEUR(){
   try{
     const d=await fetchJ(CFG.EUR_URL);
-    S.eurRate=d.eur||0.865;
+    S.eurRate=parseFloat(d.price)||0.865;
     $('mEUR').textContent=S.eurRate.toFixed(4);
     $('mEURb').style.width=(S.eurRate*100)+'%';
     updSys('sysEUR','OK '+S.eurRate.toFixed(4),'var(--green)');
@@ -897,10 +885,7 @@ function renderTrades(list,px){
   $('stTBS').textContent=tp+'/'+be+'/'+sl;
   $('stWR').textContent=wr+'%';
   $('stRT').textContent=fR(rt); $('stRT').style.color=cG(rt);
-  $('stPnL').textContent=(pnl>=0?'+':'')+pnl.toFixed(2)+'
-</body>
-</html>
-; $('stPnL').style.color=cG(pnl);
+  $('stPnL').textContent=(pnl>=0?'+':'')+pnl.toFixed(2)+'$'; $('stPnL').style.color=cG(pnl);
   $('stPF').textContent=pf;
   $('stDD').textContent=dd.toFixed(2)+'R'; $('stDD').style.color=dd<0?'var(--red)':'var(--green)';
   function buildRows(tbody,cols){
