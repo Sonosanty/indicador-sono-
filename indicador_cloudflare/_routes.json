@@ -1,1 +1,1 @@
-{"include":["/*"],"fallback":{"/*":"/index.html"},"version":1,"exclude":[]}
+{"version":1,"include":["/*"],"exclude":["/trades.json","/favicon.svg","/css/*","/js/*","/_headers"],"rules":[{"url":"/*","status":200,"path":"/index.html"}]}
