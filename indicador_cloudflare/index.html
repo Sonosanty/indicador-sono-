@@ -1128,8 +1128,18 @@ function parsePrice(s) {
 }
 
 // Calcula R actual para un trade OPEN contra precio live
+
+function geEstado(t) {
+  const e = (t.estado || t.status || '').toUpperCase();
+  return e === 'TP' || e === 'TP_V' ? 'TP_V'
+       : e === 'SL' || e === 'SL_X' ? 'SL_X'
+       : e === 'BE' ? 'BE'
+       : e === 'OPEN' || e === '' ? 'OPEN'
+       : e;
+}
+
 function calcRActual(trade, livePx) {
-  const estado = (trade.estado || trade.status || '').toUpperCase();
+  const estado = geEstado(trade);
   if (estado !== 'OPEN') return null;  // trades cerrados no se recalculan
 
   const entry  = parsePrice(trade.entry);
@@ -1152,11 +1162,11 @@ function renderTrades(trades, livePx) {
   }
 
   // Stats
-  const closed = trades.filter(t => (t.estado || '').toUpperCase() !== 'OPEN');
-  const open   = trades.filter(t => (t.estado || '').toUpperCase() === 'OPEN');
-  const tp = closed.filter(t => (t.estado || '').toUpperCase().startsWith('TP')).length;
-  const sl = closed.filter(t => (t.estado || '').toUpperCase().startsWith('SL')).length;
-  const be = closed.filter(t => (t.estado || '').toUpperCase().startsWith('BE')).length;
+  const closed = trades.filter(t => geEstado(t) !== 'OPEN');
+  const open   = trades.filter(t => geEstado(t) === 'OPEN');
+  const tp = closed.filter(t => geEstado(t).startsWith('TP')).length;
+  const sl = closed.filter(t => geEstado(t).startsWith('SL')).length;
+  const be = closed.filter(t => geEstado(t).startsWith('BE')).length;
 
   const closedRs = closed.map(t => parseFloat(t.r) || 0);
   const rTotal   = closedRs.reduce((a, b) => a + b, 0);
@@ -1185,13 +1195,13 @@ function renderTrades(trades, livePx) {
   // Filas de tabla
   tbody.innerHTML = '';
   [...trades].reverse().forEach(t => {
-    const estado = (t.estado || '').toUpperCase();
+    const estado = geEstado(t);
     const isOpen = estado === 'OPEN';
-    const r      = isOpen ? calcRActual(t, livePx) : parseFloat(t.r);
+    const r      = isOpen ? calcRActual(t, livePx) : (t.r_actual != null ? t.r_actual : (t.r != null ? parseFloat(t.r) : null));
     const rStr   = r != null ? fmtR(r) : '--';
     const rClr   = r != null ? clr(r) : 'var(--tx3)';
 
-    let badgeCls = 'b-open', badgeTxt = t.estado;
+    let badgeCls = 'b-open', badgeTxt = estado === 'OPEN' ? 'OPEN' : (t.estado || t.status || '?');
     if (estado.startsWith('TP')) { badgeCls = 'b-tp'; badgeTxt = 'TP ✓'; }
     else if (estado.startsWith('SL')) { badgeCls = 'b-sl'; badgeTxt = 'SL ✗'; }
     else if (estado.startsWith('BE')) { badgeCls = 'b-be'; badgeTxt = 'BE —'; }
