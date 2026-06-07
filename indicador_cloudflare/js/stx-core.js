@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   SONO TERMINAL X — Core JavaScript v1.0
+   SONO TERMINAL X — Core JavaScript
    Una sola fuente de verdad. Sin duplicados. Sin hardcoded.
    Arquitecto: Full Stack Senior + Trading Analyst
    ═══════════════════════════════════════════════════════════
@@ -21,7 +21,7 @@ const CFG = {
   BINANCE_API: 'https://api.binance.com/api/v3',
   FNG_URL:     'https://api.alternative.me/fng/?limit=1',
   CG_URL:      'https://api.coingecko.com/api/v3/global',
-  EUR_URL: 'https://vix-proxy.sonosanty.workers.dev/eur',
+  EUR_URL:     'https://vix-proxy.sonosanty.workers.dev/eur',
   TRADES_URL:  '/trades.json',
   WS_TIMEOUT:  15000,  // 15s sin datos → reconectar
   TICK_PRICE:  30000,  // ticker 24h cada 30s
@@ -350,7 +350,7 @@ async function loadCG(){
 async function loadEUR(){
   try{
     const d=await fetchJ(CFG.EUR_URL);
-    S.eurRate=d.eur||0.865;
+    S.eurRate=parseFloat(d.rate)||0.92;
     $('mEUR').textContent=S.eurRate.toFixed(4);
     $('mEURb').style.width=(S.eurRate*100)+'%';
     updSys('sysEUR','OK '+S.eurRate.toFixed(4),'var(--green)');
