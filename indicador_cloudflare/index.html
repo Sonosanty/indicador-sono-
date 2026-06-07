@@ -1187,11 +1187,16 @@ function renderTrades(trades, livePx) {
   [...trades].reverse().forEach(t => {
     const estado = (t.estado || '').toUpperCase();
     const isOpen = estado === 'OPEN';
-    const r      = isOpen ? calcRActual(t, livePx) : parseFloat(t.r);
+    const r      = isOpen ? calcRActual(t, livePx) : parseFloat(t.r_actual);
     const rStr   = r != null ? fmtR(r) : '--';
     const rClr   = r != null ? clr(r) : 'var(--tx3)';
 
-    let badgeCls = 'b-open', badgeTxt = t.estado;
+    let badgeCls = 'b-open', badgeTxt = (t.estado || t.status || '').toLowerCase();
+    if (badgeTxt === 'tp') { badgeCls = 'b-tp'; badgeTxt = 'TP'; }
+    else if (badgeTxt === 'sl') { badgeCls = 'b-sl'; badgeTxt = 'SL'; }
+    else if (badgeTxt === 'be') { badgeCls = 'b-be'; badgeTxt = 'BE'; }
+    else if (badgeTxt === 'open') { badgeCls = 'b-open'; badgeTxt = 'OPEN'; }
+    else { badgeTxt = badgeTxt.toUpperCase(); }
     if (estado.startsWith('TP')) { badgeCls = 'b-tp'; badgeTxt = 'TP ✓'; }
     else if (estado.startsWith('SL')) { badgeCls = 'b-sl'; badgeTxt = 'SL ✗'; }
     else if (estado.startsWith('BE')) { badgeCls = 'b-be'; badgeTxt = 'BE —'; }
