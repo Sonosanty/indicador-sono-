@@ -17,7 +17,7 @@
 
 /* ── CONFIGURACIÓN ── */
 const CFG = {
-  BINANCE_WS:  '' // 451 BLOCKED,
+  BINANCE_WS:  '', // 451 BLOCKED
   BINANCE_API: 'https://vix-proxy.sonosanty.workers.dev',
   FNG_URL:     'https://api.alternative.me/fng/?limit=1',
   CG_URL:      'https://api.coingecko.com/api/v3/global',
