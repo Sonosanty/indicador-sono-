@@ -14,5 +14,9 @@
   Cache-Control: no-cache, no-store, must-revalidate
   Content-Type: application/json; charset=utf-8
 
-# Deploy 17558ba - forced cache purge
+# SPA routes: never cache (hash router, same index.html for all)
+/*
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Deploy 1ecc8ef - CDN cache regeneration with explicit route-level rules
 
