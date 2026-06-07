@@ -6,7 +6,8 @@
   "exclude": [
     "/trades.json",
     "/favicon.svg",
-    "/robots.txt"
+    "/robots.txt",
+    "/_routes.json"
   ],
   "fallback": {
     "/*": "/index.html"
