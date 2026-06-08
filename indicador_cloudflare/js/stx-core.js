@@ -293,7 +293,7 @@ async function refreshIndicators(){
     const candles=await loadKlines('15m',220);
     if(!candles||candles.length<20){addLog('IND','var(--amber)','Sin velas suficientes — reintentando en 60s');return;}
     const cl=candles.map(c=>c.c),hi=candles.map(c=>c.h),lo=candles.map(c=>c.l);
-    const sc=computeScore(cl,hi,lo);lastScore=sc;
+    const sc=computeScore(cl,hi,lo);lastScore=sc;if(window.updateSonoMethod)window.updateSonoMethod(lastScore);
     renderScore(sc);renderMAs(sc);renderSignals(sc);renderInd(sc);
     const n=25,rh=Math.max(...hi.slice(-n)),rl=Math.min(...lo.slice(-n)),rng=rh-rl;
     renderSR({r2:rh+rng*.1,r1:rh,s1:rl,s2:rl-rng*.1},livePx||sc.px);
