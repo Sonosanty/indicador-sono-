@@ -501,6 +501,17 @@ function addLog(tag,col,msg){
 
 /* Router SPA */
 function showPage(id){
+
+  // Lazy load Chart.js solo cuando se navega a Trades
+  if (id === 'trades' && typeof Chart === 'undefined') {
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js';
+    s.onload = function() {
+      if (typeof renderTradesPage === 'function') renderTradesPage();
+    };
+    document.head.appendChild(s);
+  }
+
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('ac',b.dataset.page===id));
   const pg=$('page-'+id);if(pg)pg.classList.add('active');
