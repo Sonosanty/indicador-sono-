@@ -115,6 +115,8 @@ async function loadTicker(){
     set('sys-rest','✅ CoinGecko (Binance no disponible)');
     addLog('TICKER',T,'Precio CoinGecko: '+fU(px,2)+' · '+chg.toFixed(2)+'%');
   }catch(e2){console.error('[STX] ticker todo falló',e2);set('sys-rest','❌ Sin precio');}
+
+  if (window.updateSonoMethod && lastScore) window.updateSonoMethod(lastScore);
 }
 
 /* ════════════════════════════════════════════
