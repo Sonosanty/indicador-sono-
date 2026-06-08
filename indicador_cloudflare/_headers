@@ -11,3 +11,5 @@
 
 /trades.json
   Cache-Control: no-cache, no-store, must-revalidate
+
+# deploy-trigger: 2026-06-08T14:11Z
