@@ -268,7 +268,7 @@ async function refreshMTF(){
       const c=await loadKlines(tf,220);
       const cl=c.map(x=>x.c),hi=c.map(x=>x.h),lo=c.map(x=>x.l);
       scores.push(computeScore(cl,hi,lo).score);
-    }catch(){ scores.push(0); }
+    }catch(_){ scores.push(0); }
   }
   scores.forEach((s,i)=>{ const e=$(ids[i]); if(e){e.textContent=s;e.style.color=sColor(s);} });
   const mtf=Math.round(scores.reduce((a,s,i)=>a+s*w[i],0));
