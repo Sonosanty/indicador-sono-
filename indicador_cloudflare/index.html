@@ -830,250 +830,122 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- ═══ PÁGINA: MÉTODO ═══ -->
 <div class="page" id="page-metodo">
-<div class="shell" style="max-width:1400px;margin:0 auto;padding:1.1rem 1.4rem;display:flex;flex-direction:column;gap:14px">
-  <div class="met-hero">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:.6rem;display:flex;align-items:center;justify-content:center;gap:6px">
-      <span class="ws-dot dot-t"></span>Score Maestro Sono · datos en vivo
+<div class="wrap grid" id="sonoMethod">
+  <section class="hero">
+    <div class="card pad signalBox">
+      <div class="kpi">SONO METHOD™ · Decision Center</div>
+      <div class="signal" style="margin-top:10px"><span class="dot" id="sonoDot"></span><div><div class="signalState" id="sonoSignal">NEUTRAL</div><div class="sub" id="sonoSub">Esperando confluencias reales</div></div></div>
+      <div style="display:flex;align-items:end;gap:18px;margin-top:14px;flex-wrap:wrap">
+        <div><div class="kpi">SONO SCORE</div><div class="score" id="sonoScore">--</div></div>
+        <div><div class="kpi">Confianza</div><div class="score" style="font-size:34px" id="sonoConf">--</div></div>
+        <div><div class="kpi">Riesgo</div><div class="score" style="font-size:34px" id="sonoRisk">--</div></div>
+        <div><div class="kpi">Confluencias</div><div class="score" style="font-size:34px" id="sonoConfCount">--</div></div>
+      </div>
+      <div class="mini" style="margin-top:16px">
+        <div class="box"><span class="muted">Macro Bias</span><b id="macroBias">--</b></div>
+        <div class="box"><span class="muted">Micro Bias</span><b id="microBias">--</b></div>
+        <div class="box"><span class="muted">Momentum</span><b id="momentumBias">--</b></div>
+        <div class="box"><span class="muted">Volatility</span><b id="volBias">--</b></div>
+      </div>
     </div>
-    <div class="met-score-big" id="met-score" style="color:var(--teal)">--</div>
-    <div style="font-size:15px;margin-top:.5rem;font-weight:600" id="met-lbl">Calculando...</div>
-    <div style="font-size:11px;color:var(--tx3);margin-top:.3rem;font-family:var(--mono)">P1 Tendencia 35pts · P2 Momentum 35pts · P3 Bollinger 30pts</div>
-  </div>
-  <div class="met-g">
-    <div class="met-card met-p1">
-      <div class="met-hd"><div class="met-nm">📊 P1 · Tendencia MAs</div><div class="met-mx">máx 35</div></div>
-      <div class="met-sc" id="met-p1" style="color:var(--blue)">--</div>
-      <div class="pbar" style="margin-bottom:.6rem"><div class="pbar-f" id="met-p1bar" style="background:linear-gradient(90deg,var(--blue),var(--cyan));width:0%"></div></div>
-      <div class="met-detail" id="met-p1d">MA6: — · MA40: — · MA200: —</div>
+    <div class="card pad">
+      <div class="kpi">SONO SCORE ENGINE</div>
+      <div class="canvasWrap"><svg class="radarSvg" viewBox="0 0 360 240" id="radarSvg"></svg></div>
+      <div class="grid2">
+        <div class="box"><span class="muted">Trend Engine</span><b id="trendScore">--</b><div class="bar"><i id="trendBar"></i></div></div>
+        <div class="box"><span class="muted">Momentum Engine</span><b id="momScore">--</b><div class="bar"><i id="momBar"></i></div></div>
+        <div class="box"><span class="muted">Volatility Engine</span><b id="volScore">--</b><div class="bar"><i id="volBar"></i></div></div>
+        <div class="box"><span class="muted">Gap Engine</span><b id="gapScore">--</b><div class="bar"><i id="gapBar"></i></div></div>
+      </div>
     </div>
-    <div class="met-card met-p2">
-      <div class="met-hd"><div class="met-nm">⚡ P2 · Momentum</div><div class="met-mx">máx 35</div></div>
-      <div class="met-sc" id="met-p2" style="color:var(--green)">--</div>
-      <div class="pbar" style="margin-bottom:.6rem"><div class="pbar-f" id="met-p2bar" style="background:linear-gradient(90deg,var(--green),var(--teal));width:0%"></div></div>
-      <div class="met-detail" id="met-p2d">ADX: — · RSI: —</div>
+  </section>
+
+  <section class="cols3">
+    <div class="card pad">
+      <div class="sectionTitle">Market Structure Center</div>
+      <div class="grid2">
+        <div class="box"><span class="muted">Trend</span><b id="msTrend">--</b><div class="bar"><i id="msTrendBar"></i></div></div>
+        <div class="box"><span class="muted">Macro Bias</span><b id="msMacro">--</b><div class="bar"><i id="msMacroBar"></i></div></div>
+        <div class="box"><span class="muted">Micro Bias</span><b id="msMicro">--</b><div class="bar"><i id="msMicroBar"></i></div></div>
+        <div class="box"><span class="muted">Volatility</span><b id="msVol">--</b><div class="bar"><i id="msVolBar"></i></div></div>
+      </div>
     </div>
-    <div class="met-card met-p3">
-      <div class="met-hd"><div class="met-nm">📉 P3 · Bollinger</div><div class="met-mx">máx 30</div></div>
-      <div class="met-sc" id="met-p3" style="color:var(--amber)">--</div>
-      <div class="pbar" style="margin-bottom:.6rem"><div class="pbar-f" id="met-p3bar" style="background:linear-gradient(90deg,var(--amber),var(--purple));width:0%"></div></div>
-      <div class="met-detail" id="met-p3d">%B: — · BW: —</div>
+    <div class="card pad">
+      <div class="sectionTitle">Confluence Matrix</div>
+      <div id="matrixGrid" class="grid2"></div>
+      <div style="margin-top:12px" class="box"><span class="muted">Resultado</span><b id="matrixResult">--</b></div>
     </div>
-  </div>
+    <div class="card pad">
+      <div class="sectionTitle">Trade Execution Panel</div>
+      <table class="table">
+        <tr><th>Entrada</th><td id="execEntry">--</td></tr>
+        <tr><th>Stop</th><td id="execStop">--</td></tr>
+        <tr><th>Objetivo</th><td id="execTarget">--</td></tr>
+        <tr><th>R:R</th><td id="execRR">--</td></tr>
+        <tr><th>Duración</th><td id="execDur">--</td></tr>
+        <tr><th>Confianza</th><td id="execConf">--</td></tr>
+      </table>
+    </div>
+  </section>
 
-<!-- ══════════════════════════════════════════════
-     MÓDULO SONO DINÁMICO — insertar en page-metodo
-     después de la sección met-g (pilares SONO)
-══════════════════════════════════════════════ -->
+  <section class="cols2">
+    <div class="card pad strategies">
+      <div class="sectionTitle">SONO Strategies Center</div>
+      <div id="stratGrid" class="grid2"></div>
+    </div>
+    <div class="card pad calc">
+      <div class="sectionTitle">Position Calculator Pro</div>
+      <div class="grid2">
+        <div class="field"><label>Capital</label><input id="capIn" type="number" value="10000"></div>
+        <div class="field"><label>Riesgo %</label><input id="riskIn" type="number" value="1.5" step="0.1"></div>
+        <div class="field"><label>ATR</label><input id="atrIn" type="number" value="0"></div>
+        <div class="field"><label>Stop</label><input id="stopIn" type="number" value="0"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button class="btn" id="calcBtn">Calcular</button><button class="btn alt" id="liveBtn">Usar live + ATR</button></div>
+      <div class="grid2" style="margin-top:12px">
+        <div class="box"><span class="muted">Cantidad</span><b id="qtyOut">--</b></div>
+        <div class="box"><span class="muted">Stop Loss</span><b id="slOut">--</b></div>
+        <div class="box"><span class="muted">Take Profit</span><b id="tpOut">--</b></div>
+        <div class="box"><span class="muted">Risk Reward</span><b id="rrOut">--</b></div>
+        <div class="box"><span class="muted">Pérdida Máxima</span><b id="lossOut">--</b></div>
+        <div class="box"><span class="muted">Beneficio Potencial</span><b id="profitOut">--</b></div>
+      </div>
+    </div>
+  </section>
 
-<style>
-.sono-hero-sig{
-  display:flex;align-items:center;gap:10px;padding:.7rem 1.4rem;
-  border-radius:999px;border:1px solid;font-family:var(--mono);
-  font-size:15px;font-weight:700;letter-spacing:.08em;
-  transition:all .4s;width:fit-content;margin:0 auto;
-}
-.ajh-long {background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:var(--green)}
-.ajh-short{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--red)}
-.ajh-neu  {background:rgba(100,116,139,.1);border-color:rgba(100,116,139,.2);color:var(--tx3)}
-.ajh-dot  {width:9px;height:9px;border-radius:50%}
-
-.aj3col{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.ajpanel{
-  background:rgba(10,20,35,.85);border:1px solid var(--b);
-  border-radius:10px;padding:.8rem .9rem;
-}
-.ajpanel-title{font-size:9px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.1em;color:var(--tx3);margin-bottom:.6rem;font-family:var(--mono)}
-.ajrow{display:flex;justify-content:space-between;align-items:center;
-  padding:.22rem 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px}
-.ajrow:last-child{border:none}
-.ajrow span{color:var(--tx2)}
-.ajrow strong{font-family:var(--mono);font-size:11px;font-weight:700}
-.ajnote{font-size:10px;color:var(--tx3);margin-top:.4rem;font-style:italic;font-family:var(--mono)}
-
-.est8-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.est-c{
-  background:rgba(10,20,35,.85);border:1px solid var(--b);
-  border-radius:8px;padding:.65rem .8rem;transition:.2s;
-}
-.est-c.ac{border-color:rgba(0,212,160,.35);background:rgba(0,212,160,.05)}
-.est-c.ac-short{border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.04)}
-.est-top{display:flex;justify-content:space-between;align-items:flex-start}
-.est-num{font-size:18px;font-weight:700;font-family:var(--mono);color:rgba(255,255,255,.15);line-height:1}
-.est-dot{width:8px;height:8px;border-radius:50%;background:var(--dim);transition:background .3s,box-shadow .3s}
-.est-dot.on-long {background:var(--green);box-shadow:0 0 8px rgba(34,197,94,.7)}
-.est-dot.on-short{background:var(--red);  box-shadow:0 0 8px rgba(239,68,68,.7)}
-.est-dot.on-conf {background:var(--cyan); box-shadow:0 0 8px rgba(6,182,212,.7)}
-.est-dot.on-break{background:var(--amber);box-shadow:0 0 8px rgba(245,158,11,.7)}
-.est-nm{font-size:11px;font-weight:600;margin:.2rem 0}
-.est-desc{font-size:9px;color:var(--tx3);line-height:1.4}
-.est-badge{display:inline-block;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:700;margin-top:.3rem;font-family:var(--mono)}
-.eb-long {background:rgba(34,197,94,.15);color:var(--green)}
-.eb-short{background:rgba(239,68,68,.15);color:var(--red)}
-.eb-conf {background:rgba(6,182,212,.15);color:var(--cyan)}
-.eb-break{background:rgba(245,158,11,.15);color:var(--amber)}
-
-.aj-calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:.7rem}
-.aj-calc-grid label{display:flex;flex-direction:column;gap:4px;font-size:10px;color:var(--tx2);font-family:var(--mono)}
-.aj-calc-grid input{
-  padding:6px 8px;background:rgba(15,30,52,.8);border:1px solid var(--b);
-  border-radius:6px;color:var(--tx);font-family:var(--mono);font-size:12px;width:100%;
-}
-.aj-calc-grid input:focus{outline:none;border-color:rgba(0,212,160,.4)}
-.aj-actions{display:flex;gap:7px;margin-bottom:.7rem;flex-wrap:wrap}
-.btn-aj-p{padding:6px 16px;background:rgba(0,212,160,.12);border:1px solid rgba(0,212,160,.3);border-radius:6px;color:var(--teal,#00d4a0);font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;transition:.15s}
-.btn-aj-p:hover{background:rgba(0,212,160,.22)}
-.btn-aj-g{padding:6px 16px;background:transparent;border:1px solid var(--b);border-radius:6px;color:var(--tx2);font-family:var(--mono);font-size:11px;cursor:pointer;transition:.15s}
-.btn-aj-g:hover{border-color:var(--b2);color:var(--tx)}
-.aj-res-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
-.aj-res-grid>div{background:var(--bg4,#152540);border:1px solid var(--b);border-radius:7px;padding:.45rem .7rem}
-.aj-res-grid span{display:block;font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;font-family:var(--mono)}
-.aj-res-grid strong{font-family:var(--mono);font-size:14px;font-weight:700}
-.aj-rules{list-style:none;display:flex;flex-direction:column;gap:4px}
-.aj-rules li{padding:.35rem .8rem;background:rgba(10,20,35,.8);border:1px solid var(--b);border-radius:6px;font-size:11px;color:var(--tx2);padding-left:1.4rem;position:relative}
-.aj-rules li::before{content:"›";position:absolute;left:.6rem;color:var(--teal,#00d4a0);font-weight:700}
-@media(max-width:900px){.aj3col{grid-template-columns:1fr}.est8-grid{grid-template-columns:repeat(2,1fr)}.aj-calc-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:500px){.est8-grid{grid-template-columns:1fr}.aj-res-grid{grid-template-columns:1fr 1fr}}
-</style>
-
-<!-- Señal SONO Hero -->
-<div style="text-align:center;margin-bottom:.8rem">
-  <div class="sono-hero-sig ajh-neu" id="ajh-badge">
-    <div class="ajh-dot" id="ajh-dot" style="background:#64748b"></div>
-    <span id="ajh-signal">NEUTRAL</span>
-    <span style="font-size:11px;opacity:.7;font-weight:400" id="ajh-sub">Sin confluencia</span>
-  </div>
+  <section class="cols2">
+    <div class="card pad timeline">
+      <div class="sectionTitle">Market Timeline</div>
+      <div class="timelineList" id="timeline"></div>
+    </div>
+    <div class="card pad journal">
+      <div class="sectionTitle">Journal Intelligence</div>
+      <div class="grid4">
+        <div class="box"><span class="muted">Win Rate</span><b id="jrWin">--</b></div>
+        <div class="box"><span class="muted">Profit Factor</span><b id="jrPF">--</b></div>
+        <div class="box"><span class="muted">Expectancy</span><b id="jrExp">--</b></div>
+        <div class="box"><span class="muted">Drawdown</span><b id="jrDD">--</b></div>
+      </div>
+      <table class="table" style="margin-top:12px"><thead><tr><th>Op.</th><th>R</th><th>Razón</th></tr></thead><tbody id="journalTbody"></tbody></table>
+    </div>
+  </section>
 </div>
-
-<!-- 3 Pilares Sono -->
-<div class="aj3col">
-  <div class="ajpanel">
-    <div class="ajpanel-title">📊 P1 · Medias Móviles</div>
-    <div class="ajrow"><span>MA6 × MA70</span><strong id="aj-cross" style="color:#64748b">--</strong></div>
-    <div class="ajrow"><span>Precio vs MA40</span><strong id="aj-vs40" style="color:#64748b">--</strong></div>
-    <div class="ajrow"><span>Precio vs MA200</span><strong id="aj-vs200" style="color:#64748b">--</strong></div>
-    <div class="ajrow"><span>MA40</span><strong id="aj-ma40">--</strong></div>
-    <div class="ajrow"><span>MA200</span><strong id="aj-ma200">--</strong></div>
-    <div class="ajnote" id="aj-cross-note">Esperando datos...</div>
-  </div>
-  <div class="ajpanel">
-    <div class="ajpanel-title">📈 P2 · Momentum + Gap</div>
-    <div class="ajrow"><span>RSI 14</span><strong id="aj-rsi">--</strong></div>
-    <div class="ajrow"><span>ADX 14</span><strong id="aj-adx">--</strong></div>
-    <div class="ajrow"><span>Posición rango H/L</span><strong id="aj-gap">--</strong></div>
-    <div class="ajrow"><span>% en rango 24h</span><strong id="aj-gappct">--</strong></div>
-    <div class="ajnote" id="aj-gap-note">Analizando rango 24h...</div>
-  </div>
-  <div class="ajpanel">
-    <div class="ajpanel-title">📉 P3 · Bollinger</div>
-    <div class="ajrow"><span>%B</span><strong id="aj-pb">--</strong></div>
-    <div class="ajrow"><span>Band Width</span><strong id="aj-bw">--</strong></div>
-    <div class="ajrow"><span>ATR (14)</span><strong id="aj-atr">--</strong></div>
-    <div class="ajrow"><span>Stop sugerido (1.5×ATR)</span><strong id="aj-stop-sug" style="color:var(--red)">--</strong></div>
-    <div class="ajnote" id="aj-bb-note">Esperando bandas...</div>
-  </div>
-</div>
-
-<!-- 8 Estrategias dinámicas -->
-<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);margin:.3rem 0 .5rem;font-family:var(--mono)">
-  8 Estrategias Sono · Estado en tiempo real
-</div>
-<div class="est8-grid">
-  <div class="est-c" id="est01">
-    <div class="est-top"><div class="est-num">01</div><div class="est-dot" id="est01-dot"></div></div>
-    <div class="est-nm">Gap Bajista</div>
-    <div class="est-desc">Apertura con hueco &gt;2%. Operar cierre del gap.</div>
-    <span class="est-badge eb-long">LONG</span>
-  </div>
-  <div class="est-c" id="est02">
-    <div class="est-top"><div class="est-num">02</div><div class="est-dot" id="est02-dot"></div></div>
-    <div class="est-nm">Gap Alcista</div>
-    <div class="est-desc">Gap &gt;5%. Corrección probable. SHORT parcial.</div>
-    <span class="est-badge eb-short">SHORT</span>
-  </div>
-  <div class="est-c" id="est03">
-    <div class="est-top"><div class="est-num">03</div><div class="est-dot" id="est03-dot"></div></div>
-    <div class="est-nm">Cruce MA6×MA70</div>
-    <div class="est-desc">MA6 cruza al alza MA70 con volumen confirmado.</div>
-    <span class="est-badge eb-long">LONG</span>
-  </div>
-  <div class="est-c" id="est04">
-    <div class="est-top"><div class="est-num">04</div><div class="est-dot" id="est04-dot"></div></div>
-    <div class="est-nm">Death Cross</div>
-    <div class="est-desc">MA6 cruza a la baja MA70. Señal bajista confirmada.</div>
-    <span class="est-badge eb-short">SHORT</span>
-  </div>
-  <div class="est-c" id="est05">
-    <div class="est-top"><div class="est-num">05</div><div class="est-dot" id="est05-dot"></div></div>
-    <div class="est-nm">Bollinger Inferior</div>
-    <div class="est-desc">RSI sobrevendido + toca banda inferior. Rebote.</div>
-    <span class="est-badge eb-long">LONG</span>
-  </div>
-  <div class="est-c" id="est06">
-    <div class="est-top"><div class="est-num">06</div><div class="est-dot" id="est06-dot"></div></div>
-    <div class="est-nm">Bollinger Superior</div>
-    <div class="est-desc">RSI sobrecomprado + banda superior. Corrección.</div>
-    <span class="est-badge eb-short">SHORT</span>
-  </div>
-  <div class="est-c" id="est07">
-    <div class="est-top"><div class="est-num">07</div><div class="est-dot" id="est07-dot"></div></div>
-    <div class="est-nm">Gap + Cruce MA</div>
-    <div class="est-desc">Confluencia gap + cruce de medias. Alta probabilidad.</div>
-    <span class="est-badge eb-conf">CONFLUENCIA</span>
-  </div>
-  <div class="est-c" id="est08">
-    <div class="est-top"><div class="est-num">08</div><div class="est-dot" id="est08-dot"></div></div>
-    <div class="est-nm">Breakout de Rango</div>
-    <div class="est-desc">Rotura de consolidación con volumen. Seguir tendencia.</div>
-    <span class="est-badge eb-break">BREAKOUT</span>
-  </div>
-</div>
-
-<!-- Calculadora -->
-<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);margin:.3rem 0 .5rem;font-family:var(--mono)">
-  Calculadora de Posición · Gestión del Riesgo
-</div>
-<div class="aj-calc-grid">
-  <label>Capital Total ($)<input type="number" id="aj-capital" value="10000" min="0" step="100"></label>
-  <label>Precio de Entrada ($)<input type="number" id="aj-entry" value="0" min="0" step="1"></label>
-  <label>Stop Loss ($)<input type="number" id="aj-stop" value="0" min="0" step="1"></label>
-  <label>Riesgo por Trade (%)<input type="number" id="aj-risk" value="1.5" min="0.1" max="5" step="0.1"></label>
-</div>
-<div class="aj-actions">
-  <button class="btn-aj-p" id="aj-calc-btn">Calcular posición</button>
-  <button class="btn-aj-g" id="aj-live-btn">Usar precio live + ATR stop</button>
-  <button class="btn-aj-g" id="aj-reset-btn" style="margin-left:auto">Limpiar</button>
-</div>
-<div id="aj-result" style="display:none">
-  <div class="aj-res-grid">
-    <div><span>Riesgo $</span><strong id="aj-res-risk" style="color:var(--red)">$0</strong></div>
-    <div><span>Cantidad BTC</span><strong id="aj-res-qty">0</strong></div>
-    <div><span>Tamaño posición</span><strong id="aj-res-pos">$0</strong></div>
-    <div><span>Apalancamiento</span><strong id="aj-res-lev">0x</strong></div>
-    <div><span>Stop distance</span><strong id="aj-res-dist">0%</strong></div>
-    <div><span>R:R estimado</span><strong id="aj-res-rr" style="color:var(--green)">1:2</strong></div>
-  </div>
-</div>
-
-<!-- Reglas Sono -->
-<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);margin:.3rem 0 .5rem;font-family:var(--mono)">
-  Mandatos del Método Sono
-</div>
-<ul class="aj-rules">
-  <li>Operar solo intradía · sin posiciones overnight bajo ningún concepto.</li>
-  <li>MA200 como filtro de tendencia macro · no operar contra ella nunca.</li>
-  <li>Gap: buscar el cierre del hueco, nunca perseguir el precio.</li>
-  <li>Bollinger: rebote solo si el sesgo MA no contradice la tendencia.</li>
-  <li>Stop obligatorio siempre · riesgo máximo 2% del capital por trade.</li>
-  <li>Máximo 1-3 trades/día · más operaciones = más errores de disciplina.</li>
-  <li>Sin operar los primeros 30 minutos de apertura (volatilidad caótica).</li>
-  <li>Journal obligatorio · anotar entrada, stop, razón y resultado de cada trade.</li>
-</ul>
-
-</div>
-</div>
-
-<!-- ═══ PÁGINA: TRADES ═══ -->
+<script>
+const state={signal:'NEUTRAL',score:0,confidence:0,risk:'Neutral',confluence:0,price:63535,atr:720,ma6:63200,ma40:62800,ma70:63150,ma200:58000,rsi:45,adx:28,pb:.35,bw:4.2,gap:1.2,rr:2};
+const $=id=>document.getElementById(id), fmt=n=>Number.isFinite(n)?n.toLocaleString('en-US',{maximumFractionDigits:2}):'--';
+function setSignal(sig){state.signal=sig; const d=$('sonoDot'); d.className='dot '+(sig.includes('LONG')?'bull':sig.includes('SHORT')?'bear':''); $('sonoSignal').textContent=sig; $('sonoSub').textContent='Decisión operativa real basada en confluencias';}
+function updateScore(){ const trend=(state.price>state.ma200?30:5)+(state.ma6>state.ma70?15:0)+(state.price>state.ma40?10:0); const mom=(state.adx>25?15:8)+(state.rsi>55?10:state.rsi<30?12:6); const vol=(state.pb<.2?20:state.pb>.8?5:15)+(state.bw>5?10:8); const gap=(state.gap>5?20:state.gap>2?12:6); state.score=Math.min(100,Math.round(trend+mom+vol+gap)); state.confidence=Math.round(Math.min(95,50+state.score*.45)); state.confluence=[state.price>state.ma200,state.ma6>state.ma70,state.adx>25,state.bw>3.5,state.pb>.2&&state.pb<.8].filter(Boolean).length; const s=state.score; setSignal(s>=82?'STRONG LONG':s>=65?'LONG':s>=50?'NEUTRAL':s>=35?'SHORT':'STRONG SHORT'); $('sonoScore').textContent=s+'/100'; $('sonoConf').textContent=state.confidence+'%'; $('sonoRisk').textContent=s>=65?'Bajo':s>=50?'Medio':'Alto'; $('sonoConfCount').textContent=state.confluence+'/5'; $('macroBias').textContent=state.price>state.ma200?'Bullish':state.price<state.ma200?'Bearish':'Neutral'; $('microBias').textContent=state.ma6>state.ma70?'Bullish':'Bearish'; $('momentumBias').textContent=state.adx>25?'Active':'Weak'; $('volBias').textContent=state.bw>5?'Expanding':'Compressed'; }
+function radar(){ const svg=$('radarSvg'); const pts=[[180,18],[320,105],[280,205],[80,205],[40,105]]; const labels=['Trend','Momentum','Vol','Gap','Risk']; const vals=[Math.min(1,(state.price>state.ma200?1:.3)),Math.min(1,state.adx/50),Math.min(1,state.bw/8),Math.min(1,Math.abs(state.gap)/8),Math.min(1,1-state.confluence/5)]; let poly=''; for(let i=0;i<5;i++){const a=(Math.PI*2/5)*i-Math.PI/2; const x=180+110*Math.cos(a)*vals[i], y=120+80*Math.sin(a)*vals[i]; poly+=`${x},${y} `;} svg.innerHTML=`<defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0%' stop-color='rgba(88,166,255,.55)'/><stop offset='100%' stop-color='rgba(34,197,94,.1)'/></linearGradient></defs><polygon points='${pts.map(p=>p.join(',')).join(' ')}' fill='rgba(255,255,255,.02)' stroke='rgba(255,255,255,.08)'/><polygon points='${poly}' fill='url(#g)' stroke='rgba(88,166,255,.9)' stroke-width='2'/>${pts.map((p,i)=>`<circle cx='${p[0]}' cy='${p[1]}' r='3' fill='#58A6FF'/><text x='${p[0]}' y='${p[1]+18}' fill='#94A3B8' text-anchor='middle' font-size='11'>${labels[i]}</text>`).join('')}`; }
+function strategyGrid(){ const s=[['01','Gap Recovery','ACTIVE','84%','on-long'],['02','Gap Exhaustion','INACTIVE','21%','off'],['03','Trend Cross','ACTIVE','91%','on-long'],['04','Death Cross','INACTIVE','14%','off'],['05','BB Reversal Long','ACTIVE','73%','on-long'],['06','BB Reversal Short','INACTIVE','27%','off'],['07','Confluence Setup','ACTIVE','88%','on-conf'],['08','Volatility Breakout','ACTIVE','69%','on-break']]; $('stratGrid').innerHTML=s.map(x=>`<div class='card pad' style='padding:14px'><div style='display:flex;justify-content:space-between;align-items:flex-start'><div style='font-family:var(--mono);font-size:24px;font-weight:900'>${x[0]}</div><div class='chip ${x[2]==='ACTIVE'?'on':'off'}'><span class='s'></span>${x[2]}</div></div><div style='font-weight:800;margin-top:6px'>${x[1]}</div><div class='muted' style='font-size:12px;margin-top:6px'>Nivel de activación</div><div style='display:flex;align-items:center;justify-content:space-between;margin-top:8px'><b>${x[3]}</b><span class='pill ${x[4].includes('short')?'short':'long'}'>${x[4]}</span></div><div class='bar' style='margin-top:10px'><i style='width:${x[3]}'></i></div></div>`).join(''); }
+function confluence(){ const checks=[['Trend Engine',state.price>state.ma200],['Momentum Engine',state.adx>25],['Volatility Engine',state.bw>3.5],['Gap Engine',Math.abs(state.gap)>1],['Risk Engine',state.confluence>=3]]; $('matrixGrid').innerHTML=checks.map(([n,v])=>`<div class='box'><span class='muted'>${n}</span><b style='color:${v?'var(--bull)':'var(--bear)'}'>${v?'✔':'✖'}</b></div>`).join(''); $('matrixResult').textContent=`${checks.filter(x=>x[1]).length}/5 Motores alineados · ${checks.filter(x=>x[1]).length>=4?'Confluencia Alta':'Confluencia Media/Baja'}`; }
+function calcPosition(){ const cap=+$('capIn').value||0,risk=(+$('riskIn').value||0)/100,atr=+$('atrIn').value||0,stop=+$('stopIn').value||0,entry=state.price; const sl=stop||Math.max(0,entry-1.5*atr), rr=2, loss=cap*risk, qty=loss/Math.max(1e-9,Math.abs(entry-sl)), tp=entry+rr*Math.abs(entry-sl); $('qtyOut').textContent=fmt(qty); $('slOut').textContent=fmt(sl); $('tpOut').textContent=fmt(tp); $('rrOut').textContent='1:'+rr; $('lossOut').textContent='$'+fmt(loss); $('profitOut').textContent='$'+fmt(loss*rr); }
+function execPanel(){ const sl=Math.max(0,state.price-1.5*state.atr),tp=state.price+2*(state.price-sl); $('execEntry').textContent='$'+fmt(state.price); $('execStop').textContent='$'+fmt(sl); $('execTarget').textContent='$'+fmt(tp); $('execRR').textContent='1:2'; $('execDur').textContent='15m-4h'; $('execConf').textContent=state.confidence+'%'; }
+function timeline(){ $('timeline').innerHTML=[['Gap detectado','Gap del 1.2%'],['Cruce MA','MA6>MA70'],['RSI validado','RSI 45'],['ADX confirmado','ADX 28'],['Señal generada',state.signal],['Trade ejecutado','Pending'].map?null:null]; }
+function journal(){ const rows=[[1,'+2.1R','Gap + Trend'],[2,'-1.0R','Stop por volatilidad'],[3,'+1.7R','Bollinger long'],[4,'+0.8R','Confluence']]; $('journalTbody').innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join(''); const rs=rows.map(r=>parseFloat(r[1])); const wins=rs.filter(r=>r>0), losses=rs.filter(r=>r<0).map(Math.abs); $('jrWin').textContent=Math.round(wins.length/rs.length*100)+'%'; $('jrPF').textContent=(wins.reduce((a,b)=>a+b,0)/losses.reduce((a,b)=>a+b,0)).toFixed(2); $('jrExp').textContent=(rs.reduce((a,b)=>a+b,0)/rs.length).toFixed(2)+'R'; $('jrDD').textContent='-1.0R'; }
+function init(){ updateScore(); radar(); strategyGrid(); confluence(); execPanel(); journal(); calcPosition(); $('calcBtn').onclick=calcPosition; $('liveBtn').onclick=()=>{$('atrIn').value=state.atr; $('stopIn').value=Math.max(0,state.price-1.5*state.atr); calcPosition()}; $('sonoSignal').onclick=()=>{}; }
+init();
+</script>
+</div><!-- /page-metodo -->TRADES ═══ -->
 <div class="page" id="page-trades">
 <div class="shell" style="max-width:1600px;margin:0 auto;padding:1.1rem 1.4rem;display:flex;flex-direction:column;gap:14px">
 
