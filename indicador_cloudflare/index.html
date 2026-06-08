@@ -612,6 +612,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
   .ph-price{font-size:36px}
 }
 </style>
+
+<style>
+:root{--bg:#020617;--card:#0F172A;--card2:#111C33;--bd:rgba(255,255,255,.06);--txt:#E5E7EB;--mut:#94A3B8;--bull:#22C55E;--bear:#EF4444;--neu:#94A3B8;--acc:#58A6FF;--cyan:#22D3EE;--amber:#F59E0B;--glow:0 0 30px rgba(88,166,255,.15);--r12:16px;--r16:20px;--r20:24px;--shadow:0 20px 60px rgba(0,0,0,.35);--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+*{box-sizing:border-box} html,body{margin:0;background:radial-gradient(1200px 700px at 20% 0%,rgba(88,166,255,.11),transparent 35%),radial-gradient(1000px 600px at 90% 10%,rgba(34,197,94,.08),transparent 30%),var(--bg);color:var(--txt);font-family:var(--sans)}
+body{min-height:100vh} .wrap{max-width:1920px;margin:0 auto;padding:18px} .grid{display:grid;gap:14px}.hero{display:grid;grid-template-columns:1.5fr .9fr;gap:14px}.card{background:linear-gradient(180deg,rgba(17,24,39,.92),rgba(15,23,42,.92));border:1px solid var(--bd);border-radius:var(--r16);box-shadow:var(--shadow);backdrop-filter:blur(18px)}.pad{padding:18px}.kpi{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.12em;font-family:var(--mono)}.signalBox{position:relative;overflow:hidden}.signalBox::after{content:"";position:absolute;inset:-40px auto auto -40px;width:180px;height:180px;background:radial-gradient(circle,rgba(88,166,255,.12),transparent 70%);filter:blur(10px)}.signal{display:flex;align-items:center;gap:12px}.dot{width:12px;height:12px;border-radius:50%;background:var(--neu);box-shadow:0 0 0 0 rgba(88,166,255,.4);animation:pulse 2s infinite}.dot.bull{background:var(--bull)}.dot.bear{background:var(--bear)}.signalState{font-size:34px;font-weight:800;letter-spacing:-.03em}.score{font-size:62px;font-weight:900;line-height:1}.sub{color:var(--mut);font-size:14px}.mini{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.mini .box{background:rgba(2,6,23,.38);border:1px solid var(--bd);border-radius:14px;padding:12px}.box b{display:block;font-size:20px}.sectionTitle{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--mut);font-family:var(--mono);margin:0 0 10px}.radar, .gauge, .timeline, .journal, .strategies, .matrix, .calc, .exec{min-height:180px}.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.cols2{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}.chip{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;border:1px solid var(--bd);background:rgba(255,255,255,.03);font-size:12px;color:var(--txt)}.chip .s{width:8px;height:8px;border-radius:999px;background:var(--mut)}.chip.on .s{background:var(--bull);box-shadow:0 0 14px rgba(34,197,94,.8)}.chip.off .s{background:var(--bear)}.bar{height:10px;border-radius:999px;background:rgba(255,255,255,.05);overflow:hidden;border:1px solid var(--bd)}.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--bull));border-radius:inherit}.table{width:100%;border-collapse:collapse;font-size:13px}.table th,.table td{padding:11px 10px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left}.table th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.08em}.muted{color:var(--mut)} .pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-family:var(--mono);border:1px solid var(--bd)} .pill.long{color:var(--bull)} .pill.short{color:var(--bear)} .pill.neu{color:var(--neu)}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.field{display:flex;flex-direction:column;gap:6px}.field input{background:#0b1324;border:1px solid var(--bd);border-radius:12px;color:var(--txt);padding:12px 12px;outline:none}.btn{appearance:none;border:1px solid var(--bd);background:linear-gradient(180deg,rgba(88,166,255,.18),rgba(88,166,255,.08));color:var(--txt);padding:11px 14px;border-radius:12px;font-weight:700;cursor:pointer}.btn.alt{background:rgba(255,255,255,.03)}.btn.danger{background:linear-gradient(180deg,rgba(239,68,68,.16),rgba(239,68,68,.08))}
+.canvasWrap{height:260px}.radarSvg{width:100%;height:100%;display:block}.timelineList{display:flex;flex-direction:column;gap:10px}.timelineItem{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center;padding:12px;border:1px solid var(--bd);border-radius:14px;background:rgba(255,255,255,.02)}.timelineItem .t{font-family:var(--mono);font-size:12px;color:var(--mut)}.timelineItem .d{font-weight:700}
+@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(88,166,255,.35)}50%{transform:scale(1.08);box-shadow:0 0 0 12px rgba(88,166,255,0)}}
+@media (max-width:1280px){.hero,.cols2,.cols3,.grid4,.grid2{grid-template-columns:1fr}.signalState{font-size:28px}.score{font-size:50px}}
+</style>
 </head>
 <body>
 
@@ -831,120 +841,106 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <!-- ═══ PÁGINA: MÉTODO ═══ -->
 <div class="page" id="page-metodo">
 <div class="wrap grid" id="sonoMethod">
-  <section class="hero">
-    <div class="card pad signalBox">
-      <div class="kpi">SONO METHOD™ · Decision Center</div>
-      <div class="signal" style="margin-top:10px"><span class="dot" id="sonoDot"></span><div><div class="signalState" id="sonoSignal">NEUTRAL</div><div class="sub" id="sonoSub">Esperando confluencias reales</div></div></div>
-      <div style="display:flex;align-items:end;gap:18px;margin-top:14px;flex-wrap:wrap">
-        <div><div class="kpi">SONO SCORE</div><div class="score" id="sonoScore">--</div></div>
-        <div><div class="kpi">Confianza</div><div class="score" style="font-size:34px" id="sonoConf">--</div></div>
-        <div><div class="kpi">Riesgo</div><div class="score" style="font-size:34px" id="sonoRisk">--</div></div>
-        <div><div class="kpi">Confluencias</div><div class="score" style="font-size:34px" id="sonoConfCount">--</div></div>
-      </div>
-      <div class="mini" style="margin-top:16px">
-        <div class="box"><span class="muted">Macro Bias</span><b id="macroBias">--</b></div>
-        <div class="box"><span class="muted">Micro Bias</span><b id="microBias">--</b></div>
-        <div class="box"><span class="muted">Momentum</span><b id="momentumBias">--</b></div>
-        <div class="box"><span class="muted">Volatility</span><b id="volBias">--</b></div>
-      </div>
-    </div>
-    <div class="card pad">
-      <div class="kpi">SONO SCORE ENGINE</div>
-      <div class="canvasWrap"><svg class="radarSvg" viewBox="0 0 360 240" id="radarSvg"></svg></div>
-      <div class="grid2">
-        <div class="box"><span class="muted">Trend Engine</span><b id="trendScore">--</b><div class="bar"><i id="trendBar"></i></div></div>
-        <div class="box"><span class="muted">Momentum Engine</span><b id="momScore">--</b><div class="bar"><i id="momBar"></i></div></div>
-        <div class="box"><span class="muted">Volatility Engine</span><b id="volScore">--</b><div class="bar"><i id="volBar"></i></div></div>
-        <div class="box"><span class="muted">Gap Engine</span><b id="gapScore">--</b><div class="bar"><i id="gapBar"></i></div></div>
-      </div>
-    </div>
-  </section>
+ <section class="hero">
+ <div class="card pad signalBox">
+ <div class="kpi">SONO METHOD™ · Decision Center</div>
+ <div class="signal" style="margin-top:10px"><span class="dot" id="sonoDot"></span><div><div class="signalState" id="sonoSignal">NEUTRAL</div><div class="sub" id="sonoSub">Esperando confluencias reales</div></div></div>
+ <div style="display:flex;align-items:end;gap:18px;margin-top:14px;flex-wrap:wrap">
+ <div><div class="kpi">SONO SCORE</div><div class="score" id="sonoScore">--</div></div>
+ <div><div class="kpi">Confianza</div><div class="score" style="font-size:34px" id="sonoConf">--</div></div>
+ <div><div class="kpi">Riesgo</div><div class="score" style="font-size:34px" id="sonoRisk">--</div></div>
+ <div><div class="kpi">Confluencias</div><div class="score" style="font-size:34px" id="sonoConfCount">--</div></div>
+ </div>
+ <div class="mini" style="margin-top:16px">
+ <div class="box"><span class="muted">Macro Bias</span><b id="macroBias">--</b></div>
+ <div class="box"><span class="muted">Micro Bias</span><b id="microBias">--</b></div>
+ <div class="box"><span class="muted">Momentum</span><b id="momentumBias">--</b></div>
+ <div class="box"><span class="muted">Volatility</span><b id="volBias">--</b></div>
+ </div>
+ </div>
+ <div class="card pad">
+ <div class="kpi">SONO SCORE ENGINE</div>
+ <div class="canvasWrap"><svg class="radarSvg" viewBox="0 0 360 240" id="radarSvg"></svg></div>
+ <div class="grid2">
+ <div class="box"><span class="muted">Trend Engine</span><b id="trendScore">--</b><div class="bar"><i id="trendBar"></i></div></div>
+ <div class="box"><span class="muted">Momentum Engine</span><b id="momScore">--</b><div class="bar"><i id="momBar"></i></div></div>
+ <div class="box"><span class="muted">Volatility Engine</span><b id="volScore">--</b><div class="bar"><i id="volBar"></i></div></div>
+ <div class="box"><span class="muted">Gap Engine</span><b id="gapScore">--</b><div class="bar"><i id="gapBar"></i></div></div>
+ </div>
+ </div>
+ </section>
 
-  <section class="cols3">
-    <div class="card pad">
-      <div class="sectionTitle">Market Structure Center</div>
-      <div class="grid2">
-        <div class="box"><span class="muted">Trend</span><b id="msTrend">--</b><div class="bar"><i id="msTrendBar"></i></div></div>
-        <div class="box"><span class="muted">Macro Bias</span><b id="msMacro">--</b><div class="bar"><i id="msMacroBar"></i></div></div>
-        <div class="box"><span class="muted">Micro Bias</span><b id="msMicro">--</b><div class="bar"><i id="msMicroBar"></i></div></div>
-        <div class="box"><span class="muted">Volatility</span><b id="msVol">--</b><div class="bar"><i id="msVolBar"></i></div></div>
-      </div>
-    </div>
-    <div class="card pad">
-      <div class="sectionTitle">Confluence Matrix</div>
-      <div id="matrixGrid" class="grid2"></div>
-      <div style="margin-top:12px" class="box"><span class="muted">Resultado</span><b id="matrixResult">--</b></div>
-    </div>
-    <div class="card pad">
-      <div class="sectionTitle">Trade Execution Panel</div>
-      <table class="table">
-        <tr><th>Entrada</th><td id="execEntry">--</td></tr>
-        <tr><th>Stop</th><td id="execStop">--</td></tr>
-        <tr><th>Objetivo</th><td id="execTarget">--</td></tr>
-        <tr><th>R:R</th><td id="execRR">--</td></tr>
-        <tr><th>Duración</th><td id="execDur">--</td></tr>
-        <tr><th>Confianza</th><td id="execConf">--</td></tr>
-      </table>
-    </div>
-  </section>
+ <section class="cols3">
+ <div class="card pad">
+ <div class="sectionTitle">Market Structure Center</div>
+ <div class="grid2">
+ <div class="box"><span class="muted">Trend</span><b id="msTrend">--</b><div class="bar"><i id="msTrendBar"></i></div></div>
+ <div class="box"><span class="muted">Macro Bias</span><b id="msMacro">--</b><div class="bar"><i id="msMacroBar"></i></div></div>
+ <div class="box"><span class="muted">Micro Bias</span><b id="msMicro">--</b><div class="bar"><i id="msMicroBar"></i></div></div>
+ <div class="box"><span class="muted">Volatility</span><b id="msVol">--</b><div class="bar"><i id="msVolBar"></i></div></div>
+ </div>
+ </div>
+ <div class="card pad">
+ <div class="sectionTitle">Confluence Matrix</div>
+ <div id="matrixGrid" class="grid2"></div>
+ <div style="margin-top:12px" class="box"><span class="muted">Resultado</span><b id="matrixResult">--</b></div>
+ </div>
+ <div class="card pad">
+ <div class="sectionTitle">Trade Execution Panel</div>
+ <table class="table">
+ <tr><th>Entrada</th><td id="execEntry">--</td></tr>
+ <tr><th>Stop</th><td id="execStop">--</td></tr>
+ <tr><th>Objetivo</th><td id="execTarget">--</td></tr>
+ <tr><th>R:R</th><td id="execRR">--</td></tr>
+ <tr><th>Duración</th><td id="execDur">--</td></tr>
+ <tr><th>Confianza</th><td id="execConf">--</td></tr>
+ </table>
+ </div>
+ </section>
 
-  <section class="cols2">
-    <div class="card pad strategies">
-      <div class="sectionTitle">SONO Strategies Center</div>
-      <div id="stratGrid" class="grid2"></div>
-    </div>
-    <div class="card pad calc">
-      <div class="sectionTitle">Position Calculator Pro</div>
-      <div class="grid2">
-        <div class="field"><label>Capital</label><input id="capIn" type="number" value="10000"></div>
-        <div class="field"><label>Riesgo %</label><input id="riskIn" type="number" value="1.5" step="0.1"></div>
-        <div class="field"><label>ATR</label><input id="atrIn" type="number" value="0"></div>
-        <div class="field"><label>Stop</label><input id="stopIn" type="number" value="0"></div>
-      </div>
-      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button class="btn" id="calcBtn">Calcular</button><button class="btn alt" id="liveBtn">Usar live + ATR</button></div>
-      <div class="grid2" style="margin-top:12px">
-        <div class="box"><span class="muted">Cantidad</span><b id="qtyOut">--</b></div>
-        <div class="box"><span class="muted">Stop Loss</span><b id="slOut">--</b></div>
-        <div class="box"><span class="muted">Take Profit</span><b id="tpOut">--</b></div>
-        <div class="box"><span class="muted">Risk Reward</span><b id="rrOut">--</b></div>
-        <div class="box"><span class="muted">Pérdida Máxima</span><b id="lossOut">--</b></div>
-        <div class="box"><span class="muted">Beneficio Potencial</span><b id="profitOut">--</b></div>
-      </div>
-    </div>
-  </section>
+ <section class="cols2">
+ <div class="card pad strategies">
+ <div class="sectionTitle">SONO Strategies Center</div>
+ <div id="stratGrid" class="grid2"></div>
+ </div>
+ <div class="card pad calc">
+ <div class="sectionTitle">Position Calculator Pro</div>
+ <div class="grid2">
+ <div class="field"><label>Capital</label><input id="capIn" type="number" value="10000"></div>
+ <div class="field"><label>Riesgo %</label><input id="riskIn" type="number" value="1.5" step="0.1"></div>
+ <div class="field"><label>ATR</label><input id="atrIn" type="number" value="0"></div>
+ <div class="field"><label>Stop</label><input id="stopIn" type="number" value="0"></div>
+ </div>
+ <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button class="btn" id="calcBtn">Calcular</button><button class="btn alt" id="liveBtn">Usar live + ATR</button></div>
+ <div class="grid2" style="margin-top:12px">
+ <div class="box"><span class="muted">Cantidad</span><b id="qtyOut">--</b></div>
+ <div class="box"><span class="muted">Stop Loss</span><b id="slOut">--</b></div>
+ <div class="box"><span class="muted">Take Profit</span><b id="tpOut">--</b></div>
+ <div class="box"><span class="muted">Risk Reward</span><b id="rrOut">--</b></div>
+ <div class="box"><span class="muted">Pérdida Máxima</span><b id="lossOut">--</b></div>
+ <div class="box"><span class="muted">Beneficio Potencial</span><b id="profitOut">--</b></div>
+ </div>
+ </div>
+ </section>
 
-  <section class="cols2">
-    <div class="card pad timeline">
-      <div class="sectionTitle">Market Timeline</div>
-      <div class="timelineList" id="timeline"></div>
-    </div>
-    <div class="card pad journal">
-      <div class="sectionTitle">Journal Intelligence</div>
-      <div class="grid4">
-        <div class="box"><span class="muted">Win Rate</span><b id="jrWin">--</b></div>
-        <div class="box"><span class="muted">Profit Factor</span><b id="jrPF">--</b></div>
-        <div class="box"><span class="muted">Expectancy</span><b id="jrExp">--</b></div>
-        <div class="box"><span class="muted">Drawdown</span><b id="jrDD">--</b></div>
-      </div>
-      <table class="table" style="margin-top:12px"><thead><tr><th>Op.</th><th>R</th><th>Razón</th></tr></thead><tbody id="journalTbody"></tbody></table>
-    </div>
-  </section>
+ <section class="cols2">
+ <div class="card pad timeline">
+ <div class="sectionTitle">Market Timeline</div>
+ <div class="timelineList" id="timeline"></div>
+ </div>
+ <div class="card pad journal">
+ <div class="sectionTitle">Journal Intelligence</div>
+ <div class="grid4">
+ <div class="box"><span class="muted">Win Rate</span><b id="jrWin">--</b></div>
+ <div class="box"><span class="muted">Profit Factor</span><b id="jrPF">--</b></div>
+ <div class="box"><span class="muted">Expectancy</span><b id="jrExp">--</b></div>
+ <div class="box"><span class="muted">Drawdown</span><b id="jrDD">--</b></div>
+ </div>
+ <table class="table" style="margin-top:12px"><thead><tr><th>Op.</th><th>R</th><th>Razón</th></tr></thead><tbody id="journalTbody"></tbody></table>
+ </div>
+ </section>
 </div>
-<script>
-const state={signal:'NEUTRAL',score:0,confidence:0,risk:'Neutral',confluence:0,price:63535,atr:720,ma6:63200,ma40:62800,ma70:63150,ma200:58000,rsi:45,adx:28,pb:.35,bw:4.2,gap:1.2,rr:2};
-const $=id=>document.getElementById(id), fmt=n=>Number.isFinite(n)?n.toLocaleString('en-US',{maximumFractionDigits:2}):'--';
-function setSignal(sig){state.signal=sig; const d=$('sonoDot'); d.className='dot '+(sig.includes('LONG')?'bull':sig.includes('SHORT')?'bear':''); $('sonoSignal').textContent=sig; $('sonoSub').textContent='Decisión operativa real basada en confluencias';}
-function updateScore(){ const trend=(state.price>state.ma200?30:5)+(state.ma6>state.ma70?15:0)+(state.price>state.ma40?10:0); const mom=(state.adx>25?15:8)+(state.rsi>55?10:state.rsi<30?12:6); const vol=(state.pb<.2?20:state.pb>.8?5:15)+(state.bw>5?10:8); const gap=(state.gap>5?20:state.gap>2?12:6); state.score=Math.min(100,Math.round(trend+mom+vol+gap)); state.confidence=Math.round(Math.min(95,50+state.score*.45)); state.confluence=[state.price>state.ma200,state.ma6>state.ma70,state.adx>25,state.bw>3.5,state.pb>.2&&state.pb<.8].filter(Boolean).length; const s=state.score; setSignal(s>=82?'STRONG LONG':s>=65?'LONG':s>=50?'NEUTRAL':s>=35?'SHORT':'STRONG SHORT'); $('sonoScore').textContent=s+'/100'; $('sonoConf').textContent=state.confidence+'%'; $('sonoRisk').textContent=s>=65?'Bajo':s>=50?'Medio':'Alto'; $('sonoConfCount').textContent=state.confluence+'/5'; $('macroBias').textContent=state.price>state.ma200?'Bullish':state.price<state.ma200?'Bearish':'Neutral'; $('microBias').textContent=state.ma6>state.ma70?'Bullish':'Bearish'; $('momentumBias').textContent=state.adx>25?'Active':'Weak'; $('volBias').textContent=state.bw>5?'Expanding':'Compressed'; }
-function radar(){ const svg=$('radarSvg'); const pts=[[180,18],[320,105],[280,205],[80,205],[40,105]]; const labels=['Trend','Momentum','Vol','Gap','Risk']; const vals=[Math.min(1,(state.price>state.ma200?1:.3)),Math.min(1,state.adx/50),Math.min(1,state.bw/8),Math.min(1,Math.abs(state.gap)/8),Math.min(1,1-state.confluence/5)]; let poly=''; for(let i=0;i<5;i++){const a=(Math.PI*2/5)*i-Math.PI/2; const x=180+110*Math.cos(a)*vals[i], y=120+80*Math.sin(a)*vals[i]; poly+=`${x},${y} `;} svg.innerHTML=`<defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0%' stop-color='rgba(88,166,255,.55)'/><stop offset='100%' stop-color='rgba(34,197,94,.1)'/></linearGradient></defs><polygon points='${pts.map(p=>p.join(',')).join(' ')}' fill='rgba(255,255,255,.02)' stroke='rgba(255,255,255,.08)'/><polygon points='${poly}' fill='url(#g)' stroke='rgba(88,166,255,.9)' stroke-width='2'/>${pts.map((p,i)=>`<circle cx='${p[0]}' cy='${p[1]}' r='3' fill='#58A6FF'/><text x='${p[0]}' y='${p[1]+18}' fill='#94A3B8' text-anchor='middle' font-size='11'>${labels[i]}</text>`).join('')}`; }
-function strategyGrid(){ const s=[['01','Gap Recovery','ACTIVE','84%','on-long'],['02','Gap Exhaustion','INACTIVE','21%','off'],['03','Trend Cross','ACTIVE','91%','on-long'],['04','Death Cross','INACTIVE','14%','off'],['05','BB Reversal Long','ACTIVE','73%','on-long'],['06','BB Reversal Short','INACTIVE','27%','off'],['07','Confluence Setup','ACTIVE','88%','on-conf'],['08','Volatility Breakout','ACTIVE','69%','on-break']]; $('stratGrid').innerHTML=s.map(x=>`<div class='card pad' style='padding:14px'><div style='display:flex;justify-content:space-between;align-items:flex-start'><div style='font-family:var(--mono);font-size:24px;font-weight:900'>${x[0]}</div><div class='chip ${x[2]==='ACTIVE'?'on':'off'}'><span class='s'></span>${x[2]}</div></div><div style='font-weight:800;margin-top:6px'>${x[1]}</div><div class='muted' style='font-size:12px;margin-top:6px'>Nivel de activación</div><div style='display:flex;align-items:center;justify-content:space-between;margin-top:8px'><b>${x[3]}</b><span class='pill ${x[4].includes('short')?'short':'long'}'>${x[4]}</span></div><div class='bar' style='margin-top:10px'><i style='width:${x[3]}'></i></div></div>`).join(''); }
-function confluence(){ const checks=[['Trend Engine',state.price>state.ma200],['Momentum Engine',state.adx>25],['Volatility Engine',state.bw>3.5],['Gap Engine',Math.abs(state.gap)>1],['Risk Engine',state.confluence>=3]]; $('matrixGrid').innerHTML=checks.map(([n,v])=>`<div class='box'><span class='muted'>${n}</span><b style='color:${v?'var(--bull)':'var(--bear)'}'>${v?'✔':'✖'}</b></div>`).join(''); $('matrixResult').textContent=`${checks.filter(x=>x[1]).length}/5 Motores alineados · ${checks.filter(x=>x[1]).length>=4?'Confluencia Alta':'Confluencia Media/Baja'}`; }
-function calcPosition(){ const cap=+$('capIn').value||0,risk=(+$('riskIn').value||0)/100,atr=+$('atrIn').value||0,stop=+$('stopIn').value||0,entry=state.price; const sl=stop||Math.max(0,entry-1.5*atr), rr=2, loss=cap*risk, qty=loss/Math.max(1e-9,Math.abs(entry-sl)), tp=entry+rr*Math.abs(entry-sl); $('qtyOut').textContent=fmt(qty); $('slOut').textContent=fmt(sl); $('tpOut').textContent=fmt(tp); $('rrOut').textContent='1:'+rr; $('lossOut').textContent='$'+fmt(loss); $('profitOut').textContent='$'+fmt(loss*rr); }
-function execPanel(){ const sl=Math.max(0,state.price-1.5*state.atr),tp=state.price+2*(state.price-sl); $('execEntry').textContent='$'+fmt(state.price); $('execStop').textContent='$'+fmt(sl); $('execTarget').textContent='$'+fmt(tp); $('execRR').textContent='1:2'; $('execDur').textContent='15m-4h'; $('execConf').textContent=state.confidence+'%'; }
-function timeline(){ $('timeline').innerHTML=[['Gap detectado','Gap del 1.2%'],['Cruce MA','MA6>MA70'],['RSI validado','RSI 45'],['ADX confirmado','ADX 28'],['Señal generada',state.signal],['Trade ejecutado','Pending'].map?null:null]; }
-function journal(){ const rows=[[1,'+2.1R','Gap + Trend'],[2,'-1.0R','Stop por volatilidad'],[3,'+1.7R','Bollinger long'],[4,'+0.8R','Confluence']]; $('journalTbody').innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join(''); const rs=rows.map(r=>parseFloat(r[1])); const wins=rs.filter(r=>r>0), losses=rs.filter(r=>r<0).map(Math.abs); $('jrWin').textContent=Math.round(wins.length/rs.length*100)+'%'; $('jrPF').textContent=(wins.reduce((a,b)=>a+b,0)/losses.reduce((a,b)=>a+b,0)).toFixed(2); $('jrExp').textContent=(rs.reduce((a,b)=>a+b,0)/rs.length).toFixed(2)+'R'; $('jrDD').textContent='-1.0R'; }
-function init(){ updateScore(); radar(); strategyGrid(); confluence(); execPanel(); journal(); calcPosition(); $('calcBtn').onclick=calcPosition; $('liveBtn').onclick=()=>{$('atrIn').value=state.atr; $('stopIn').value=Math.max(0,state.price-1.5*state.atr); calcPosition()}; $('sonoSignal').onclick=()=>{}; }
-init();
-</script>
+
 </div><!-- ═══ PÁGINA: TRADES ═══ -->
 <div class="page" id="page-trades">
 <div class="shell" style="max-width:1600px;margin:0 auto;padding:1.1rem 1.4rem;display:flex;flex-direction:column;gap:14px">
