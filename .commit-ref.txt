@@ -1,0 +1,4 @@
+Commit: d3865a2e2f1c7804b0dfb8b4faaa844960436b04
+Hash: d3865a2
+Mensaje: d3865a2 fix: stx-core v2 - async renderRangosPage + renderTradesPage + fix badge INIT
+Fecha: 2026-06-08 09:18
