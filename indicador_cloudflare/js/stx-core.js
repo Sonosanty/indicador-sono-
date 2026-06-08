@@ -519,6 +519,29 @@ function updateTradesR(px){
   });
 }
 
+function renderTradesPage() {
+  const tbody = document.getElementById('tradesFullTbody');
+  if (!tbody) { renderTrades(allTrades, livePx); return; }
+  if (!allTrades || !allTrades.length) {
+    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--tx3);padding:1rem">Sin trades cargados</td></tr>';
+    return;
+  }
+  tbody.innerHTML = '';
+  [...allTrades].reverse().forEach(t => {
+    const est = geEstado(t), isOpen = est === 'OPEN';
+    const r = isOpen ? calcRActual(t, livePx) : parseFloat(t.r_actual ?? t.r);
+    const rStr = r != null ? fR(r) : '--', rClr = r != null ? cG(r) : 'var(--tx3)';
+    let bc = 'b-op', bt = t.estado || t.status || '?';
+    if (est.startsWith('TP')) { bc = 'b-tp'; bt = 'TP \u2713'; }
+    else if (est.startsWith('SL')) { bc = 'b-sl'; bt = 'SL \u2717'; }
+    else if (est.startsWith('BE')) { bc = 'b-be'; bt = 'BE \u2014'; }
+    const tr = document.createElement('tr');
+    if (isOpen) tr.dataset.tradeId = t.id;
+    tr.innerHTML = '<td>' + t.id + '</td><td><span class="badge ' + bc + '">' + bt + '</span></td><td>' + (t.tf||'--') + '</td><td>' + (t.side||'--') + '</td><td>' + (t.setup||'--') + '</td><td>' + (t.entry||'--') + '</td><td>' + (t.sl||'--') + '</td><td>' + (t.tp1||'--') + '</td><td>' + (t.tp2||'--') + '</td><td>' + (t.mfe||'--') + '</td><td>' + (t.mae||'--') + '</td><td>' + (t.duration||t.dur||'--') + '</td><td style="color:' + rClr + ';font-weight:700" data-r="1">' + rStr + '</td>';
+    tbody.appendChild(tr);
+  });
+}
+
 async function loadTrades(){
   try{
     const d=await fetchJ('/trades.json');
@@ -597,6 +620,7 @@ function showPage(id){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('ac',b.dataset.page===id));
   const pg=$('page-'+id); if(pg) pg.classList.add('active');
   if(id==='rangos') renderRangosPage();
+  if(id==='trades') renderTradesPage();
   if(id==='metodo'&&lastSC) updateMetodoPg(lastSC);
   history.pushState({page:id},'',(id==='dashboard'?'/':'/'+id));
 }
