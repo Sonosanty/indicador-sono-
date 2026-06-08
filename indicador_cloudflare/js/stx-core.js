@@ -758,7 +758,8 @@ function setCoin(c) {
 /* ════════════════════════════════════════════
    INIT — orden correcto, sin await sueltos
 ════════════════════════════════════════════ */
-(async function init() {
+(async function init() /* patched */ {
+  console.log('[STX] init() arrancando...');
   console.log('[STX v3] Iniciando con proxy...');
 
   // Reloj
