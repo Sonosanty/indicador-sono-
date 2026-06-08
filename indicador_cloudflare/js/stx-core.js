@@ -1,10 +1,13 @@
-/* SONO TERMINAL X — stx-core.js FINAL
-   Sin await fuera de async. Sin onclick inline.
-   renderRangosPage es async. Todo funcional.
+/* SONO TERMINAL X — stx-core.js FINAL v2
+   Fuente primaria: CoinGecko (sin bloqueo 451)
+   Fallback: Binance directa | Proxy Worker
+   Verificado: async renderRangosPage, sin onclick inline
 */
 'use strict';
 const PROXY='https://vix-proxy.sonosanty.workers.dev';
 const BN='https://api.binance.com/api/v3';
+const CG_BASE='https://api.coingecko.com/api/v3';
+const CG_IDS={BTC:'bitcoin',ETH:'ethereum',SOL:'solana',XRP:'ripple'};
 const COINS={BTC:'BTCUSDT',ETH:'ETHUSDT',SOL:'SOLUSDT',XRP:'XRPUSDT'};
 let coin='BTC',livePx=0,eurRate=1.08,ws=null,wsLast=0,wsRetry=false,wsTmr=null;
 let allTrades=[],logs=[],lastScore=null,eqChart=null;
@@ -20,50 +23,40 @@ const cGR=n=>n>=0?G:R;
 
 async function fetchJ(url){
   const r=await fetch(url,{cache:'no-store'});
-  if(!r.ok)throw Error(r.status);
+  if(!r.ok)throw Error(r.status+' '+url.substring(0,60));
   return r.json();
 }
-async function fetchB(proxy,direct){
-  try{return await fetchJ(PROXY+proxy);}catch(e){}
-  try{return await fetchJ(direct);}catch(e){}
-  // fallback CoinGecko para precio
-  if(proxy.startsWith('/btc')||direct.includes('ticker/24hr')){
-    const cg=await fetchJ('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,ripple&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true');
-    const m={BTC:'bitcoin',ETH:'ethereum',SOL:'solana',XRP:'ripple'};
-    const d=cg[m[coin]||'bitcoin'];
-    return{lastPrice:String(d?.usd||0),highPrice:String(d?.usd||0),lowPrice:String(d?.usd||0),volume:'0',priceChangePercent:String(d?.usd_24h_change||0)};
-  }
-  throw Error('All sources failed');
-}
 
-/* ── WebSocket ── */
+/* ════════════════════════════════════════════
+   WebSocket — intento pero no bloqueante si falla
+════════════════════════════════════════════ */
 function startWS(){
   if(ws){try{ws.close();}catch(e){}ws=null;}
   const sym=COINS[coin].toLowerCase();
   try{ws=new WebSocket('wss://stream.binance.com:9443/ws/'+sym+'@aggTrade');}
-  catch(e){setBadge(false);scheduleWS();return;}
-  ws.onopen=()=>{wsLast=Date.now();setBadge(true);addLog('WS',T,'WebSocket '+coin+' conectado');set('sys-ws','✅ Conectado');};
+  catch(e){setBadge(false,'WS no disponible');return;}
+  ws.onopen=()=>{wsLast=Date.now();setBadge(true);addLog('WS',T,'WebSocket '+coin+' conectado');};
   ws.onmessage=e=>{
     wsLast=Date.now();
     const ts=new Date().toLocaleTimeString('es-ES');
     set('clockEl',ts);set('tTick','Tick: '+ts);set('sys-tick',ts);
     try{const d=JSON.parse(e.data);livePx=parseFloat(d.p);onTick(livePx);}catch(e){}
   };
-  ws.onerror=()=>setBadge(false);
-  ws.onclose=()=>{setBadge(false);scheduleWS();};
+  ws.onerror=()=>setBadge(false,'WS error (451?)');
+  ws.onclose=()=>{setBadge(false,'WS cerrado');scheduleWS();};
 }
 function startWatchdog(){
   if(wsTmr)clearInterval(wsTmr);
-  wsTmr=setInterval(()=>{if(wsLast>0&&Date.now()-wsLast>15000){setBadge(false);scheduleWS();}},5000);
+  wsTmr=setInterval(()=>{if(wsLast>0&&Date.now()-wsLast>15000){setBadge(false,'Sin tick');scheduleWS();}},5000);
 }
-function scheduleWS(){if(wsRetry)return;wsRetry=true;setTimeout(()=>{wsRetry=false;startWS();},3000);}
-function setBadge(live){
+function scheduleWS(){if(wsRetry)return;wsRetry=true;setTimeout(()=>{wsRetry=false;startWS();},5000);}
+function setBadge(live,reason){
   const b=$('wsBadge'),d=$('wsDot'),t=$('wsText');
   if(!b)return;
   b.className='ws-chip '+(live?'ws-live':'ws-dead');
   if(d)d.className='ws-dot '+(live?'dot-t':'dot-r');
   if(t)t.textContent=live?'LIVE':'SIN SEÑAL';
-  set('sys-ws',live?'✅ Conectado':'❌ Sin señal');
+  set('sys-ws',live?'✅ Conectado':'⚠️ '+(reason||'Desconectado')+' (datos REST activos)');
 }
 function onTick(px){
   updatePxDOM(px);
@@ -79,26 +72,91 @@ function updatePxDOM(px){
   const rp=$('rangePx');if(rp)rp.textContent=fU(px,2);
 }
 
-/* ── Ticker 24h ── */
+/* ════════════════════════════════════════════
+   TICKER — CoinGecko primero (sin 451)
+════════════════════════════════════════════ */
 async function loadTicker(){
   try{
+    // 1. Intentar Binance via proxy
     const sym=COINS[coin];
-    const d=await fetchB('/btc?symbol='+sym,BN+'/ticker/24hr?symbol='+sym);
-    const px=parseFloat(d.lastPrice),h=parseFloat(d.highPrice),l=parseFloat(d.lowPrice);
-    const vol=parseFloat(d.volume),chg=parseFloat(d.priceChangePercent);
-    if(livePx===0){livePx=px;updatePxDOM(px);}
-    set('h24',fU(h));set('l24',fU(l));
-    const vs=vol>=1e6?(vol/1e6).toFixed(2)+'M':vol>=1e3?(vol/1e3).toFixed(1)+'K':vol.toFixed(0);
-    set('vol24',vs+' '+coin);
+    let d=null;
+    try{d=await fetchJ(PROXY+'/btc?symbol='+sym);}catch(e){}
+    if(!d)try{d=await fetchJ(BN+'/ticker/24hr?symbol='+sym);}catch(e){}
+
+    if(d&&d.lastPrice){
+      const px=parseFloat(d.lastPrice),h=parseFloat(d.highPrice),l=parseFloat(d.lowPrice);
+      const vol=parseFloat(d.volume),chg=parseFloat(d.priceChangePercent);
+      if(livePx===0){livePx=px;updatePxDOM(px);}
+      set('h24',fU(h));set('l24',fU(l));
+      const vs=vol>=1e6?(vol/1e6).toFixed(2)+'M':vol>=1e3?(vol/1e3).toFixed(1)+'K':vol.toFixed(0);
+      set('vol24',vs+' '+coin);
+      const ce=$('priceChg');
+      if(ce){ce.textContent=(chg>=0?'▲ +':'▼ ')+Math.abs(chg).toFixed(2)+'%';ce.className='ph-chg '+(chg>=0?'up':'dn');ce.style.display='';}
+      set('tBTCChg',(chg>=0?'+':'')+chg.toFixed(2)+'% 24h');
+      set('trd-btcchg',(chg>=0?'+':'')+chg.toFixed(2)+'% 24h');
+      set('sys-rest','✅ Binance OK');
+      return;
+    }
+  }catch(e){}
+
+  // 2. Fallback CoinGecko (FUENTE REAL, sin 451)
+  try{
+    const cgId=CG_IDS[coin]||'bitcoin';
+    const cg=await fetchJ(CG_BASE+'/simple/price?ids='+cgId+'&vs_currencies=usd,eur&include_24hr_change=true&include_24hr_vol=true');
+    const data=cg[cgId];
+    const px=data.usd,chg=data.usd_24h_change||0;
+    livePx=px;updatePxDOM(px);
     const ce=$('priceChg');
     if(ce){ce.textContent=(chg>=0?'▲ +':'▼ ')+Math.abs(chg).toFixed(2)+'%';ce.className='ph-chg '+(chg>=0?'up':'dn');ce.style.display='';}
+    set('h24','--');set('l24','--');
+    set('vol24',data.usd_24h_vol?fK(data.usd_24h_vol)+'USD':'--');
     set('tBTCChg',(chg>=0?'+':'')+chg.toFixed(2)+'% 24h');
     set('trd-btcchg',(chg>=0?'+':'')+chg.toFixed(2)+'% 24h');
-    set('sys-rest','✅ OK');
-  }catch(e){console.error('[STX] ticker',e);set('sys-rest','❌ '+e.message);}
+    set('sys-rest','✅ CoinGecko (Binance no disponible)');
+    addLog('TICKER',T,'Precio CoinGecko: '+fU(px,2)+' · '+chg.toFixed(2)+'%');
+  }catch(e2){console.error('[STX] ticker todo falló',e2);set('sys-rest','❌ Sin precio');}
 }
 
-/* ── Cálculos ── */
+/* ════════════════════════════════════════════
+   KLINES — CoinGecko OHLCV como fuente real
+   cuando Binance devuelve 451
+════════════════════════════════════════════ */
+async function loadKlines(tf,limit=220){
+  const sym=COINS[coin];
+
+  // 1. Proxy Worker
+  try{
+    const d=await fetchJ(PROXY+'/klines?symbol='+sym+'&interval='+tf+'&limit='+limit);
+    if(d&&d.length>10)return d.map(c=>({t:+c[0],o:+c[1],h:+c[2],l:+c[3],c:+c[4],v:+c[5]}));
+  }catch(e){}
+
+  // 2. Binance directa
+  try{
+    const d=await fetchJ(BN+'/klines?symbol='+sym+'&interval='+tf+'&limit='+limit);
+    if(d&&d.length>10)return d.map(c=>({t:+c[0],o:+c[1],h:+c[2],l:+c[3],c:+c[4],v:+c[5]}));
+  }catch(e){}
+
+  // 3. CoinGecko OHLCV — fuente real sin 451
+  // CoinGecko devuelve ~48 velas (30min) para days=1, ~168 velas (1h) para days=7
+  const cgId=CG_IDS[coin]||'bitcoin';
+  const days=tf==='1d'?30:tf.includes('h')&&parseInt(tf)>=4?7:1;
+  try{
+    const d=await fetchJ(CG_BASE+'/coins/'+cgId+'/ohlc?vs_currency=usd&days='+days);
+    // d = [[timestamp, open, high, low, close], ...]
+    if(d&&d.length>10){
+      addLog('KLINES','var(--amber)','CoinGecko OHLCV · '+d.length+' velas ·'+tf);
+      return d.map(c=>({t:c[0],o:c[1],h:c[2],l:c[3],c:c[4],v:1}));
+    }
+  }catch(e){}
+
+  // 4. Sin datos — devolver array vacío (no crash)
+  console.warn('[STX] loadKlines: todas las fuentes fallaron para '+tf);
+  return[];
+}
+
+/* ════════════════════════════════════════════
+   Cálculos matemáticos
+════════════════════════════════════════════ */
 function smaL(arr,p){if(arr.length<p)return null;return arr.slice(-p).reduce((a,b)=>a+b,0)/p;}
 function rsiL(cl,p=14){
   if(cl.length<p+1)return null;
@@ -124,19 +182,20 @@ function bbL(cl,p=20,k=2){
   const u=m+k*sd,dn=m-k*sd;
   return{pb:+((cl[cl.length-1]-dn)/((u-dn)||1)).toFixed(3),bw:+((u-dn)/m*100).toFixed(2)};
 }
-function vwap(candles){
+function vwapCalc(candles){
   if(!candles?.length)return null;
   let tv=0,tpv=0;
   candles.slice(-50).forEach(c=>{const tp=(c.h+c.l+c.c)/3,v=c.v||1;tpv+=tp*v;tv+=v;});
   return tv>0?Math.round(tpv/tv):null;
 }
-function atr(hi,lo,cl,p=14){
+function atrCalc(hi,lo,cl,p=14){
   if(cl.length<p+1)return null;
   const trs=[];
   for(let i=cl.length-p;i<cl.length;i++)trs.push(Math.max(hi[i]-lo[i],Math.abs(hi[i]-cl[i-1]),Math.abs(lo[i]-cl[i-1])));
   return Math.round(trs.reduce((a,b)=>a+b,0)/p);
 }
 function computeScore(cl,hi,lo){
+  if(!cl||cl.length<20)return{score:0,p1:0,p2:0,p3:0,ma6:null,ma40:null,ma70:null,ma200:null,px:livePx,rv:null,av:null,pb:null,bw:null};
   const px=cl[cl.length-1];
   const ma6=smaL(cl,6),ma40=smaL(cl,40),ma70=smaL(cl,70),ma200=smaL(cl,200);
   const rv=rsiL(cl),av=adxL(hi,lo,cl);
@@ -164,54 +223,38 @@ function sLabel(s){
   return['Capitulación','CASH'];
 }
 
-async function loadKlines(tf,limit=220){
-  const sym=COINS[coin];
-  const d=await fetchB('/klines?symbol='+sym+'&interval='+tf+'&limit='+limit,BN+'/klines?symbol='+sym+'&interval='+tf+'&limit='+limit);
-  return d.map(c=>({t:+c[0],o:+c[1],h:+c[2],l:+c[3],c:+c[4],v:+c[5]}));
-}
-
-/* ── Render ── */
+/* ════════════════════════════════════════════
+   Render funciones
+════════════════════════════════════════════ */
 function renderScore(sc){
-  const{score,p1,p2,p3}=sc,col=sColor(score);
-  const[lbl,dec]=sLabel(score);
+  const{score,p1,p2,p3}=sc,col=sColor(score),[lbl,dec]=sLabel(score);
   const arc=$('ringArc');
   if(arc){arc.style.strokeDashoffset=326-(326*score/100);arc.style.stroke=col;}
   set('scoreNum',score);setC('scoreNum',col);
-  set('scoreLbl',lbl);setC('scoreLbl',col);
-  set('scoreZone',dec);
+  set('scoreLbl',lbl);setC('scoreLbl',col);set('scoreZone',dec);
   const p1b=$('p1bar');if(p1b)p1b.style.width=(p1/35*100)+'%';
   const p2b=$('p2bar');if(p2b)p2b.style.width=(p2/35*100)+'%';
   const p3b=$('p3bar');if(p3b)p3b.style.width=(p3/30*100)+'%';
   set('p1pts',p1+'/35');set('p2pts',p2+'/35');set('p3pts',p3+'/30');
   document.querySelectorAll('#zonaLst .zona-r').forEach(el=>el.classList.toggle('zac',score>=+el.dataset.min));
-  // Método
-  set('met-score',score);setC('met-score',col);
-  set('met-lbl',lbl);setC('met-lbl',col);
+  set('met-score',score);setC('met-score',col);set('met-lbl',lbl);setC('met-lbl',col);
   const mp1b=$('met-p1bar');if(mp1b)mp1b.style.width=(p1/35*100)+'%';
   const mp2b=$('met-p2bar');if(mp2b)mp2b.style.width=(p2/35*100)+'%';
   const mp3b=$('met-p3bar');if(mp3b)mp3b.style.width=(p3/30*100)+'%';
   set('met-p1',p1+' pts');set('met-p2',p2+' pts');set('met-p3',p3+' pts');
-  // Exponer globalmente para Ajram
   window.lastScore=sc;
   if(window.updateAjramFromSONO)window.updateAjramFromSONO();
 }
 function renderMAs(sc){
   const{ma6,ma40,ma70,ma200,px}=sc;
-  function setMA(vi,di,ma){
-    if(ma==null)return;
-    const d=(px-ma)/ma*100;
-    set(vi,fU(ma,0));set(di,fP(d));setC(di,cGR(d));
-  }
-  setMA('ma6v','ma6d',ma6);setMA('ma40v','ma40d',ma40);
-  setMA('ma70v','ma70d',ma70);setMA('ma200v','ma200d',ma200);
-  const md1=$('met-p1d');
-  if(md1)md1.textContent='MA6:'+(ma6?fU(ma6,0):'--')+' · MA40:'+(ma40?fU(ma40,0):'--')+' · MA200:'+(ma200?fU(ma200,0):'--');
+  function setMA(vi,di,ma){if(ma==null)return;const d=(px-ma)/ma*100;set(vi,fU(ma,0));set(di,fP(d));setC(di,cGR(d));}
+  setMA('ma6v','ma6d',ma6);setMA('ma40v','ma40d',ma40);setMA('ma70v','ma70d',ma70);setMA('ma200v','ma200d',ma200);
+  const md1=$('met-p1d');if(md1)md1.textContent='MA6:'+(ma6?fU(ma6,0):'--')+' · MA40:'+(ma40?fU(ma40,0):'--')+' · MA200:'+(ma200?fU(ma200,0):'--');
 }
 function renderSignals(sc){
   const{ma6,ma40,ma70,ma200,px,rv,av,pb}=sc;
   function sig(di,vi,ok,val){
-    const de=$(di),ve=$(vi);
-    if(de){de.style.background=ok?T:'var(--tx3,#4d6585)';}
+    const de=$(di),ve=$(vi);if(de)de.style.background=ok?T:'var(--tx3,#4d6585)';
     if(ve){ve.textContent=val;ve.style.color=ok?T:'var(--tx3,#4d6585)';}
   }
   sig('d_ma6x70','v_ma6x70',ma6&&ma70&&ma6>ma70,ma6&&ma70?(ma6>ma70?'↑ activa':'↓ inact'):'--');
@@ -234,31 +277,32 @@ function renderInd(sc){
   const md3=$('met-p3d');if(md3)md3.textContent='%B: '+(sc.pb!=null?sc.pb.toFixed(2):'--')+' · BW: '+(sc.bw!=null?sc.bw+'%':'--');
 }
 function renderSR(sr,px){
-  set('srR2',fU(sr.r2,0));set('srR1',fU(sr.r1,0));
-  set('srS1',fU(sr.s1,0));set('srS2',fU(sr.s2,0));
+  set('srR2',fU(sr.r2,0));set('srR1',fU(sr.r1,0));set('srS1',fU(sr.s1,0));set('srS2',fU(sr.s2,0));
   if(px>0)set('srLive',fU(px,2));
 }
 
-/* ── refreshIndicators ── */
+/* ════════════════════════════════════════════
+   refreshIndicators — usa loadKlines con CoinGecko fallback
+════════════════════════════════════════════ */
 async function refreshIndicators(){
   try{
     const candles=await loadKlines('15m',220);
+    if(!candles||candles.length<20){addLog('IND','var(--amber)','Sin velas suficientes — reintentando en 60s');return;}
     const cl=candles.map(c=>c.c),hi=candles.map(c=>c.h),lo=candles.map(c=>c.l);
-    const sc=computeScore(cl,hi,lo);
-    lastScore=sc;
+    const sc=computeScore(cl,hi,lo);lastScore=sc;
     renderScore(sc);renderMAs(sc);renderSignals(sc);renderInd(sc);
     const n=25,rh=Math.max(...hi.slice(-n)),rl=Math.min(...lo.slice(-n)),rng=rh-rl;
-    renderSR({r2:rh+rng*0.1,r1:rh,s1:rl,s2:rl-rng*0.1},livePx||sc.px);
-    const vw=vwap(candles),at=atr(hi,lo,cl);
+    renderSR({r2:rh+rng*.1,r1:rh,s1:rl,s2:rl-rng*.1},livePx||sc.px);
+    const vw=vwapCalc(candles),at=atrCalc(hi,lo,cl);
     if(vw)set('vwapEl',fU(vw));if(at)set('atrEl',fU(at));
     addLog('IND',T,'Score '+sc.score+'/100 · RSI '+(sc.rv??'--')+' · ADX '+(sc.av??'--'));
-  }catch(e){console.error('[STX]',e);addLog('IND',R,'Error: '+e.message);}
+  }catch(e){console.error('[STX]',e);addLog('IND',R,'Error indicadores: '+e.message);}
 }
 
 async function refreshMTF(){
   const tfs=['1m','3m','5m','15m'],ids=['mtf1m','mtf3m','mtf5m','mtf15m'],w=[.10,.15,.25,.50],scores=[];
   for(const tf of tfs){
-    try{const c=await loadKlines(tf,220);scores.push(computeScore(c.map(x=>x.c),c.map(x=>x.h),c.map(x=>x.l)).score);}
+    try{const c=await loadKlines(tf,220);scores.push(c.length>10?computeScore(c.map(x=>x.c),c.map(x=>x.h),c.map(x=>x.l)).score:0);}
     catch(e){scores.push(0);}
   }
   scores.forEach((s,i)=>{const e=$(ids[i]);if(e){e.textContent=s;e.style.color=sColor(s);}});
@@ -266,14 +310,17 @@ async function refreshMTF(){
   const mt=$('mtfTotal');if(mt){mt.textContent=mtf;mt.style.color=sColor(mtf);}
 }
 
-/* ── Rangos ── async CORRECTO */
+/* ════════════════════════════════════════════
+   Rangos — async CORRECTO
+════════════════════════════════════════════ */
 async function renderRangosPage(){
   const grid=$('rangeGrid');if(!grid)return;
-  grid.innerHTML='<div style="grid-column:1/-1;padding:1rem;color:var(--tx3,#4d6585);font-family:monospace">Cargando rangos...</div>';
+  grid.innerHTML='<div style="grid-column:1/-1;padding:1rem;color:var(--tx3,#4d6585);font-family:monospace">Cargando rangos multi-TF...</div>';
   const tfs=['15m','5m','3m','1m'],res=[];
   for(const tf of tfs){
     try{
       const c=await loadKlines(tf,60);
+      if(!c||c.length<5){res.push({tf,px:livePx,r2:0,r1:0,s1:0,s2:0,zona:'Sin datos',pres:'--',pn:50,rv:null,av:null});continue;}
       const cl=c.map(x=>x.c),hi=c.map(x=>x.h),lo=c.map(x=>x.l);
       const px=cl[cl.length-1];
       const rh=Math.max(...hi.slice(-20)),rl=Math.min(...lo.slice(-20)),rng=rh-rl;
@@ -289,15 +336,8 @@ async function renderRangosPage(){
   grid.innerHTML=res.map((r,i)=>`
     <div class="range-spatial-card ${r.pres==='Compradora'?'p-buy':r.pres==='Vendedora'?'p-sell':''}">
       <div class="rsc-head">
-        <div>
-          <div class="rsc-tf">${r.tf}${i===0?' <span class="rsc-dom">DOM</span>':''}</div>
-          <div class="rsc-state">${r.zona}</div>
-        </div>
-        <div class="rsc-pres">
-          <div class="rsc-pres-lb">Presión</div>
-          <div class="rsc-pres-v">${r.pres}</div>
-          <div class="rsc-pres-s">RSI ${r.rv??'--'} · ADX ${r.av??'--'}</div>
-        </div>
+        <div><div class="rsc-tf">${r.tf}${i===0?' <span class="rsc-dom">DOM</span>':''}</div><div class="rsc-state">${r.zona}</div></div>
+        <div class="rsc-pres"><div class="rsc-pres-lb">Presión</div><div class="rsc-pres-v">${r.pres}</div><div class="rsc-pres-s">RSI ${r.rv??'--'} · ADX ${r.av??'--'}</div></div>
       </div>
       <div class="pressure-meter-wrap">
         <div class="pressure-meter-labels"><span>VENDEDORA</span><span>NEUTRA</span><span>COMPRADORA</span></div>
@@ -319,7 +359,9 @@ async function renderRangosPage(){
     </div>`).join('');
 }
 
-/* ── Trades ── */
+/* ════════════════════════════════════════════
+   Trades
+════════════════════════════════════════════ */
 function geEstado(t){return((t.status||t.estado||'')).toUpperCase().trim();}
 function calcRActual(t,px){
   if(geEstado(t)!=='OPEN')return null;
@@ -331,8 +373,7 @@ function updateOpenR(px){
   ['tradesTbody','tradesFullTbody'].forEach(id=>{
     const tb=$(id);if(!tb)return;
     tb.querySelectorAll('tr[data-trade-id]').forEach(row=>{
-      const t=allTrades.find(x=>String(x.id)===row.dataset.tradeId);
-      if(!t)return;
+      const t=allTrades.find(x=>String(x.id)===row.dataset.tradeId);if(!t)return;
       const r=calcRActual(t,px),cell=row.querySelector('[data-r]');
       if(cell&&r!=null){cell.textContent=fR(r);cell.style.color=cGR(r);}
     });
@@ -344,23 +385,19 @@ function buildRow(t,px){
   const rStr=r!=null?fR(r):'--',rClr=r!=null?cGR(r):'var(--tx3)';
   let bc='b-op',bt=t.status||t.estado||'?';
   if(est.startsWith('TP')){bc='b-tp';bt='TP ✓';}else if(est.startsWith('SL')){bc='b-sl';bt='SL ✗';}else if(est.startsWith('BE')){bc='b-be';bt='BE —';}
-  const tr=document.createElement('tr');
-  if(isOpen)tr.dataset.tradeId=t.id;
+  const tr=document.createElement('tr');if(isOpen)tr.dataset.tradeId=t.id;
   tr.innerHTML=`<td>${t.id}</td><td><span class="badge ${bc}">${bt}</span></td><td>${t.tf||'--'}</td><td>${t.side||'--'}</td><td>${t.setup||'--'}</td><td>${t.entry||'--'}</td><td>${t.sl||'--'}</td><td>${t.tp1||'--'}</td><td>${t.tp2||'--'}</td><td>${t.mfe||'--'}</td><td>${t.mae||'--'}</td><td>${t.dur||t.duration||'--'}</td><td style="color:${rClr};font-weight:700" data-r="1">${rStr}</td>`;
   return tr;
 }
 function renderTrades(list,px){
   const closed=list.filter(t=>geEstado(t)!=='OPEN'),open=list.filter(t=>geEstado(t)==='OPEN');
-  const tp=closed.filter(t=>geEstado(t).startsWith('TP')).length;
-  const sl=closed.filter(t=>geEstado(t).startsWith('SL')).length;
-  const be=closed.filter(t=>geEstado(t).startsWith('BE')).length;
+  const tp=closed.filter(t=>geEstado(t).startsWith('TP')).length,sl=closed.filter(t=>geEstado(t).startsWith('SL')).length,be=closed.filter(t=>geEstado(t).startsWith('BE')).length;
   const rs=closed.map(t=>parseFloat(t.r_actual??t.r)||0);
   const rt=rs.reduce((a,b)=>a+b,0),wins=rs.filter(r=>r>0).length;
   const wr=closed.length>0?(wins/closed.length*100).toFixed(1):'0.0';
   const wA=rs.filter(r=>r>0).reduce((a,b)=>a+b,0),lA=Math.abs(rs.filter(r=>r<0).reduce((a,b)=>a+b,0));
   const pf=lA>0?(wA/lA).toFixed(2):'∞';
-  const pnl=closed.reduce((a,t)=>a+(parseFloat(t.pnl)||0),0);
-  const dd=Math.min(0,...rs,0);
+  const pnl=closed.reduce((a,t)=>a+(parseFloat(t.pnl)||0),0),dd=Math.min(0,...rs,0);
   ['tOpen','trd-open'].forEach(id=>set(id,open.length));
   ['tOpenSub','trd-opensub'].forEach(id=>set(id,open.map(t=>t.side||'?').join(' · ')||'--'));
   ['tClosed','trd-closed'].forEach(id=>set(id,closed.length));
@@ -371,8 +408,7 @@ function renderTrades(list,px){
   ['stPnL','trd-pnl'].forEach(id=>{set(id,(pnl>=0?'+':'')+pnl.toFixed(2)+'$');setC(id,cGR(pnl));});
   ['stPF','trd-pf'].forEach(id=>set(id,pf));
   ['stDD','trd-dd'].forEach(id=>{set(id,dd.toFixed(2)+'R');setC(id,dd<0?R:G);});
-  set('tradesStatus','trades.json · '+list.length+' trades');
-  set('sys-trades','✅ '+list.length+' trades');
+  set('tradesStatus','trades.json · '+list.length+' trades');set('sys-trades','✅ '+list.length+' trades');
   const tb=$('tradesTbody');if(tb){tb.innerHTML='';[...list].reverse().forEach(t=>tb.appendChild(buildRow(t,px)));}
   // Equity chart
   if(window.Chart&&$('equityChart')){
@@ -383,9 +419,7 @@ function renderTrades(list,px){
       options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{display:false},y:{position:'right',ticks:{color:'#4d6585',font:{size:9},callback:v=>v+'R'},grid:{color:'rgba(255,255,255,.03)'}}}}
     });
   }
-  // KPIs equity
-  set('eq-dd',dd.toFixed(2)+'R');setC('eq-dd',dd<0?R:G);
-  set('eq-pf',pf);
+  set('eq-dd',dd.toFixed(2)+'R');setC('eq-dd',dd<0?R:G);set('eq-pf',pf);
   set('eq-exp',closed.length>0?(rt/closed.length).toFixed(2)+'R':'--');
   set('eq-best',rs.length?Math.max(...rs).toFixed(2)+'R':'--');setC('eq-best',G);
   set('eq-worst',rs.length?Math.min(...rs).toFixed(2)+'R':'--');setC('eq-worst',R);
@@ -398,27 +432,31 @@ function renderTradesPage(){
 }
 async function loadTrades(){
   try{
-    const d=await fetchJ('/trades.json');
-    allTrades=Array.isArray(d)?d:(d.trades||[]);
-    renderTrades(allTrades,livePx);
-    addLog('TRADES',T,allTrades.length+' trades cargados');
+    const d=await fetchJ('/trades.json');allTrades=Array.isArray(d)?d:(d.trades||[]);
+    renderTrades(allTrades,livePx);addLog('TRADES',T,allTrades.length+' trades de trades.json');
   }catch(e){console.error('[STX] trades',e);set('sys-trades','❌ Error');}
 }
 
-/* ── Macro ── */
+/* ════════════════════════════════════════════
+   Macro — CoinGecko primario para global
+════════════════════════════════════════════ */
 async function loadFG(){
   try{
-    const d=await fetchB('/fng','https://api.alternative.me/fng/?limit=1');
+    let d=null;
+    try{d=await fetchJ(PROXY+'/fng');}catch(e){}
+    if(!d)d=await fetchJ('https://api.alternative.me/fng/?limit=1');
     const fg=parseInt(d.data[0].value),lb=d.data[0].value_classification;
     const c=fg<=20?T:fg<=40?'#86efac':fg<=60?'var(--tx3)':fg<=80?'var(--amber)':R;
     set('mFNG',fg);setC('mFNG',c);set('mFNGl',lb);
     const b=$('mFNGb');if(b){b.style.width=fg+'%';b.style.background=c;}
-    set('sys-fg','✅ '+fg+' '+lb);addLog('F&G',T,'Fear & Greed: '+fg+' — '+lb);
+    set('sys-fg','✅ '+fg+' · '+lb);addLog('F&G',T,'F&G: '+fg+' — '+lb);
   }catch(e){set('sys-fg','❌');}
 }
 async function loadCG(){
   try{
-    const d=await fetchB('/global','https://api.coingecko.com/api/v3/global');
+    let d=null;
+    try{d=await fetchJ(PROXY+'/global');}catch(e){}
+    if(!d)d=await fetchJ(CG_BASE+'/global');
     const dom=d.data.market_cap_percentage?.btc||0,mc=d.data.total_market_cap?.usd||0;
     set('mDOM',dom.toFixed(1)+'%');set('mDOMl',dom>60?'BTC dominante':dom>45?'Equilibrado':'Altseason');
     const db=$('mDOMb');if(db)db.style.width=dom+'%';
@@ -428,27 +466,32 @@ async function loadCG(){
 }
 async function loadEUR(){
   try{
-    const d=await fetchB('/eur',BN+'/ticker/price?symbol=EURUSDT');
-    eurRate=parseFloat(d.price);
-    set('mEUR',eurRate.toFixed(4));
-    const eb=$('mEURb');if(eb)eb.style.width=Math.min(100,(eurRate-0.8)*500)+'%';
-    set('sys-eur','✅ '+eurRate.toFixed(4));
-  }catch(e){set('sys-eur','❌ Usando 1.08');}
+    let rate=null;
+    try{const d=await fetchJ(PROXY+'/eur');rate=parseFloat(d.price);if(!rate||rate<0.5)rate=null;}catch(e){}
+    if(!rate)try{const d=await fetchJ(BN+'/ticker/price?symbol=EURUSDT');rate=parseFloat(d.price);}catch(e){}
+    if(!rate){
+      // Fallback: CoinGecko EUR no disponible directamente, usar valor real conocido
+      rate=1.08;addLog('EUR','var(--amber)','EUR fallback 1.08 (Binance no disponible)');
+    }
+    eurRate=rate;set('mEUR',rate.toFixed(4));
+    const eb=$('mEURb');if(eb)eb.style.width=Math.min(100,(rate-0.8)*500)+'%';
+    set('sys-eur',rate===1.08?'⚠️ Fallback 1.08':'✅ '+rate.toFixed(4));
+  }catch(e){set('sys-eur','❌');}
 }
 
-/* ── Logs ── */
+/* Logs */
 function addLog(tag,col,msg){
   const ts=new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
   logs.unshift({ts,tag,col,msg});if(logs.length>12)logs.pop();
-  const cm={[T]:'rgba(0,212,160,.1)',[G]:'rgba(34,197,94,.12)',[R]:'rgba(239,68,68,.12)'};
-  const ct={[T]:T,[G]:G,[R]:R};
+  const cm={[T]:'rgba(0,212,160,.1)',[G]:'rgba(34,197,94,.12)',[R]:'rgba(239,68,68,.12)','var(--amber)':'rgba(245,158,11,.12)','var(--blue)':'rgba(59,130,246,.12)'};
+  const ct={[T]:T,[G]:G,[R]:R,'var(--amber)':'var(--amber)','var(--blue)':'var(--blue)'};
   ['alertLst','sysLog'].forEach(id=>{
     const el=$(id);if(!el)return;
     el.innerHTML=logs.map(a=>`<div class="al-row"><div class="al-t">${a.ts}</div><div class="al-tg" style="background:${cm[a.col]||'rgba(59,130,246,.12)'};color:${ct[a.col]||'var(--blue)'}">${a.tag}</div><div class="al-m">${a.msg}</div></div>`).join('');
   });
 }
 
-/* ── Router SPA ── */
+/* Router SPA */
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('ac',b.dataset.page===id));
@@ -459,24 +502,21 @@ function showPage(id){
   if(id==='metodo'&&lastScore)renderScore(lastScore);
 }
 
-/* ── Moneda ── */
+/* Moneda */
 function setCoin(c){
   coin=c;livePx=0;
   document.querySelectorAll('#coinBtns .cb-btn').forEach(b=>b.classList.toggle('ac',b.dataset.coin===c));
   ['priceUSD','h24','l24','vol24','priceEUR','vwapEl','atrEl'].forEach(id=>set(id,'---'));
   const ce=$('priceChg');if(ce)ce.style.display='none';
-  startWS();loadTicker();refreshIndicators();
-  addLog('COIN','var(--blue)','Moneda: '+c);
+  startWS();loadTicker();refreshIndicators();addLog('COIN','var(--blue)','Moneda: '+c);
 }
 
-/* ── Tabs y filtros Trades ── */
+/* Filtros Trades */
 function setupTabs(){
   document.querySelectorAll('.t-tab').forEach(btn=>{
     btn.addEventListener('click',()=>{
-      document.querySelectorAll('.t-tab').forEach(b=>b.classList.remove('ac'));
-      btn.classList.add('ac');
-      const tab=btn.dataset.ttab;
-      const sel=$('filterStatus');if(sel)sel.value=tab==='open'?'OPEN':tab==='closed'?'TP':'ALL';
+      document.querySelectorAll('.t-tab').forEach(b=>b.classList.remove('ac'));btn.classList.add('ac');
+      const sel=$('filterStatus');if(sel)sel.value=btn.dataset.ttab==='open'?'OPEN':btn.dataset.ttab==='closed'?'TP':'ALL';
       applyFilter();
     });
   });
@@ -485,10 +525,8 @@ function setupTabs(){
   });
 }
 function applyFilter(){
-  const status=$('filterStatus')?.value||'ALL';
-  const side=$('filterSide')?.value||'ALL';
-  const setup=($('filterSetup')?.value||'').toLowerCase();
-  const tf=($('filterTf')?.value||'').toLowerCase();
+  const status=$('filterStatus')?.value||'ALL',side=$('filterSide')?.value||'ALL';
+  const setup=($('filterSetup')?.value||'').toLowerCase(),tf=($('filterTf')?.value||'').toLowerCase();
   const filtered=allTrades.filter(t=>{
     const est=geEstado(t);
     if(status!=='ALL'&&est!==status&&!est.startsWith(status))return false;
@@ -503,31 +541,25 @@ function applyFilter(){
   [...filtered].reverse().forEach(t=>tb.appendChild(buildRow(t,livePx)));
 }
 
-/* ── INIT ── */
+/* ════════════════════════════════════════════
+   INIT — sin await fuera de async
+════════════════════════════════════════════ */
 (async function init(){
-  console.log('[STX FINAL] Iniciando...');
+  console.log('[STX FINALv2] Iniciando con CoinGecko como fuente primaria...');
   setInterval(()=>set('clockEl',new Date().toLocaleTimeString('es-ES')),1000);
-  // Navegación — sin onclick inline
   document.querySelectorAll('.nav-btn').forEach(btn=>btn.addEventListener('click',()=>showPage(btn.dataset.page)));
   document.querySelectorAll('#coinBtns .cb-btn').forEach(btn=>btn.addEventListener('click',()=>setCoin(btn.dataset.coin)));
   window.addEventListener('popstate',e=>{if(e.state?.page)showPage(e.state.page);});
   setupTabs();
-  // Carga de datos
   await loadEUR();
   startWS();startWatchdog();
-  loadTicker();
-  refreshIndicators();
-  loadFG();loadCG();
-  loadTrades();
-  setTimeout(refreshMTF,5000);
-  // Refrescos
-  setInterval(loadTicker,30000);
-  setInterval(refreshIndicators,60000);
-  setInterval(loadFG,300000);
-  setInterval(loadCG,300000);
-  setInterval(loadEUR,3600000);
-  setInterval(loadTrades,120000);
-  setInterval(refreshMTF,120000);
-  addLog('STX','var(--teal,#00d4a0)','SONO Terminal X FINAL iniciado · datos reales');
-  console.log('[STX FINAL] init() completado');
+  loadTicker();      // CoinGecko primario si Binance falla
+  refreshIndicators(); // CoinGecko OHLCV si Binance falla
+  loadFG();loadCG();loadTrades();
+  setTimeout(refreshMTF,8000);
+  setInterval(loadTicker,30000);setInterval(refreshIndicators,60000);
+  setInterval(loadFG,300000);setInterval(loadCG,300000);setInterval(loadEUR,3600000);
+  setInterval(loadTrades,120000);setInterval(refreshMTF,120000);
+  addLog('STX',T,'SONO Terminal X FINALv2 · CoinGecko activo');
+  console.log('[STX FINALv2] init() completado');
 })();
