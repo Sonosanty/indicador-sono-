@@ -874,5 +874,8 @@ function initSonoMethod() {
   const liveBtn=$$("liveBtn"); if(liveBtn)liveBtn.addEventListener("click",function(){const ai=$$("atrIn");const si=$$("stopIn");if(ai)ai.value=s.atr;if(si)si.value=Math.max(0,s.price-1.5*s.atr);calcPosition();});
 }
 
+
+_init().catch(e=>console.error('[STX] init FALLÓ:',e.message));
+
 })();
 
