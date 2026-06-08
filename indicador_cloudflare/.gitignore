@@ -25,3 +25,8 @@ output/
 .vscode/
 *.swp
 *.swo
+# Backups - nunca commitear
+*.backup.*
+*.bak
+*.original
+index_raw.html
