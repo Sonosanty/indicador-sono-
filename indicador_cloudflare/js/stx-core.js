@@ -243,7 +243,7 @@ function renderScore(sc){
   const mp3b=$('met-p3bar');if(mp3b)mp3b.style.width=(p3/30*100)+'%';
   set('met-p1',p1+' pts');set('met-p2',p2+' pts');set('met-p3',p3+' pts');
   window.lastScore=sc;
-  if(window.updateAjramFromSONO)window.updateAjramFromSONO();
+  if(window.updateSonoFromScore)window.updateSonoFromScore();
 }
 function renderMAs(sc){
   const{ma6,ma40,ma70,ma200,px}=sc;
