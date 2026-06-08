@@ -945,7 +945,7 @@ function journal(){ const rows=[[1,'+2.1R','Gap + Trend'],[2,'-1.0R','Stop por v
 function init(){ updateScore(); radar(); strategyGrid(); confluence(); execPanel(); journal(); calcPosition(); $('calcBtn').onclick=calcPosition; $('liveBtn').onclick=()=>{$('atrIn').value=state.atr; $('stopIn').value=Math.max(0,state.price-1.5*state.atr); calcPosition()}; $('sonoSignal').onclick=()=>{}; }
 init();
 </script>
-</div><!-- /page-metodo -->TRADES ═══ -->
+</div><!-- ═══ PÁGINA: TRADES ═══ -->
 <div class="page" id="page-trades">
 <div class="shell" style="max-width:1600px;margin:0 auto;padding:1.1rem 1.4rem;display:flex;flex-direction:column;gap:14px">
 
