@@ -21,6 +21,14 @@ const fK=n=>n>=1e12?'$'+(n/1e12).toFixed(2)+'T':n>=1e9?'$'+(n/1e9).toFixed(1)+'B
 const G='var(--green)',R='var(--red)',T='var(--teal,#00d4a0)';
 const cGR=n=>n>=0?G:R;
 
+/* ════════════════════════════════════════════
+   EventBus — comunicación entre módulos
+════════════════════════════════════════════ */
+const bus = { _l: {} };
+bus.on = function(e, fn) { (this._l[e] = this._l[e] || []).push(fn); };
+bus.off = function(e, fn) { const a = this._l[e]; if (a) this._l[e] = a.filter(f => f !== fn); };
+function emit(e, data) { (bus._l[e] || []).forEach(fn => { try { fn(data); } catch(ex) { console.warn('[BUS]', e, ex); } }); }
+
 async function fetchJ(url){
   const r=await fetch(url,{cache:'no-store'});
   if(!r.ok)throw Error(r.status+' '+url.substring(0,60));
@@ -244,8 +252,7 @@ function renderScore(sc){
   set('met-p1',p1+' pts');set('met-p2',p2+' pts');set('met-p3',p3+' pts');
   window.lastScore=sc;
   if(window.updateSonoFromScore)window.updateSonoFromScore();
-
-  if (window.updateSonoMethod) window.updateSonoMethod(lastScore);
+  emit('score:updated', sc);
 }
 function renderMAs(sc){
   const{ma6,ma40,ma70,ma200,px}=sc;
@@ -300,7 +307,7 @@ async function refreshIndicators(){
     // ATR añadido a sc para updateSonoMethod
     sc.atr = at || 0;
     lastScore = sc;
-    if (window.updateSonoMethod) window.updateSonoMethod(sc);
+    emit('score:updated', sc);
     addLog('IND',T,'Score '+sc.score+'/100 · RSI '+(sc.rv??'--')+' · ADX '+(sc.av??'--'));
   }catch(e){console.error('[STX]',e);addLog('IND',R,'Error indicadores: '+e.message);}
 }
@@ -618,15 +625,16 @@ function initSonoMethod() {
   function strategyGrid() {
     const grid = $('stratGrid');
     if (!grid) return;
+    const gap = Math.abs(s.gap || 0);
     const data = [
-      ['01','Gap Recovery','ACTIVE','84%','on-long'],
-      ['02','Gap Exhaustion','INACTIVE','21%','off'],
-      ['03','Trend Cross','ACTIVE','91%','on-long'],
-      ['04','Death Cross','INACTIVE','14%','off'],
-      ['05','BB Reversal Long','ACTIVE','73%','on-long'],
-      ['06','BB Reversal Short','INACTIVE','27%','off'],
-      ['07','Confluence Setup','ACTIVE','88%','on-conf'],
-      ['08','Volatility Breakout','ACTIVE','69%','on-break']
+      ['01','Gap Recovery',   gap>2?'ACTIVE':'INACTIVE', Math.min(95,60+gap*3)+'%', gap>2?'on-long':'off'],
+      ['02','Gap Exhaustion',  gap>5?'ACTIVE':'INACTIVE', Math.min(95,40+gap*2)+'%', gap>5?'on-short':'off'],
+      ['03','Trend Cross',     (s.ma6&&s.ma70&&s.ma6>s.ma70)?'ACTIVE':'INACTIVE', s.ma6&&s.ma70?Math.min(95,Math.round((s.ma6-s.ma70)/s.ma70*1000+50))+'%':'--', (s.ma6>s.ma70)?'on-long':'off'],
+      ['04','Death Cross',     (s.ma6&&s.ma70&&s.ma6<s.ma70)?'ACTIVE':'INACTIVE', s.ma6&&s.ma70?Math.min(95,Math.round((s.ma70-s.ma6)/s.ma70*1000+50))+'%':'--', (s.ma6<s.ma70)?'on-short':'off'],
+      ['05','BB Reversal Long', s.pb<0.2?'ACTIVE':'INACTIVE', s.pb!=null?Math.min(95,Math.round((0.2-s.pb)*300+50))+'%':'--', s.pb<0.2?'on-long':'off'],
+      ['06','BB Reversal Short',s.pb>0.8?'ACTIVE':'INACTIVE', s.pb!=null?Math.min(95,Math.round((s.pb-0.8)*300+50))+'%':'--', s.pb>0.8?'on-short':'off'],
+      ['07','Confluence Setup', s.score>=65?'ACTIVE':'INACTIVE', s.score>=65?Math.min(95,Math.round(40+s.score*0.55))+'%':'--', s.score>=65?'on-conf':'off'],
+      ['08','Volatility Breakout', s.bw>4?'ACTIVE':'INACTIVE', s.bw!=null?Math.min(95,Math.round(s.bw*8+30))+'%':'--', s.bw>4?'on-break':'off']
     ];
     grid.innerHTML = data.map(x => '' +
       '<div class="card pad" style="padding:14px">' +
@@ -641,21 +649,20 @@ function initSonoMethod() {
     ).join('');
   }
 
-  window.updateSonoMethod = function(sc) {
-    if (sc) {
-      s.price = sc.price || s.price;
-      s.atr = sc.atr || s.atr;
-      s.ma6 = sc.ma6 || s.ma6;
-      s.ma40 = sc.ma40 || s.ma40;
-      s.ma70 = sc.ma70 || s.ma70;
-      s.ma200 = sc.ma200 || s.ma200;
-      s.rsi = sc.rsi || s.rsi;
-      s.adx = sc.adx || s.adx;
-      s.pb = sc.pb ?? s.pb;
-      s.bw = sc.bw ?? s.bw;
-      s.gap = sc.gap ?? s.gap;
-      s.score = sc.total || s.score;
-    }
+  function updateSM(sc) {
+    if (!sc) return;
+    s.price = sc.price || sc.px || s.price;
+    s.atr = sc.atr || s.atr;
+    s.ma6 = sc.ma6 || s.ma6;
+    s.ma40 = sc.ma40 || s.ma40;
+    s.ma70 = sc.ma70 || s.ma70;
+    s.ma200 = sc.ma200 || s.ma200;
+    s.rsi = sc.rv ?? s.rsi;
+    s.adx = sc.av ?? s.adx;
+    s.pb = sc.pb ?? s.pb;
+    s.bw = sc.bw ?? s.bw;
+    s.gap = sc.gap ?? s.gap;
+    s.score = sc.score ?? s.score;
 
     const px = s.price;
     const sig = s.score >= 82 ? 'STRONG LONG' : s.score >= 65 ? 'LONG' : s.score >= 50 ? 'NEUTRAL' : s.score >= 35 ? 'SHORT' : 'STRONG SHORT';
@@ -713,7 +720,10 @@ function initSonoMethod() {
 
     execPanel(px, s.atr, Math.round(Math.min(95, 50 + s.score * 0.45)));
     strategyGrid();
-  };
+  }
+
+  // Suscripción al EventBus
+  bus.on('score:updated', updateSM);
 
   const calcBtn = $('calcBtn');
   if (calcBtn) calcBtn.addEventListener('click', calcPosition);
