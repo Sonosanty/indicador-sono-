@@ -255,6 +255,7 @@ class SonoBot:
         self.balances = {}
         self.running = True
         self.paper_mode = PAPER_MODE
+        self._last_trade_time = {}  # asset -> timestamp del último trade (cooldown 5min)
         
         # Paper trading: balances simulados con persistencia
         if self.paper_mode:
@@ -306,8 +307,9 @@ class SonoBot:
                     if 'highest_price' in pos:
                         self.positions[pos['asset']]['highest_price'] = pos['highest_price']
                 self.trade_log = state.get('trade_log', [])
+                self._last_trade_time = state.get('last_trade_time', {})
                 logger.info(f'Estado paper cargado: USDT={self.paper_balances.get("USDT",0):.2f}, '
-                           f'posiciones={len(self.positions)}')
+                           f'posiciones={len(self.positions)}, trades={len(self.trade_log)}')
                 return
             except Exception as e:
                 logger.warning(f'Error cargando estado paper: {e}. Usando balance inicial.')
@@ -334,8 +336,9 @@ class SonoBot:
                 'balances': self.paper_balances,
                 'positions': positions_list,
                 'trade_log': self.trade_log[-500:],  # mantener últimos 500 trades
+                'last_trade_time': self._last_trade_time,
                 'last_update': datetime.now().isoformat(),
-                'version': 1,
+                'version': 2,
             }
             with open(sp, 'w', encoding='utf-8') as f:
                 json.dump(state, f, indent=2, ensure_ascii=False)
@@ -589,35 +592,51 @@ class SonoBot:
                         has_higher_priority_pos = True
                         break
                 
-                # ═══ ENTRADAS SWING ═══
-                if signal == 'COMPRA FUERTE' and not pos:
-                    self.execute_buy(asset, price)
-                elif signal == 'COMPRA' and not pos:
-                    if not has_higher_priority_pos:
-                        self.execute_buy(asset, price)
-                    else:
-                        logger.info(f'{asset}: COMPRA score={score["total"]} - saltado (prioridad mayor activa)')
-                elif signal == 'ACUMULACIÓN' and not pos and active_positions == 0:
-                    if asset in ('XRP', 'ETH'):
-                        self.execute_buy(asset, price)
+                # ═══ CALCULAR MAs para cruce MA6 × MA70 ═══
+                closes = [c['close'] for c in candles]
+                ma6 = sum(closes[-6:]) / 6 if len(closes) >= 6 else None
+                ma70 = sum(closes[-70:]) / 70 if len(closes) >= 70 else None
+                ma6_prev = sum(closes[-7:-1]) / 6 if len(closes) >= 7 else None
+                ma70_prev = sum(closes[-71:-1]) / 70 if len(closes) >= 71 else None
+                ma6_cross_up = (ma6 is not None and ma70 is not None and ma6_prev is not None and ma70_prev is not None
+                                and ma6_prev <= ma70_prev and ma6 > ma70)
                 
-                # ═══ SWING: TRAILING STOP ═══
+                # ═══ TIMING: evitar duplicados (cooldown 5 min entre órdenes) ═══
+                now = time.time()
+                last_trade = self._last_trade_time.get(asset, 0)
+                cooldown_ok = (now - last_trade) >= 300  # 5 minutos
+                
+                # ═══ MÁXIMO 1 POSICIÓN POR PAR ═══
+                if pos:
+                    logger.info(f'{asset}: Posición abierta, no se evalúa entrada')
+                elif not cooldown_ok:
+                    logger.info(f'{asset}: Cooldown activo ({int(now-last_trade)}s), esperando...')
+                
+                # ═══ ENTRADA: BUY → Score ≥ 62 Y MA6 cruza arriba MA70 ═══
+                if not pos and cooldown_ok:
+                    if score["total"] >= 62 and ma6_cross_up:
+                        logger.info(f'{asset}: ENTRADA SWING | Score={score["total"]} ≥ 62 | MA6 cruzó MA70 ↑')
+                        self.execute_buy(asset, price)
+                        self._last_trade_time[asset] = now
+                    elif score["total"] >= 78:
+                        # Entrada directa si Score ≥ 78 aunque no haya cruce (señal fuerte)
+                        logger.info(f'{asset}: ENTRADA SWING FUERTE | Score={score["total"]} ≥ 78 | Sin cruce MA')
+                        self.execute_buy(asset, price)
+                        self._last_trade_time[asset] = now
+                
+                # ═══ SALIDA: SELL → Score ≤ 17 (capitulación) O pérdida ≥ 3% ═══
                 if pos and pos.get('entry', 0) > 0:
-                    gain_pct = ((price - pos['entry']) / pos['entry']) * 100
-                    highest = pos.get('highest_price', pos['entry'])
-                    if price > highest:
-                        pos['highest_price'] = price
-                    trail_high = pos.get('highest_price', pos['entry'])
-                    if trail_high > pos['entry']:
-                        drawdown_pct = ((trail_high - price) / trail_high) * 100
-                        if drawdown_pct >= 2.0:
-                            logger.info(f'{asset}: Trailing stop activado (drawdown {drawdown_pct:.1f}% desde ${trail_high:.2f})')
-                            self.execute_sell(asset, price)
-                            continue
-                
-                # ═══ SALIDAS SWING ═══
-                if signal in ('VENTA', 'CAPITULACIÓN', 'DISTRIBUCIÓN') and pos:
-                    self.execute_sell(asset, price)
+                    # Stop-loss duro: caída ≥ 3% desde entrada
+                    loss_pct = ((price - pos['entry']) / pos['entry']) * 100
+                    if loss_pct <= -3.0:
+                        logger.info(f'{asset}: STOP LOSS -3% activado | Entry=${pos["entry"]:.2f} | Actual=${price:.2f} ({loss_pct:.1f}%)')
+                        self.execute_sell(asset, price)
+                        continue
+                    # Salida por Score ≤ 17 (capitulación)
+                    if score["total"] <= 17:
+                        logger.info(f'{asset}: SALIDA CAPITULACIÓN | Score={score["total"]} ≤ 17')
+                        self.execute_sell(asset, price)
+                        continue
                         
         except Exception as e:
             logger.error(f'Error en ciclo: {e}')
