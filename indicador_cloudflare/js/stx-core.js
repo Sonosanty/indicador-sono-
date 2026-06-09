@@ -560,7 +560,7 @@ function applyFilter(){
 }
 
 /* ════════════════════════════════════════════
-   INIT — sin await fuera de async
+   INIT — secuencia con await, datos listos antes de continuar
 ════════════════════════════════════════════ */
 (async function init(){
   initSonoMethod();
@@ -571,14 +571,24 @@ function applyFilter(){
   document.querySelectorAll('#coinBtns .cb-btn').forEach(btn=>btn.addEventListener('click',()=>setCoin(btn.dataset.coin)));
   window.addEventListener('popstate',e=>{if(e.state?.page)showPage(e.state.page);});
   setupTabs();
+
+  // Fase 1 — EUR (siempre primero, resto depende de precio)
   await loadEUR();
+
+  // Fase 2 — Ticker + Indicadores + Trades (secuencial, orden crítico)
+  try{await loadTicker();}catch(e){console.warn('[STX] loadTicker falló:',e);}
+  try{await refreshIndicators();}catch(e){console.warn('[STX] refreshIndicators falló:',e);}
+  try{await loadTrades();}catch(e){console.warn('[STX] loadTrades falló:',e);}
+
+  // Fase 3 — WebSocket + secundarias (sin bloqueo)
   startWS();startWatchdog();
-  loadTicker().catch(e=>console.warn('[STX] loadTicker falló:',e));
-  refreshIndicators().catch(e=>console.warn('[STX] refreshIndicators falló:',e));
-  loadFG().catch(e=>console.warn('[STX] loadFG falló:',e));
-  loadCG().catch(e=>console.warn('[STX] loadCG falló:',e));
-  loadTrades().catch(e=>console.warn('[STX] loadTrades falló:',e));
+  loadFG().catch(e=>console.warn('[STX] FG falló:',e));
+  loadCG().catch(e=>console.warn('[STX] CG falló:',e));
+
+  // Fase 4 — MTF diferido (necesita klines de varios TFs)
   setTimeout(()=>refreshMTF().catch(e=>console.warn('[STX] refreshMTF falló:',e)),8000);
+
+  // Fase 5 — Polling
   setInterval(()=>loadTicker().catch(e=>console.warn('[STX] ticker falló:',e)),30000);
   setInterval(()=>refreshIndicators().catch(e=>console.warn('[STX] indicators falló:',e)),60000);
   setInterval(()=>loadFG().catch(e=>console.warn('[STX] FG falló:',e)),300000);
@@ -587,7 +597,7 @@ function applyFilter(){
   setInterval(()=>loadTrades().catch(e=>console.warn('[STX] trades falló:',e)),120000);
   setInterval(()=>refreshMTF().catch(e=>console.warn('[STX] MTF falló:',e)),120000);
   addLog('STX',T,'SONO Terminal X FINALv2 · CoinGecko activo');
-  console.log('[STX FINALv2] init() completado');
+  console.log('[STX FINALv2] init() completado con datos');
 
 
 /* S S S S S S O N O   M E T H O D (tm) M O D U L E S S S S S S */
