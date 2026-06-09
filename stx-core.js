@@ -297,10 +297,12 @@ async function refreshIndicators(){
     renderSR({r2:rh+rng*.1,r1:rh,s1:rl,s2:rl-rng*.1},livePx||sc.px);
     const vw=vwapCalc(candles),at=atrCalc(hi,lo,cl);
     if(vw)set('vwapEl',fU(vw));if(at)set('atrEl',fU(at));
+    // ATR añadido a sc para updateSonoMethod
+    sc.atr = at || 0;
+    lastScore = sc;
+    if (window.updateSonoMethod) window.updateSonoMethod(sc);
     addLog('IND',T,'Score '+sc.score+'/100 · RSI '+(sc.rv??'--')+' · ADX '+(sc.av??'--'));
   }catch(e){console.error('[STX]',e);addLog('IND',R,'Error indicadores: '+e.message);}
-
-  if (window.updateSonoMethod) window.updateSonoMethod(lastScore);
 }
 
 async function refreshMTF(){
@@ -474,8 +476,11 @@ async function loadEUR(){
     try{const d=await fetchJ(PROXY+'/eur');rate=parseFloat(d.price);if(!rate||rate<0.5)rate=null;}catch(e){}
     if(!rate)try{const d=await fetchJ(BN+'/ticker/price?symbol=EURUSDT');rate=parseFloat(d.price);}catch(e){}
     if(!rate){
-      // Fallback: CoinGecko EUR no disponible directamente, usar valor real conocido
-      rate=1.08;addLog('EUR','var(--amber)','EUR fallback 1.08 (Binance no disponible)');
+      // Fallback: CoinGecko
+      try{const cg=await fetchJ(CG_BASE+'/simple/price?ids=tether&vs_currencies=eur');if(cg?.tether?.eur)rate=1/cg.tether.eur;}catch(e2){}
+      if(!rate)try{const er=await fetch('https://open.er-api.com/v6/latest/USD',{cache:'no-store'});if(er.ok){const ed=await er.json();if(ed?.rates?.EUR)rate=ed.rates.EUR;}}catch(e3){}
+      if(!rate){rate=1.08;addLog('EUR','var(--amber)','EUR fallback 1.08');}
+      else addLog('EUR','var(--teal,#00d4a0)','EUR rate: '+rate.toFixed(4)+' (CoinGecko/ER-API)');
     }
     eurRate=rate;set('mEUR',rate.toFixed(4));
     const eb=$('mEURb');if(eb)eb.style.width=Math.min(100,(rate-0.8)*500)+'%';

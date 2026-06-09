@@ -10,6 +10,9 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://api.binance.com wss://stream.binance.com:9443 https://api.alternative.me https://api.coingecko.com https://vix-proxy.sonosanty.workers.dev; img-src 'self' data: blob:; frame-ancestors 'none'; base-uri 'self'
 
+/js/stx-core.js
+  Cache-Control: public, max-age=300, stale-while-revalidate=600
+
 /trades.json
-  Cache-Control: no-cache, no-store, must-revalidate
+  Cache-Control: public, max-age=120
   Content-Type: application/json; charset=utf-8
