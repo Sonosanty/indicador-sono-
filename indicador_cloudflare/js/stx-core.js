@@ -251,7 +251,6 @@ function renderScore(sc){
   const mp3b=$('met-p3bar');if(mp3b)mp3b.style.width=(p3/30*100)+'%';
   set('met-p1',p1+' pts');set('met-p2',p2+' pts');set('met-p3',p3+' pts');
   window.lastScore=sc;
-  if(window.updateSonoFromScore)window.updateSonoFromScore();
   emit('score:updated', sc);
 }
 function renderMAs(sc){
@@ -513,7 +512,7 @@ function showPage(id){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('ac',b.dataset.page===id));
   const pg=$('page-'+id);if(pg)pg.classList.add('active');
   history.pushState({page:id},'',(id==='dashboard'?'/':'/'+id));
-  if(id==='rangos')renderRangosPage();
+  if(id==='rangos')renderRangosPage().catch(e=>console.warn('[STX] rangos falló:',e));
   if(id==='trades')renderTradesPage();
   if(id==='metodo'&&lastScore)renderScore(lastScore);
 }
@@ -524,7 +523,10 @@ function setCoin(c){
   document.querySelectorAll('#coinBtns .cb-btn').forEach(b=>b.classList.toggle('ac',b.dataset.coin===c));
   ['priceUSD','h24','l24','vol24','priceEUR','vwapEl','atrEl'].forEach(id=>set(id,'---'));
   const ce=$('priceChg');if(ce)ce.style.display='none';
-  startWS();loadTicker();refreshIndicators();addLog('COIN','var(--blue)','Moneda: '+c);
+  startWS();
+  loadTicker().catch(e=>console.warn('[STX] setCoin loadTicker falló:',e));
+  refreshIndicators().catch(e=>console.warn('[STX] setCoin refreshIndicators falló:',e));
+  addLog('COIN','var(--blue)','Moneda: '+c);
 }
 
 /* Filtros Trades */
@@ -571,13 +573,19 @@ function applyFilter(){
   setupTabs();
   await loadEUR();
   startWS();startWatchdog();
-  loadTicker();      // CoinGecko primario si Binance falla
-  refreshIndicators(); // CoinGecko OHLCV si Binance falla
-  loadFG();loadCG();loadTrades();
-  setTimeout(refreshMTF,8000);
-  setInterval(loadTicker,30000);setInterval(refreshIndicators,60000);
-  setInterval(loadFG,300000);setInterval(loadCG,300000);setInterval(loadEUR,3600000);
-  setInterval(loadTrades,120000);setInterval(refreshMTF,120000);
+  loadTicker().catch(e=>console.warn('[STX] loadTicker falló:',e));
+  refreshIndicators().catch(e=>console.warn('[STX] refreshIndicators falló:',e));
+  loadFG().catch(e=>console.warn('[STX] loadFG falló:',e));
+  loadCG().catch(e=>console.warn('[STX] loadCG falló:',e));
+  loadTrades().catch(e=>console.warn('[STX] loadTrades falló:',e));
+  setTimeout(()=>refreshMTF().catch(e=>console.warn('[STX] refreshMTF falló:',e)),8000);
+  setInterval(()=>loadTicker().catch(e=>console.warn('[STX] ticker falló:',e)),30000);
+  setInterval(()=>refreshIndicators().catch(e=>console.warn('[STX] indicators falló:',e)),60000);
+  setInterval(()=>loadFG().catch(e=>console.warn('[STX] FG falló:',e)),300000);
+  setInterval(()=>loadCG().catch(e=>console.warn('[STX] CG falló:',e)),300000);
+  setInterval(()=>loadEUR().catch(e=>console.warn('[STX] EUR falló:',e)),3600000);
+  setInterval(()=>loadTrades().catch(e=>console.warn('[STX] trades falló:',e)),120000);
+  setInterval(()=>refreshMTF().catch(e=>console.warn('[STX] MTF falló:',e)),120000);
   addLog('STX',T,'SONO Terminal X FINALv2 · CoinGecko activo');
   console.log('[STX FINALv2] init() completado');
 
