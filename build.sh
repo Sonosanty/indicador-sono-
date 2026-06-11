@@ -92,7 +92,7 @@ for pagina in "${PAGINAS[@]}"; do
 done
 
 # Archivos de configuración CF (obligatorios para seguridad y routing)
-CONFIG=("_headers" "_routes.json" "favicon.ico" "favicon.svg")
+CONFIG=("_headers" "_routes.json" "favicon.ico" "favicon.svg" "manifest.json" "service-worker.js" "robots.txt")
 for cfg in "${CONFIG[@]}"; do
  if [ -f "indicador_cloudflare/$cfg" ]; then
  cp "indicador_cloudflare/$cfg" dist/
